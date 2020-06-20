@@ -1,5 +1,6 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
+import Qt.labs.platform 1.1
 
 ApplicationWindow {
     id: window
@@ -16,6 +17,11 @@ ApplicationWindow {
         }
     }
 
+    FolderDialog {
+        id: fdProtoDir
+        onAccepted: txtProtoFolder.text = folder
+    }
+
     SplitView {
         anchors.fill: parent
         orientation: Qt.Horizontal
@@ -25,12 +31,33 @@ ApplicationWindow {
         }
 
         Rectangle {
-            implicitWidth: 200
+            implicitWidth: 300
             SplitView.maximumWidth: 400
             color: "lightblue"
-            Label {
-                text: "View 1"
-                anchors.centerIn: parent
+            Column {
+                width: parent.width
+                TextField {
+                    id: txtServer
+                    width: parent.width
+                    placeholderText: "grpc server URL" 
+                }
+                Item {
+                    width: parent.width
+                    anchors.top: txtServer.bottom
+                    anchors.left: parent.left
+                    TextField {
+                        id: txtProtoFolder
+                        placeholderText: "folder to proto files"
+                        anchors.right: btnProtoOpen.left
+                        anchors.left: parent.left
+                    }
+                    Button {
+                        id: btnProtoOpen
+                        text: "open"
+                        anchors.right: parent.right
+                        onClicked: fdProtoDir.open()
+                    }
+                }
             }
         }
         Rectangle {
