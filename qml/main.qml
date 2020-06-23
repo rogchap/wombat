@@ -5,21 +5,14 @@ import Qt.labs.platform 1.1
 ApplicationWindow {
     id: window
     visible: true
-    title: "Courier"
-    minimumWidth: 800
-    minimumHeight: 450
+    title: "Courier" 
+    minimumWidth: 1080
+    minimumHeight: 720
+    // flags: Qt.WindowStaysOnTopHint
 
-    Shortcut {
-        sequence: "r"
-        onActivated: {
-            window.close();
-            eCtx.reload();
-        }
-    }
-
-    FolderDialog {
-        id: fdProtoDir
-        onAccepted: txtProtoFolder.text = folder
+    FileDialog {
+        id: fdProtoFile
+        onAccepted: txtProtoFolder.text = file
     }
 
     SplitView {
@@ -55,7 +48,7 @@ ApplicationWindow {
                         id: btnProtoOpen
                         text: "open"
                         anchors.right: parent.right
-                        onClicked: fdProtoDir.open()
+                        onClicked: fdProtoFile.open()
                     }
                 }
             }
@@ -65,9 +58,16 @@ ApplicationWindow {
             SplitView.minimumWidth: 50
             SplitView.fillWidth: true
             color: "lightgray"
-            Label {
-                text: "View 2"
-                anchors.centerIn: parent
+            ComboBox {
+                id: cbServiceList
+                textRole: "display"
+                model: serviceList
+                width: 200
+            }
+            ComboBox {
+                id: cbMethodList
+                anchors.left: cbServiceList.right
+                width: 200
             }
         }
         Rectangle {
