@@ -10,7 +10,8 @@ import (
 )
 
 type Source interface {
-	ListServices() []string
+	Services() []string
+	Methods() map[string][]string
 }
 
 type fileSource struct {
@@ -19,8 +20,12 @@ type fileSource struct {
 	methods  map[string][]string
 }
 
-func (s *fileSource) ListServices() []string {
+func (s *fileSource) Services() []string {
 	return s.services
+}
+
+func (s *fileSource) Methods() map[string][]string {
+	return s.methods
 }
 
 func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {

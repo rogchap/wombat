@@ -10,9 +10,12 @@ ApplicationWindow {
     minimumHeight: 720
     // flags: Qt.WindowStaysOnTopHint
 
-    FileDialog {
-        id: fdProtoFile
-        onAccepted: txtProtoFolder.text = file
+    FolderDialog {
+        id: fdProtoFolder
+        onAccepted: {
+            txtProtoFolder.text = folder
+            mc.processProtos(folder)
+        }
     }
 
     SplitView {
@@ -40,6 +43,7 @@ ApplicationWindow {
                     anchors.left: parent.left
                     TextField {
                         id: txtProtoFolder
+                        readOnly: true
                         placeholderText: "folder to proto files"
                         anchors.right: btnProtoOpen.left
                         anchors.left: parent.left
@@ -48,7 +52,7 @@ ApplicationWindow {
                         id: btnProtoOpen
                         text: "open"
                         anchors.right: parent.right
-                        onClicked: fdProtoFile.open()
+                        onClicked: fdProtoFolder.open()
                     }
                 }
             }
@@ -61,11 +65,13 @@ ApplicationWindow {
             ComboBox {
                 id: cbServiceList
                 textRole: "display"
-                model: serviceList
+                model: mc.serviceList
                 width: 200
             }
             ComboBox {
                 id: cbMethodList
+                textRole: "display"
+                model: mc.methodList
                 anchors.left: cbServiceList.right
                 width: 200
             }
