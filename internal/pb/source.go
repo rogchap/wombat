@@ -12,6 +12,7 @@ import (
 type Source interface {
 	Services() []string
 	Methods() map[string][]string
+	GetMethodDesc(srv, name string) *desc.MethodDescriptor
 }
 
 type fileSource struct {
@@ -26,6 +27,20 @@ func (s *fileSource) Services() []string {
 
 func (s *fileSource) Methods() map[string][]string {
 	return s.methods
+}
+
+func (s *fileSource) GetMethodDesc(srv, name string) *desc.MethodDescriptor {
+	for _, fd := range s.files {
+		sdesc := fd.FindService(srv)
+		if sdesc == nil {
+			continue
+		}
+		mdesc := sdesc.FindMethodByName(name)
+		if mdesc != nil {
+			return mdesc
+		}
+	}
+	return nil
 }
 
 func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {

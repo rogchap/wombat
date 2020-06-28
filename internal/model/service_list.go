@@ -6,6 +6,7 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
+//go:generate qtmoc
 type ServiceList struct {
 	core.QStringListModel
 

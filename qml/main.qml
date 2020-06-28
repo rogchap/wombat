@@ -6,15 +6,22 @@ ApplicationWindow {
     id: window
     visible: true
     title: "Courier" 
-    minimumWidth: 1080
-    minimumHeight: 720
+    minimumWidth: 1200
+    minimumHeight: 820
     // flags: Qt.WindowStaysOnTopHint
 
     FolderDialog {
         id: fdProtoFolder
         onAccepted: {
             txtProtoFolder.text = folder
-            mc.processProtos(folder)
+            mc.processProtos(txtImportFolder.text, folder)
+        }
+    }
+
+    FolderDialog {
+        id: fdImportFolders
+        onAccepted: {
+            txtImportFolder.text = folder
         }
     }
 
@@ -38,6 +45,7 @@ ApplicationWindow {
                     placeholderText: "grpc server URL" 
                 }
                 Item {
+                    id: protoFolderContainer
                     width: parent.width
                     anchors.top: txtServer.bottom
                     anchors.left: parent.left
@@ -55,6 +63,25 @@ ApplicationWindow {
                         onClicked: fdProtoFolder.open()
                     }
                 }
+                Item {
+                    width: parent.width
+                    anchors.topMargin: 40
+                    anchors.top: protoFolderContainer.bottom
+                    anchors.left: parent.left
+                    TextField {
+                        id: txtImportFolder
+                        readOnly: true
+                        placeholderText: "folder to proto imports"
+                        anchors.right: btnImportOpen.left
+                        anchors.left: parent.left
+                    }
+                    Button {
+                        id: btnImportOpen
+                        text: "open"
+                        anchors.right: parent.right
+                        onClicked: fdImportFolders.open()
+                    }
+                }
             }
         }
         Rectangle {
@@ -66,7 +93,11 @@ ApplicationWindow {
                 id: cbServiceList
                 textRole: "display"
                 model: mc.serviceList
-                width: 200
+                width: 300
+                onActivated: {
+                    console.log("here")
+                    mc.serviceChanged(displayText)
+                }
             }
             ComboBox {
                 id: cbMethodList
@@ -75,12 +106,18 @@ ApplicationWindow {
                 anchors.left: cbServiceList.right
                 width: 200
             }
+            Button {
+                id: btnSend
+                text: "send"
+                anchors.left: cbMethodList.right
+                onClicked: mc.send(txtServer.text, cbServiceList.displayText, cbMethodList.displayText)
+            }
         }
         Rectangle {
-            implicitWidth: 200
+            implicitWidth: 300
             color: "lightgreen"
             Label {
-                text: "View 3"
+                text: mc.output
                 anchors.centerIn: parent
             }
         }
