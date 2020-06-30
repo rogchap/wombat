@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jhump/protoreflect/dynamic"
@@ -29,6 +30,7 @@ type mainController struct {
 
 	_ *model.ServiceList `property:"serviceList"`
 	_ *model.MethodList  `property:"methodList"`
+	_ *model.Input       `property:"input"`
 
 	_ string `property:"output"`
 
@@ -40,6 +42,7 @@ type mainController struct {
 func (c *mainController) init() {
 	c.SetServiceList(model.NewServiceList(nil))
 	c.SetMethodList(model.NewMethodList(nil))
+	c.SetInput(model.NewInput(nil))
 
 	c.ConnectProcessProtos(c.processProtos)
 	c.ConnectServiceChanged(c.serviceChanged)
@@ -81,7 +84,7 @@ func (c *mainController) processProtos(imports, path string) {
 		return
 	}
 	c.ServiceList().SetStringList(services)
-	c.MethodList().SetStringList(c.pbSource.Methods()[services[0]])
+	c.serviceChanged(services[0])
 }
 
 func (c *mainController) serviceChanged(service string) {
@@ -91,8 +94,26 @@ func (c *mainController) serviceChanged(service string) {
 	if !ok {
 		return
 	}
+	var methodStrs []string
+	for _, m := range srvMethods {
+		methodStrs = append(methodStrs, m.GetName())
+	}
 
-	c.MethodList().SetStringList(srvMethods)
+	c.MethodList().SetStringList(methodStrs)
+
+	input := srvMethods[0].GetInputType()
+	c.Input().SetLabel(input.GetFullyQualifiedName())
+
+	var fields []*model.Field
+	for _, f := range input.GetFields() {
+		field := model.NewField(nil)
+		field.SetLabel(f.GetName())
+		field.SetTag(int(f.GetNumber()))
+		fields = append(fields, field)
+	}
+	c.Input().BeginResetModel()
+	c.Input().SetFields(fields)
+	c.Input().EndResetModel()
 }
 
 func (c *mainController) send(host, service, method string) {
@@ -108,6 +129,13 @@ func (c *mainController) send(host, service, method string) {
 
 	md := c.pbSource.GetMethodDesc(service, method)
 	req := dynamic.NewMessage(md.GetInputType())
+
+	// req.SetFieldByNumber(1, int32(1))
+	// req.SetFieldByNumber(2, int32(2))
+	for _, f := range c.Input().Fields() {
+		v, _ := strconv.Atoi(f.Value())
+		req.SetFieldByNumber(f.Tag(), int32(v))
+	}
 
 	stub := grpcdynamic.NewStub(cc)
 

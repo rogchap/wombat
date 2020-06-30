@@ -11,21 +11,21 @@ import (
 
 type Source interface {
 	Services() []string
-	Methods() map[string][]string
+	Methods() map[string][]*desc.MethodDescriptor
 	GetMethodDesc(srv, name string) *desc.MethodDescriptor
 }
 
 type fileSource struct {
 	files    []*desc.FileDescriptor
 	services []string
-	methods  map[string][]string
+	methods  map[string][]*desc.MethodDescriptor
 }
 
 func (s *fileSource) Services() []string {
 	return s.services
 }
 
-func (s *fileSource) Methods() map[string][]string {
+func (s *fileSource) Methods() map[string][]*desc.MethodDescriptor {
 	return s.methods
 }
 
@@ -58,14 +58,14 @@ func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 	}
 
 	var services []string
-	methods := make(map[string][]string)
+	methods := make(map[string][]*desc.MethodDescriptor)
 	for _, fd := range fds {
 		for _, srv := range fd.GetServices() {
 			srvName := srv.GetFullyQualifiedName()
 			services = append(services, srvName)
-			var ms []string
+			var ms []*desc.MethodDescriptor
 			for _, m := range srv.GetMethods() {
-				ms = append(ms, m.GetName())
+				ms = append(ms, m)
 			}
 			methods[srvName] = ms
 		}

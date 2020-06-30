@@ -1,5 +1,6 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
+import QtQuick.Layouts 1.13
 import Qt.labs.platform 1.1
 
 ApplicationWindow {
@@ -13,8 +14,8 @@ ApplicationWindow {
     FolderDialog {
         id: fdProtoFolder
         onAccepted: {
-            txtProtoFolder.text = folder
-            mc.processProtos(txtImportFolder.text, folder)
+            txtProtoFolder.text = currentFolder
+            mc.processProtos(txtImportFolder.text, currentFolder)
         }
     }
 
@@ -38,47 +39,46 @@ ApplicationWindow {
             SplitView.maximumWidth: 400
             color: "lightblue"
             Column {
-                width: parent.width
+                anchors.fill: parent
                 TextField {
                     id: txtServer
                     width: parent.width
+                    text: "localhost:10000"
                     placeholderText: "grpc server URL" 
                 }
-                Item {
+                Row {
                     id: protoFolderContainer
                     width: parent.width
-                    anchors.top: txtServer.bottom
-                    anchors.left: parent.left
                     TextField {
                         id: txtProtoFolder
                         readOnly: true
                         placeholderText: "folder to proto files"
-                        anchors.right: btnProtoOpen.left
-                        anchors.left: parent.left
+                        // anchors.right: btnProtoOpen.left
+                        // anchors.left: parent.left
                     }
                     Button {
                         id: btnProtoOpen
                         text: "open"
-                        anchors.right: parent.right
+                        // anchors.right: parent.right
                         onClicked: fdProtoFolder.open()
                     }
                 }
-                Item {
+                Row {
                     width: parent.width
-                    anchors.topMargin: 40
-                    anchors.top: protoFolderContainer.bottom
+                    // anchors.topMargin: 40
+                    // anchors.top: protoFolderContainer.bottom
                     anchors.left: parent.left
                     TextField {
                         id: txtImportFolder
                         readOnly: true
                         placeholderText: "folder to proto imports"
-                        anchors.right: btnImportOpen.left
-                        anchors.left: parent.left
+                        // anchors.right: btnImportOpen.left
+                        // anchors.left: parent.left
                     }
                     Button {
                         id: btnImportOpen
                         text: "open"
-                        anchors.right: parent.right
+                        // anchors.right: parent.right
                         onClicked: fdImportFolders.open()
                     }
                 }
@@ -112,13 +112,46 @@ ApplicationWindow {
                 anchors.left: cbMethodList.right
                 onClicked: mc.send(txtServer.text, cbServiceList.displayText, cbMethodList.displayText)
             }
+            Rectangle {
+                id: inputContainer
+                anchors.fill: parent
+                anchors.topMargin: cbServiceList.height
+                color: "lightgray"
+                ColumnLayout {
+                    anchors.fill: parent
+                    Label {
+                        id: lblInput
+                        text: mc.input.label
+                    }
+                    ListView {
+                        Layout.fillHeight: true
+                        spacing: 5
+                        model: mc.input
+                        delegate: Row {
+                            Label {
+                                text: label
+                            }
+                            TextField {
+                                text: val
+                                selectByMouse: true
+                                selectionColor: "lightgray"
+                                onTextChanged: mc.input.updateFieldValue(index, text) 
+                            }
+                        }
+                    }
+                }
+
+            }
         }
         Rectangle {
             implicitWidth: 300
             color: "lightgreen"
-            Label {
+            TextArea {
                 text: mc.output
-                anchors.centerIn: parent
+                anchors.fill: parent
+                wrapMode: TextEdit.WordWrap
+                selectByMouse: true
+                selectionColor: "lightgray"
             }
         }
     }
