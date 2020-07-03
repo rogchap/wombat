@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
@@ -28,33 +27,40 @@ type mainController struct {
 
 	_ func() `constructor:"init"`
 
-	_ *model.ServiceList `property:"serviceList"`
-	_ *model.MethodList  `property:"methodList"`
-	_ *model.Input       `property:"input"`
+	_ *model.StringList `property:protoFilesList"`
+	_ *model.StringList `property:protoImportsList"`
+	_ *model.StringList `property:"serviceList"`
+	_ *model.StringList `property:"methodList"`
+	_ *model.Input      `property:"input"`
 
 	_ string `property:"output"`
 
+	_ func(path string)                  `slot:"findProtoFiles"`
+	_ func(path string)                  `slot:"addImport"`
 	_ func(imports, path string)         `slot:"processProtos"`
 	_ func(service string)               `slot:"serviceChanged"`
 	_ func(host, service, method string) `slot:"send"`
 }
 
 func (c *mainController) init() {
-	c.SetServiceList(model.NewServiceList(nil))
-	c.SetMethodList(model.NewMethodList(nil))
+	c.SetProtoFilesList(model.NewStringList(nil))
+	c.SetProtoImportsList(model.NewStringList(nil))
+	c.SetServiceList(model.NewStringList(nil))
+	c.SetMethodList(model.NewStringList(nil))
 	c.SetInput(model.NewInput(nil))
 
+	c.ConnectFindProtoFiles(c.findProtoFiles)
+	c.ConnectAddImport(c.addImport)
 	c.ConnectProcessProtos(c.processProtos)
 	c.ConnectServiceChanged(c.serviceChanged)
 	c.ConnectSend(c.send)
 }
 
-func (c *mainController) processProtos(imports, path string) {
+func (c *mainController) findProtoFiles(path string) {
 	var protoFiles []string
 	filepath.Walk(path[7:], func(path string, info os.FileInfo, err error) error {
-		if strings.Contains(path, "third_party") {
-			return nil
-		}
+
+		//TODO: only add if we haven't got it already
 		if filepath.Ext(path) == ".proto" {
 			protoFiles = append(protoFiles, path)
 		}
@@ -66,13 +72,25 @@ func (c *mainController) processProtos(imports, path string) {
 		// TODO: Show error to user that there is no proto files found
 	}
 
-	importsList := []string{path[7:]}
-	if imports != "" {
-		importsList = append(importsList, imports[7:])
+	// TODO: Shoud we be replacing or adding?
+	c.ProtoFilesList().SetStringList(protoFiles)
+}
+
+func (c *mainController) addImport(path string) {
+	path = path[7:]
+	lm := c.ProtoImportsList()
+	for _, p := range lm.StringList() {
+		if p == path {
+			return
+		}
 	}
+	lm.SetStringList(append(lm.StringList(), path))
+}
+
+func (c *mainController) processProtos(imports, path string) {
 
 	var err error
-	c.pbSource, err = pb.GetSourceFromProtoFiles(importsList, protoFiles)
+	c.pbSource, err = pb.GetSourceFromProtoFiles(c.ProtoImportsList().StringList(), c.ProtoFilesList().StringList())
 	if err != nil {
 		println(err.Error())
 		return

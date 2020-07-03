@@ -3,6 +3,7 @@ import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import Qt.labs.platform 1.1
 
+
 ApplicationWindow {
     id: window
     visible: true
@@ -11,19 +12,17 @@ ApplicationWindow {
     minimumHeight: 820
     // flags: Qt.WindowStaysOnTopHint
 
+
     FolderDialog {
-        id: fdProtoFolder
-        onAccepted: {
-            txtProtoFolder.text = currentFolder
-            mc.processProtos(txtImportFolder.text, currentFolder)
-        }
+        id: fdFindProtos
+        acceptLabel: "Find *.proto files"
+        onAccepted: mc.findProtoFiles(folder)
     }
 
     FolderDialog {
-        id: fdImportFolders
-        onAccepted: {
-            txtImportFolder.text = folder
-        }
+        id: fdImportFolder
+        acceptLabel: "Select"
+        onAccepted: mc.addImport(folder)
     }
 
     SplitView {
@@ -40,48 +39,101 @@ ApplicationWindow {
             color: "lightblue"
             Column {
                 anchors.fill: parent
+                spacing: 5
+
                 TextField {
                     id: txtServer
                     width: parent.width
                     text: "localhost:10000"
                     placeholderText: "grpc server URL" 
                 }
-                Row {
-                    id: protoFolderContainer
+                Label {
+                    text: "Proto files:"
+                    leftPadding: 5
+                }
+                ScrollView {
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                     width: parent.width
-                    TextField {
-                        id: txtProtoFolder
-                        readOnly: true
-                        placeholderText: "folder to proto files"
-                        // anchors.right: btnProtoOpen.left
-                        // anchors.left: parent.left
+                    height: 150
+                    clip: true
+                    background: Rectangle {
+                        color: "white"
+                        border {
+                            color: "lightgray"
+                            width: 1
+                        }
                     }
-                    Button {
-                        id: btnProtoOpen
-                        text: "open"
-                        // anchors.right: parent.right
-                        onClicked: fdProtoFolder.open()
+
+                    ListView {
+                        anchors.fill: parent
+                        model: mc.protoFilesList
+                        delegate: Label {
+                            width: parent.width
+                            text: display
+                            elide: Text.ElideLeft
+                        }
                     }
                 }
                 Row {
                     width: parent.width
-                    // anchors.topMargin: 40
-                    // anchors.top: protoFolderContainer.bottom
-                    anchors.left: parent.left
-                    TextField {
-                        id: txtImportFolder
-                        readOnly: true
-                        placeholderText: "folder to proto imports"
-                        // anchors.right: btnImportOpen.left
-                        // anchors.left: parent.left
-                    }
+                    layoutDirection: Qt.RightToLeft
+                    rightPadding: 5
+
                     Button {
-                        id: btnImportOpen
-                        text: "open"
-                        // anchors.right: parent.right
-                        onClicked: fdImportFolders.open()
+                        text: "Find *.proto files"
+                        onClicked: fdFindProtos.open()
                     }
                 }
+
+                Label {
+                    text: "Import paths:"
+                    leftPadding: 5
+                }
+
+                ScrollView {
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    width: parent.width
+                    height: 150
+                    clip: true
+                    background: Rectangle {
+                        color: "white"
+                        border {
+                            color: "lightgray"
+                            width: 1
+                        }
+                    }
+                    ListView {
+                        anchors.fill: parent
+                        model: mc.protoImportsList
+                        delegate: Label {
+                            width: parent.width
+                            text: display
+                            elide: Text.ElideLeft
+                        }
+                    }
+                }
+                Row {
+                    width: parent.width
+                    layoutDirection: Qt.RightToLeft
+                    rightPadding: 5
+
+                    Button {
+                        text: "Select folder"
+                        onClicked: fdImportFolder.open()
+                    }
+                }
+
+                Item {
+                    width: parent.width
+                    height: 10
+                    // spacer    
+                }
+                Button {
+                    text: "Connect"
+                    width: parent.width
+                    onClicked: mc.processProtos("","")
+                }
+                
             }
         }
         Rectangle {

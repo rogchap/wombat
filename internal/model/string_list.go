@@ -7,20 +7,18 @@ import (
 )
 
 //go:generate qtmoc
-type ServiceList struct {
+type StringList struct {
 	core.QStringListModel
 
 	_ func() `constructor:"init"`
 }
 
-func (s *ServiceList) init() {
+func (s *StringList) init() {
 	s.ConnectData(s.data)
 	s.ConnectRowCount(s.rowCount)
-	// We set an initial value so that when the data is bound we don't have a ghost first value
-	s.SetStringList([]string{" "})
 }
 
-func (s *ServiceList) data(idx *core.QModelIndex, role int) *core.QVariant {
+func (s *StringList) data(idx *core.QModelIndex, role int) *core.QVariant {
 	if !idx.IsValid() {
 		return core.NewQVariant()
 	}
@@ -32,6 +30,6 @@ func (s *ServiceList) data(idx *core.QModelIndex, role int) *core.QVariant {
 	return core.NewQVariant1(s.StringList()[idx.Row()])
 }
 
-func (s *ServiceList) rowCount(parent *core.QModelIndex) int {
+func (s *StringList) rowCount(parent *core.QModelIndex) int {
 	return len(s.StringList())
 }
