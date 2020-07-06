@@ -6,7 +6,10 @@ import "../."
 Pane {
     id: control
 
+    property alias color: bg.color
+
     background: Rectangle {
+        id: bg
         color: Style.bgColor
     }
 }

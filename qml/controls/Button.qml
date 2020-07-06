@@ -7,6 +7,7 @@ Button {
     id: control
 
     property alias color: text.color
+    property color bgColor: Style.bgColor
 
     contentItem: Text {
         id: text
@@ -21,6 +22,6 @@ Button {
     background: Rectangle {
         implicitWidth: 100
         implicitHeight: 40
-        color: control.down ? Style.bgColor2 : Style.bgColor
+        color: control.down ? Style.bgColor2 : control.bgColor
     }
 }

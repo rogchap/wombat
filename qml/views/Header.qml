@@ -19,21 +19,25 @@ Pane {
         }
     }
 
+    Button {
+        text: qsTr("New Workspace")
+        bgColor: Style.accentColor3
 
-        
-        Button {
-            text: qsTr("New Workspace")
-            color: Style.accentColor3
+        onClicked: wkspOptions.open()
+
+        WorkspaceOptions {
+            id: wkspOptions
         }
+    }
 
-        Label {
-            anchors.right: parent.right
-            height: parent.height
-            verticalAlignment: Text.AlignVCenter
-            text: qsTr("connected")
-            color: "green"
-        }
+    Label {
+        anchors.right: parent.right
+        height: parent.height
+        verticalAlignment: Text.AlignVCenter
+        text: qsTr("connected")
+        color: Style.greenColor
+    }
 
-    
+
 }
 
