@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
 	"github.com/therecipe/qt/core"
@@ -31,7 +32,7 @@ type mainController struct {
 	_ *model.StringList `property:protoImportsList"`
 	_ *model.StringList `property:"serviceList"`
 	_ *model.StringList `property:"methodList"`
-	_ *model.Input      `property:"input"`
+	_ *model.Message    `property:"input"`
 
 	_ string `property:"output"`
 
@@ -39,6 +40,7 @@ type mainController struct {
 	_ func(path string)                  `slot:"addImport"`
 	_ func(imports, path string)         `slot:"processProtos"`
 	_ func(service string)               `slot:"serviceChanged"`
+	_ func(service, method string)       `slot:"methodChanged"`
 	_ func(host, service, method string) `slot:"send"`
 }
 
@@ -47,12 +49,13 @@ func (c *mainController) init() {
 	c.SetProtoImportsList(model.NewStringList(nil))
 	c.SetServiceList(model.NewStringList(nil))
 	c.SetMethodList(model.NewStringList(nil))
-	c.SetInput(model.NewInput(nil))
+	c.SetInput(model.NewMessage(nil))
 
 	c.ConnectFindProtoFiles(c.findProtoFiles)
 	c.ConnectAddImport(c.addImport)
 	c.ConnectProcessProtos(c.processProtos)
 	c.ConnectServiceChanged(c.serviceChanged)
+	c.ConnectMethodChanged(c.methodChanged)
 	c.ConnectSend(c.send)
 }
 
@@ -118,13 +121,43 @@ func (c *mainController) serviceChanged(service string) {
 	}
 
 	c.MethodList().SetStringList(methodStrs)
+	c.methodChanged(service, methodStrs[0])
+}
 
-	input := srvMethods[0].GetInputType()
+func (c *mainController) methodChanged(service, method string) {
+	md := c.pbSource.GetMethodDesc(service, method)
+	if md == nil {
+		return
+	}
+	input := md.GetInputType()
 	c.Input().SetLabel(input.GetFullyQualifiedName())
 
 	var fields []*model.Field
 	for _, f := range input.GetFields() {
 		field := model.NewField(nil)
+
+		switch f.GetType() {
+		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
+			field.SetType("message")
+			// TODO: this needs to be recursive
+			message := model.NewMessage(nil)
+			var innerFields []*model.Field
+			msg := f.GetMessageType()
+			for _, innerf := range msg.GetFields() {
+				innerField := model.NewField(nil)
+				innerField.SetType("string")
+				innerField.SetLabel(innerf.GetName())
+				innerField.SetTag(int(innerf.GetNumber()))
+				innerFields = append(innerFields, innerField)
+			}
+			message.SetLabel(msg.GetFullyQualifiedName())
+			message.SetFields(innerFields)
+			field.SetMessage(message)
+
+		default:
+			field.SetType("string")
+		}
+
 		field.SetLabel(f.GetName())
 		field.SetTag(int(f.GetNumber()))
 		fields = append(fields, field)
