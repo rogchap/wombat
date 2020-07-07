@@ -14,11 +14,15 @@ ApplicationWindow {
     minimumWidth: 1200
     minimumHeight: 820
     color: Style.bgColor
+    flags: Qt.WindowFullscreenButtonHint
+   
     // flags: Qt.WindowStaysOnTopHint
+    // onActiveFocusItemChanged: print(activeFocusItem)
 
     header: Header {}
 
     MainContent {}
+
 
     FolderDialog {
         id: fdFindProtos

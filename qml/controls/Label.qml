@@ -4,5 +4,8 @@ import "../."
 
 Label {
     id: control
+
+    property alias color: control.color
+
     color: Style.textColor
 }

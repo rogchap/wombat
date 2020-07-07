@@ -13,12 +13,25 @@ Pane {
         anchors.left: parent.left
         spacing: 5
         ComboBox {
+            id: cbServiceList
+
             color: Style.primaryColor
-            model: ["s12.Authorization.Access", "Second", "Third"]
+            currentIndex: 0
+
+            model: mc.serviceList
+            onActivated: {
+                mc.serviceChanged(displayText)
+                cbMethodList.currentIndex = 0
+            }
         }
         ComboBox {
+            id: cbMethodList
+
             color: Style.primaryColor
-            model: ["GetAccessToken", "Second", "Third"]
+            currentIndex: 0
+
+            model: mc.methodList
+            onActivated: mc.methodChanged(cbServiceList.displayText, displayText)
         }
     }
 

@@ -32,6 +32,7 @@ func Startup() int {
 	if isDebug {
 		entry = filepath.Join(".", "qml", "main.qml")
 		debug.HotReloader(engine)
+		app.SetQuitOnLastWindowClosed(false)
 	}
 
 	mc := NewMainController(nil)

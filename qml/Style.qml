@@ -5,6 +5,8 @@ QtObject {
     readonly property color bgColor: "#2e3440"
     readonly property color bgColor2: "#434c5e"
     readonly property color bgColor3: "#4c566a"
+    readonly property color bgLightColor: "#eceff4"
+    readonly property color bgInputColor: "#242933"
 
     readonly property color borderColor: "#3b4252"
 

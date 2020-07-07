@@ -51,7 +51,19 @@ Pane {
         currentIndex: tabbar.currentIndex
 
         Pane {
-            Label { text: "Input content" }
+
+            Column {
+
+                FileList {
+                    onOpened: print("open")
+                    onCleared: print("clear")
+                }
+
+                TextField {
+                    labelText: "Labele here:"
+                    placeholderText: "placeholder"
+                }
+            }
         }
         Pane {
             Label { text: "Metadata content" }

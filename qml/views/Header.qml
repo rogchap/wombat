@@ -20,7 +20,7 @@ Pane {
     }
 
     Button {
-        text: qsTr("New Workspace")
+        text: qsTr("Workspace")
         bgColor: Style.accentColor3
 
         onClicked: wkspOptions.open()

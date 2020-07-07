@@ -8,6 +8,7 @@ Button {
 
     property alias color: text.color
     property color bgColor: Style.bgColor
+    property bool hideBorder: true
 
     contentItem: Text {
         id: text
@@ -23,5 +24,9 @@ Button {
         implicitWidth: 100
         implicitHeight: 40
         color: control.down ? Style.bgColor2 : control.bgColor
+        border {
+            color: Style.borderColor
+            width: control.hideBorder ? 0 : 1
+        }
     }
 }

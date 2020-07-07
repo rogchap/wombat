@@ -8,10 +8,12 @@ ComboBox {
 
     property alias color: content.color
 
+    textRole: "display"
+
     delegate: ItemDelegate {
         width: control.width
         contentItem: Text {
-            text: modelData
+            text: control.textRole ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
             color: Style.textDarkColor
             font.weight: control.currentIndex === index ? Font.DemiBold : Font.Normal
             elide: Text.ElideLeft

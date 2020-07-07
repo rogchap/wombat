@@ -16,6 +16,7 @@ Popup {
 
     modal: true
     focus: true
+    clip: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
 
     background: Rectangle {
@@ -37,8 +38,16 @@ Popup {
             }
 
             AbstractButton {
-                text: "X"
-                anchors.right: parent.right
+                text: "×"
+                font {
+                    weight: Font.DemiBold
+                    pointSize: 22
+                }
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                    topMargin: -8
+                }
 
                 contentItem: Label {
                     text: parent.text
