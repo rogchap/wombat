@@ -50,21 +50,10 @@ Pane {
     StackLayout {
         currentIndex: tabbar.currentIndex
 
-        Pane {
-
-            Column {
-
-                FileList {
-                    onOpened: print("open")
-                    onCleared: print("clear")
-                }
-
-                TextField {
-                    labelText: "Labele here:"
-                    placeholderText: "placeholder"
-                }
-            }
+        RequestData {
+            inputData: mc.input
         }
+
         Pane {
             Label { text: "Metadata content" }
         }

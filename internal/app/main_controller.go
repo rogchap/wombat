@@ -138,14 +138,14 @@ func (c *mainController) methodChanged(service, method string) {
 
 		switch f.GetType() {
 		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			field.SetType("message")
+			// field.SetType("message")
 			// TODO: this needs to be recursive
 			message := model.NewMessage(nil)
 			var innerFields []*model.Field
 			msg := f.GetMessageType()
 			for _, innerf := range msg.GetFields() {
 				innerField := model.NewField(nil)
-				innerField.SetType("string")
+				innerField.SetType(descriptor.FieldDescriptorProto_Type_name[int32(innerf.GetType())])
 				innerField.SetLabel(innerf.GetName())
 				innerField.SetTag(int(innerf.GetNumber()))
 				innerFields = append(innerFields, innerField)
@@ -155,11 +155,12 @@ func (c *mainController) methodChanged(service, method string) {
 			field.SetMessage(message)
 
 		default:
-			field.SetType("string")
+			// field.SetType("string")
 		}
 
 		field.SetLabel(f.GetName())
 		field.SetTag(int(f.GetNumber()))
+		field.SetType(descriptor.FieldDescriptorProto_Type_name[int32(f.GetType())])
 		fields = append(fields, field)
 	}
 	c.Input().BeginResetModel()

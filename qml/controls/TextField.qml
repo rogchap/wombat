@@ -10,9 +10,10 @@ Item {
     property alias text: textField.text
     property alias placeholderText: textField.placeholderText
     property alias labelText: label.text
+    property alias hintText: hint.text
 
     height: label.height + textField.height + 5
-    implicitWidth: 200
+    implicitWidth: textField.width
 
     Label {
         id: label
@@ -21,6 +22,16 @@ Item {
             left: control.left
             leftMargin: 5
         }
+    }
+
+    Label {
+        id: hint
+        anchors {
+            right: control.right
+            rightMargin: 5
+        }
+
+        color: Qt.darker(Style.textColor3, 1.6)
     }
 
     TextField {

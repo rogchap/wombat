@@ -12,6 +12,7 @@ QtObject {
 
     readonly property color textColor: "#eceff4"
     readonly property color textColor2: "#d8dee9"
+    readonly property color textColor3: "#bcc7d9"
     readonly property color textDarkColor: "#2e3440"
 
     readonly property color primaryColor: "#88c0d0"
