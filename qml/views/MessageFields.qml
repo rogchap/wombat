@@ -38,7 +38,13 @@ ListView {
 
         DelegateChoice {
             roleValue: "TYPE_INT32"
-            Label { text: "int32: not implemented yet" }
+            TextField {
+                labelText: label
+                hintText: type.substring(5, type.length).toLowerCase()
+                text: val
+                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
+                onTextChanged: root.model.updateFieldValue(index, text) 
+            }
         }
 
         DelegateChoice {
@@ -75,7 +81,19 @@ ListView {
             Item {
                 height: msgPane.height + msgLabel.height + 10
 
-                Label { id: msgLabel; text: label }
+                Label {
+                    id: msgLabel
+                    text: label
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
+                }
+
+                Label { 
+                    anchors.left: msgLabel.right
+                    anchors.leftMargin: 10
+                    color: Qt.darker(Style.textColor3, 1.6)
+                    text: message.label
+                }
 
                 Pane {
                     id: msgPane

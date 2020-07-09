@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
 	"github.com/therecipe/qt/core"
@@ -34,14 +35,16 @@ type mainController struct {
 	_ *model.StringList `property:"methodList"`
 	_ *model.Message    `property:"input"`
 
+	_ string `property:"addr"`
 	_ string `property:"output"`
 
-	_ func(path string)                  `slot:"findProtoFiles"`
-	_ func(path string)                  `slot:"addImport"`
-	_ func(imports, path string)         `slot:"processProtos"`
-	_ func(service string)               `slot:"serviceChanged"`
-	_ func(service, method string)       `slot:"methodChanged"`
-	_ func(host, service, method string) `slot:"send"`
+	_ func(addr string)            `slot:"updateAddr"`
+	_ func(path string)            `slot:"findProtoFiles"`
+	_ func(path string)            `slot:"addImport"`
+	_ func(imports, path string)   `slot:"processProtos"`
+	_ func(service string)         `slot:"serviceChanged"`
+	_ func(service, method string) `slot:"methodChanged"`
+	_ func(service, method string) `slot:"send"`
 }
 
 func (c *mainController) init() {
@@ -51,12 +54,20 @@ func (c *mainController) init() {
 	c.SetMethodList(model.NewStringList(nil))
 	c.SetInput(model.NewMessage(nil))
 
+	c.ConnectUpdateAddr(c.updateAddr)
 	c.ConnectFindProtoFiles(c.findProtoFiles)
 	c.ConnectAddImport(c.addImport)
 	c.ConnectProcessProtos(c.processProtos)
 	c.ConnectServiceChanged(c.serviceChanged)
 	c.ConnectMethodChanged(c.methodChanged)
 	c.ConnectSend(c.send)
+}
+
+func (c *mainController) updateAddr(addr string) {
+	if c.Addr() == addr {
+		return
+	}
+	c.SetAddr(addr)
 }
 
 func (c *mainController) findProtoFiles(path string) {
@@ -129,49 +140,61 @@ func (c *mainController) methodChanged(service, method string) {
 	if md == nil {
 		return
 	}
+
 	input := md.GetInputType()
-	c.Input().SetLabel(input.GetFullyQualifiedName())
-
-	var fields []*model.Field
-	for _, f := range input.GetFields() {
-		field := model.NewField(nil)
-
-		switch f.GetType() {
-		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			// field.SetType("message")
-			// TODO: this needs to be recursive
-			message := model.NewMessage(nil)
-			var innerFields []*model.Field
-			msg := f.GetMessageType()
-			for _, innerf := range msg.GetFields() {
-				innerField := model.NewField(nil)
-				innerField.SetType(descriptor.FieldDescriptorProto_Type_name[int32(innerf.GetType())])
-				innerField.SetLabel(innerf.GetName())
-				innerField.SetTag(int(innerf.GetNumber()))
-				innerFields = append(innerFields, innerField)
-			}
-			message.SetLabel(msg.GetFullyQualifiedName())
-			message.SetFields(innerFields)
-			field.SetMessage(message)
-
-		default:
-			// field.SetType("string")
-		}
-
-		field.SetLabel(f.GetName())
-		field.SetTag(int(f.GetNumber()))
-		field.SetType(descriptor.FieldDescriptorProto_Type_name[int32(f.GetType())])
-		fields = append(fields, field)
-	}
 	c.Input().BeginResetModel()
-	c.Input().SetFields(fields)
+	c.Input().SetLabel(input.GetFullyQualifiedName())
+	c.Input().SetFields(getMessageFields(input))
 	c.Input().EndResetModel()
 }
 
-func (c *mainController) send(host, service, method string) {
+func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
+	var fields []*model.Field
+	for _, f := range msg.GetFields() {
+		field := model.NewField(nil)
+		field.SetLabel(f.GetName())
+		field.SetTag(int(f.GetNumber()))
+		field.SetFullname(f.GetFullyQualifiedName())
+
+		ft := f.GetType()
+		field.SetType(descriptor.FieldDescriptorProto_Type_name[int32(ft)])
+
+		switch ft {
+		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
+			m := f.GetMessageType()
+			msg := model.NewMessage(nil)
+			msg.SetLabel(m.GetFullyQualifiedName())
+			msg.SetFields(getMessageFields(m))
+			field.SetMessage(msg)
+		}
+		fields = append(fields, field)
+	}
+	return fields
+}
+
+func processFields(msg *dynamic.Message, fields []*model.Field) {
+	for _, f := range fields {
+		switch descriptor.FieldDescriptorProto_Type(descriptor.FieldDescriptorProto_Type_value[f.Type()]) {
+		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
+			fd := msg.FindFieldDescriptor(int32(f.Tag()))
+			m := dynamic.NewMessage(fd.GetMessageType())
+			processFields(m, f.Message().Fields())
+			msg.SetFieldByNumber(f.Tag(), m)
+
+		case descriptor.FieldDescriptorProto_TYPE_INT32:
+			v, _ := strconv.Atoi(f.Value())
+			msg.SetFieldByNumber(f.Tag(), int32(v))
+
+		case descriptor.FieldDescriptorProto_TYPE_STRING:
+			msg.SetFieldByNumber(f.Tag(), f.Value())
+		}
+	}
+}
+
+func (c *mainController) send(service, method string) {
 	c.SetOutput("")
 
-	cc, err := grpc.Dial(host, grpc.WithInsecure())
+	cc, err := grpc.Dial(c.Addr(), grpc.WithInsecure())
 	if err != nil {
 		//TODO: handle error
 		println(err.Error())
@@ -182,12 +205,7 @@ func (c *mainController) send(host, service, method string) {
 	md := c.pbSource.GetMethodDesc(service, method)
 	req := dynamic.NewMessage(md.GetInputType())
 
-	// req.SetFieldByNumber(1, int32(1))
-	// req.SetFieldByNumber(2, int32(2))
-	for _, f := range c.Input().Fields() {
-		v, _ := strconv.Atoi(f.Value())
-		req.SetFieldByNumber(f.Tag(), int32(v))
-	}
+	processFields(req, c.Input().Fields())
 
 	stub := grpcdynamic.NewStub(cc)
 
@@ -200,6 +218,7 @@ func (c *mainController) send(host, service, method string) {
 		for {
 			resp, err := stream.RecvMsg()
 			if err == io.EOF {
+				c.SetOutput(fmt.Sprintf("%sEOF\n", c.Output()))
 				break
 			}
 			if err != nil {

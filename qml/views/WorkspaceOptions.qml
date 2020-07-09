@@ -15,8 +15,10 @@ Modal {
         spacing: 10
 
         TextField {
+            id: txtAddr
             labelText: qsTr("gRPC server address:")
             placeholderText: "localhost:9090"
+            text: mc.addr 
         }
 
         FileList {
@@ -63,6 +65,7 @@ Modal {
             onClicked: {
                 // TODO: handle any errors
                 mc.processProtos("","")
+                mc.updateAddr(txtAddr.text)
                 root.close()
             }
         }

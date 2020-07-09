@@ -11,6 +11,7 @@ Item {
     property alias placeholderText: textField.placeholderText
     property alias labelText: label.text
     property alias hintText: hint.text
+    property alias validator: textField.validator
 
     height: label.height + textField.height + 5
     implicitWidth: textField.width

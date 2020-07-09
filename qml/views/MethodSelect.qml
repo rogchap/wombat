@@ -40,5 +40,6 @@ Pane {
         anchors.right: parent.right
         text: qsTr("Send")
         color: Style.primaryColor
+        onClicked: mc.send(cbServiceList.displayText, cbMethodList.displayText)
     }
 }

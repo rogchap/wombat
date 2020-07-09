@@ -10,6 +10,6 @@ Pane {
         color: Style.bgColor
     }
     
-    Label {text: "Output pane"}
+    Label {text: mc.output }
 }
 

@@ -31,6 +31,11 @@ Pane {
     }
 
     Label {
+        anchors.centerIn: parent
+        text: mc.addr
+    }
+
+    Label {
         anchors.right: parent.right
         height: parent.height
         verticalAlignment: Text.AlignVCenter

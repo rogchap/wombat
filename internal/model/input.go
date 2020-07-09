@@ -7,6 +7,7 @@ import "github.com/therecipe/qt/core"
 const (
 	FieldType = int(core.Qt__UserRole) + 1<<iota
 	FieldLabel
+	FieldFullname
 	FieldVal
 	FieldMsg
 )
@@ -17,6 +18,7 @@ type Field struct {
 
 	_ string   `property:"type"`
 	_ string   `property:"label"`
+	_ string   `property:"fullname"`
 	_ int      `property:"tag"`
 	_ string   `property:"value"`
 	_ *Message `property:"message"`
@@ -37,10 +39,11 @@ type Message struct {
 
 func (i *Message) init() {
 	i.SetRoles(map[int]*core.QByteArray{
-		FieldType:  core.NewQByteArray2("type", -1),
-		FieldLabel: core.NewQByteArray2("label", -1),
-		FieldVal:   core.NewQByteArray2("val", -1),
-		FieldMsg:   core.NewQByteArray2("message", -1),
+		FieldType:     core.NewQByteArray2("type", -1),
+		FieldLabel:    core.NewQByteArray2("label", -1),
+		FieldFullname: core.NewQByteArray2("fullname", -1),
+		FieldVal:      core.NewQByteArray2("val", -1),
+		FieldMsg:      core.NewQByteArray2("message", -1),
 	})
 
 	i.ConnectData(i.data)
@@ -67,6 +70,8 @@ func (i *Message) data(index *core.QModelIndex, role int) *core.QVariant {
 		return core.NewQVariant1(f.Type())
 	case FieldLabel:
 		return core.NewQVariant1(f.Label())
+	case FieldFullname:
+		return core.NewQVariant1(f.Fullname())
 	case FieldVal:
 		return core.NewQVariant1(f.Value())
 	case FieldMsg:
