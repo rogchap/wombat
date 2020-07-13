@@ -1,6 +1,7 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
+import QtQuick.Dialogs 1.1
 import Qt.labs.platform 1.1
 
 import "../."
@@ -8,6 +9,8 @@ import "../controls"
 
 Modal {
     id: root
+
+    readonly property var wc: mc.workspaceCtrl
 
     headerText: qsTr("Workspace")
 
@@ -18,7 +21,7 @@ Modal {
             id: txtAddr
             labelText: qsTr("gRPC server address:")
             placeholderText: "localhost:9090"
-            text: mc.addr 
+            text: wc.addr 
         }
 
         FileList {
@@ -26,27 +29,27 @@ Modal {
             actionButtonColor: Style.primaryColor
             actionButtonText: qsTr("Find *.proto files")
 
-            model: mc.protoFilesList
+            model: wc.protoListModel
 
             onOpened: fdProtos.open()
 
             FolderDialog {
                 id: fdProtos
                 acceptLabel: qsTr("Find *.proto files")
-                onAccepted: mc.findProtoFiles(folder)
+                onAccepted: wc.findProtoFiles(folder)
             }
         }
 
         FileList {
             labelText: qsTr("Import proto paths:")
 
-            model: mc.protoImportsList
+            model: wc.importListModel
 
             onOpened: fdImports.open()
 
             FolderDialog {
                 id: fdImports
-                onAccepted: mc.addImport(folder)
+                onAccepted: wc.addImport(folder)
             }
         }
 
@@ -64,10 +67,19 @@ Modal {
 
             onClicked: {
                 // TODO: handle any errors
-                mc.processProtos("","")
-                mc.updateAddr(txtAddr.text)
+                let err = wc.processProtos()
+                if (err) {
+                    print(err)
+                    return
+                }
+                err = wc.connect(txtAddr.text)
+                if (err) {
+                    print(err)
+                    return
+                }
                 root.close()
             }
+            
         }
         
     }

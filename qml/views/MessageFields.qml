@@ -18,62 +18,71 @@ ListView {
 
         DelegateChoice {
             roleValue: "TYPE_DOUBLE"
-            Label { text: "double: not implemented yet" }
+            DelegateTextField {
+                validator: DoubleValidator {}
+            }
         }
         
         DelegateChoice {
             roleValue: "TYPE_FLOAT"
-            Label { text: "float: not implemented yet" }
+            DelegateTextField {
+                validator: DoubleValidator {}
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_INT64"
-            Label { text: "int64: not implemented yet" }
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /^-?\d+/ }
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_UINT64"
-            Label { text: "uint64: not implemented yet" }
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /\d+/ }
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_INT32"
-            TextField {
-                labelText: label
-                hintText: type.substring(5, type.length).toLowerCase()
-                text: val
+            DelegateTextField {
                 validator: IntValidator { bottom: -2147483648; top: 2147483647 }
-                onTextChanged: root.model.updateFieldValue(index, text) 
             }
         }
 
         DelegateChoice {
             roleValue: "TYPE_FIXED64"
-            Label { text: "fixed64: not implemented yet" }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_FIXED32"
-            Label { text: "fixed32: not implemented yet" }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_BOOL"
-            Label { text: "bool: not implemented yet" }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_STRING"
-            TextField {
-                labelText: label
-                hintText: type.substring(5, type.length).toLowerCase()
-                text: val
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /^-?\d+/ }
             }
         }
 
         DelegateChoice {
+            roleValue: "TYPE_FIXED32"
+            DelegateTextField {
+                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "TYPE_BOOL"
+            CheckBox {
+                text: label
+                checked: val == "true" ? true : false
+                onCheckedChanged: root.model.updateFieldValue(index, checked) 
+
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "TYPE_STRING"
+            DelegateTextField {}
+        }
+
+        DelegateChoice {
             roleValue: "TYPE_GROUP"
-            Label { text: "group: not implemented yet" }
+            Label { text: "group: not supported" }
         }
 
         DelegateChoice {
@@ -110,18 +119,37 @@ ListView {
                             item.model = message
                         }
                     }
+
+                    Rectangle {
+                        width: 1
+                        height: msgPane.height + 5
+                        color: Style.accentColor
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.leftMargin: -7
+                        anchors.topMargin: -5
+                    }
+
                 }
+
             }
         }
 
         DelegateChoice {
             roleValue: "TYPE_BYTES"
-            Label { text: "bytes: not implemented yet" }
+            TextAreaField {
+                labelText: label
+                hintText: type.substring(5, type.length).toLowerCase()
+                text: val
+                onTextChanged: root.model.updateFieldValue(index, text) 
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_UINT32"
-            Label { text: "uint32: not implemented yet" }
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /^-?\d+/ }
+            }
         }
 
         DelegateChoice {
@@ -131,22 +159,30 @@ ListView {
 
         DelegateChoice {
             roleValue: "TYPE_SFIXED32"
-            Label { text: "sfixed32: not implemented yet" }
+            DelegateTextField {
+                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_SFIXED64"
-            Label { text: "sfixed64: not implemented yet" }
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /^-?\d+/ }
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_SINT32"
-            Label { text: "sint32: not implemented yet" }
+            DelegateTextField {
+                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
+            }
         }
 
         DelegateChoice {
             roleValue: "TYPE_SINT64"
-            Label { text: "sint64: not implemented yet" }
+            DelegateTextField {
+                validator: RegExpValidator { regExp: /^-?\d+/ }
+            }
         }
     }
 

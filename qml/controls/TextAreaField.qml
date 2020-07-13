@@ -11,9 +11,8 @@ Item {
     property alias placeholderText: textField.placeholderText
     property alias labelText: label.text
     property alias hintText: hint.text
-    property alias validator: textField.validator
 
-    height: label.height + textField.height + 5
+    height: label.height + 150 + 5
     implicitWidth: textField.width
 
     Label {
@@ -35,25 +34,27 @@ Item {
         color: Qt.darker(Style.textColor3, 1.6)
     }
 
-    TextField {
-        id: textField
+    ScrollView {
+        implicitHeight: 150
+        implicitWidth: 400
 
         anchors {
             top: label.bottom
             topMargin: 5
         }
+            background: Rectangle {
+                color: Style.bgInputColor
+                border.color: Style.borderColor
+            }
 
-        color: Style.textColor
-        placeholderTextColor: Style.borderColor
-        selectByMouse: true
-        selectionColor: Style.accentColor2
-
-        background: Rectangle {
-            implicitHeight: 40
-            implicitWidth: 400
-            color: Style.bgInputColor
-            border.color: Style.borderColor
+        TextArea {
+            id: textField
+            color: Style.textColor
+            placeholderTextColor: Style.borderColor
+            selectByMouse: true
+            selectionColor: Style.accentColor2
         }
     }
 }
+
 

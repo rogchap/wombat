@@ -32,7 +32,7 @@ Pane {
 
     Label {
         anchors.centerIn: parent
-        text: mc.addr
+        text: mc.workspaceCtrl.addr
     }
 
     Label {

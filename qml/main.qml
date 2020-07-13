@@ -24,18 +24,6 @@ ApplicationWindow {
     MainContent {}
 
 
-    FolderDialog {
-        id: fdFindProtos
-        acceptLabel: "Find *.proto files"
-        onAccepted: mc.findProtoFiles(folder)
-    }
-
-    FolderDialog {
-        id: fdImportFolder
-        acceptLabel: "Select"
-        onAccepted: mc.addImport(folder)
-    }
-
     // SplitView {
     //     anchors.fill: parent
     //     orientation: Qt.Horizontal

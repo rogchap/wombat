@@ -7,6 +7,9 @@ import "../controls"
 
 Pane {
     id: root
+
+    readonly property var ic: mc.workspaceCtrl.inputCtrl
+
     padding: 0
 
     ColumnLayout {
@@ -17,47 +20,47 @@ Pane {
             Layout.fillWidth: true
         }
 
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.topMargin: -1
-        height: 1
-        color: Style.borderColor
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.topMargin: -1
+            height: 1
+            color: Style.borderColor
+        }
+
+        TabBar {
+            id: tabbar
+            background: Rectangle {
+                color: Style.bgColor
+            }
+
+            TabButton {
+                text: qsTr("Request")
+            }
+
+            TabButton {
+                text: qsTr("Metadata")
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.topMargin: -1
+            Layout.leftMargin: tabbar.width
+            height: 1
+            color: Style.borderColor
+        }
+
+        StackLayout {
+            currentIndex: tabbar.currentIndex
+
+            RequestData {
+                inputData: ic.requestModel
+            }
+
+            Pane {
+                Label { text: "Metadata content" }
+            }
+        }
     }
-
-    TabBar {
-        id: tabbar
-        background: Rectangle {
-            color: Style.bgColor
-        }
-
-        TabButton {
-            text: qsTr("Input")
-        }
-
-        TabButton {
-            text: qsTr("Metadata")
-        }
-    }
-
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.topMargin: -1
-        Layout.leftMargin: tabbar.width
-        height: 1
-        color: Style.borderColor
-    }
-
-    StackLayout {
-        currentIndex: tabbar.currentIndex
-
-        RequestData {
-            inputData: mc.input
-        }
-
-        Pane {
-            Label { text: "Metadata content" }
-        }
-    }
-}
 
 }

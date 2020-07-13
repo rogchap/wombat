@@ -4,9 +4,12 @@ import QtQuick.Controls 2.13
 import "../."
 import "../controls"
 
-Pane {
+Item {
     id: root
-    padding: 0
+
+    readonly property var wc: mc.workspaceCtrl
+    readonly property var ic: wc.inputCtrl
+
     implicitHeight: 40
     
     Row {
@@ -18,9 +21,9 @@ Pane {
             color: Style.primaryColor
             currentIndex: 0
 
-            model: mc.serviceList
+            model: ic.serviceListModel
             onActivated: {
-                mc.serviceChanged(displayText)
+                ic.serviceChanged(displayText)
                 cbMethodList.currentIndex = 0
             }
         }
@@ -30,8 +33,8 @@ Pane {
             color: Style.primaryColor
             currentIndex: 0
 
-            model: mc.methodList
-            onActivated: mc.methodChanged(cbServiceList.displayText, displayText)
+            model: ic.methodListModel
+            onActivated: ic.methodChanged(cbServiceList.displayText, displayText)
         }
     }
 
@@ -40,6 +43,6 @@ Pane {
         anchors.right: parent.right
         text: qsTr("Send")
         color: Style.primaryColor
-        onClicked: mc.send(cbServiceList.displayText, cbMethodList.displayText)
-    }
+        onClicked: wc.send(cbServiceList.displayText, cbMethodList.displayText)
+    } 
 }
