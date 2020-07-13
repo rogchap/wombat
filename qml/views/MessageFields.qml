@@ -154,7 +154,11 @@ ListView {
 
         DelegateChoice {
             roleValue: "TYPE_ENUM"
-            Label { text: "enum: not implemented yet" }
+            ComboBoxField {
+                labelText: label
+                model: enumListModel
+                onDisplayTextChanged: root.model.updateFieldValue(index, displayText)
+            }
         }
 
         DelegateChoice {

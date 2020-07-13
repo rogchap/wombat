@@ -112,6 +112,16 @@ func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
 			msg.SetLabel(m.GetFullyQualifiedName())
 			msg.SetFields(getMessageFields(m))
 			field.SetMessage(msg)
+		case descriptor.FieldDescriptorProto_TYPE_ENUM:
+			e := f.GetEnumType()
+			var enumValues []string
+			for _, enum := range e.GetValues() {
+				enumValues = append(enumValues, enum.GetName())
+			}
+			enumListModel := model.NewStringList(nil)
+			enumListModel.SetStringList(enumValues)
+			field.SetEnumListModel(enumListModel)
+
 		}
 		fields = append(fields, field)
 	}

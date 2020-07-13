@@ -10,18 +10,20 @@ const (
 	FieldFullname
 	FieldVal
 	FieldMsg
+	FieldEnum
 )
 
 //go:generate qtmoc
 type Field struct {
 	core.QObject
 
-	_ string   `property:"type"`
-	_ string   `property:"label"`
-	_ string   `property:"fullname"`
-	_ int      `property:"tag"`
-	_ string   `property:"value"`
-	_ *Message `property:"message"`
+	_ string      `property:"type"`
+	_ string      `property:"label"`
+	_ string      `property:"fullname"`
+	_ int         `property:"tag"`
+	_ string      `property:"value"`
+	_ *Message    `property:"message"`
+	_ *StringList `property:"enumListModel"`
 }
 
 //go:generate qtmoc
@@ -44,6 +46,7 @@ func (i *Message) init() {
 		FieldFullname: core.NewQByteArray2("fullname", -1),
 		FieldVal:      core.NewQByteArray2("val", -1),
 		FieldMsg:      core.NewQByteArray2("message", -1),
+		FieldEnum:     core.NewQByteArray2("enumListModel", -1),
 	})
 
 	i.ConnectData(i.data)
@@ -76,6 +79,8 @@ func (i *Message) data(index *core.QModelIndex, role int) *core.QVariant {
 		return core.NewQVariant1(f.Value())
 	case FieldMsg:
 		return core.NewQVariant1(f.Message())
+	case FieldEnum:
+		return core.NewQVariant1(f.EnumListModel())
 
 	default:
 		return core.NewQVariant()
