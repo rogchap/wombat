@@ -31,16 +31,30 @@ Pane {
     }
 
     Label {
+        id: lblAddr
         anchors.centerIn: parent
         text: mc.workspaceCtrl.addr
+        font.pointSize: 14
+        font.weight: Font.DemiBold
+        color: Style.primaryColor
     }
 
     Label {
-        anchors.right: parent.right
-        height: parent.height
-        verticalAlignment: Text.AlignVCenter
-        text: qsTr("connected")
-        color: Style.greenColor
+        function getColor() {
+            switch(text) {
+                case "ready":
+                    return Style.greenColor
+                case "connecting":
+                case "idle":
+                    return Style.yellowColor
+                default:
+                    return Style.redColor
+            }
+        }
+        anchors.top: lblAddr.bottom
+        anchors.horizontalCenter: lblAddr.horizontalCenter
+        text: mc.workspaceCtrl.connState.toLowerCase().replace("_", " ")
+        color: getColor()
     }
 
 

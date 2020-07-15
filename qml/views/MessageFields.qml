@@ -14,59 +14,15 @@ ListView {
     height: contentHeight
     
     delegate: DelegateChooser {
-        role: "type"
+        role: "delegate"
 
         DelegateChoice {
-            roleValue: "TYPE_DOUBLE"
-            DelegateTextField {
-                validator: DoubleValidator {}
-            }
+            roleValue: "text"
+            DelegateTextField {}
         }
         
         DelegateChoice {
-            roleValue: "TYPE_FLOAT"
-            DelegateTextField {
-                validator: DoubleValidator {}
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_INT64"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /^-?\d+/ }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_UINT64"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /\d+/ }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_INT32"
-            DelegateTextField {
-                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_FIXED64"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /^-?\d+/ }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_FIXED32"
-            DelegateTextField {
-                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_BOOL"
+            roleValue: "bool"
             CheckBox {
                 text: label
                 checked: val == "true" ? true : false
@@ -76,17 +32,7 @@ ListView {
         }
 
         DelegateChoice {
-            roleValue: "TYPE_STRING"
-            DelegateTextField {}
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_GROUP"
-            Label { text: "group: not supported" }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_MESSAGE"
+            roleValue: "message"
             Item {
                 height: msgPane.height + msgLabel.height + 10
 
@@ -129,65 +75,27 @@ ListView {
                         anchors.leftMargin: -7
                         anchors.topMargin: -5
                     }
-
                 }
-
             }
         }
 
         DelegateChoice {
-            roleValue: "TYPE_BYTES"
+            roleValue: "textArea"
             TextAreaField {
                 labelText: label
-                hintText: type.substring(5, type.length).toLowerCase()
+                hintText: type
                 text: val
                 onTextChanged: root.model.updateFieldValue(index, text) 
             }
         }
 
         DelegateChoice {
-            roleValue: "TYPE_UINT32"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /^-?\d+/ }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_ENUM"
+            roleValue: "enum"
             ComboBoxField {
                 labelText: label
                 model: enumListModel
                 onDisplayTextChanged: root.model.updateFieldValue(index, displayText)
             }
         }
-
-        DelegateChoice {
-            roleValue: "TYPE_SFIXED32"
-            DelegateTextField {
-                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_SFIXED64"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /^-?\d+/ }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_SINT32"
-            DelegateTextField {
-                validator: IntValidator { bottom: -2147483648; top: 2147483647 }
-            }
-        }
-
-        DelegateChoice {
-            roleValue: "TYPE_SINT64"
-            DelegateTextField {
-                validator: RegExpValidator { regExp: /^-?\d+/ }
-            }
-        }
     }
-
 }

@@ -12,13 +12,6 @@ Label {
     leftPadding: 8
     rightPadding: 8
 
-    function getCode() {
-        switch(code) {
-            case 0:
-            return { text: "OK" }
-        }
-    }
-
     background: Rectangle {
         id: bg
         color: Style.bgColor
@@ -99,7 +92,7 @@ Label {
                 bg.color = Style.redColor
                 break
             default:
-                text = "pending..."
+                text = ""
                 bg.color = Style.bgColor
         }
     }

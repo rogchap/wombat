@@ -17,6 +17,7 @@ import (
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"rogchap.com/courier/internal/model"
 )
@@ -25,7 +26,8 @@ import (
 type workspaceController struct {
 	core.QObject
 
-	grpcConn *grpc.ClientConn
+	grpcConn      *grpc.ClientConn
+	cancelCtxFunc context.CancelFunc
 
 	_ func() `constructor:"init"`
 
@@ -33,6 +35,7 @@ type workspaceController struct {
 	_ *outputController `property:"outputCtrl"`
 
 	_ string            `property:"addr"`
+	_ string            `property:"connState"`
 	_ *model.StringList `property:protoListModel"`
 	_ *model.StringList `property:importListModel"`
 
@@ -105,6 +108,7 @@ func (c *workspaceController) connect(addr string) error {
 
 	if c.grpcConn != nil {
 		c.grpcConn.Close()
+		c.cancelCtxFunc()
 	}
 	// TODO [RC] setup grpc options
 	opts := []grpc.DialOption{
@@ -120,6 +124,21 @@ func (c *workspaceController) connect(addr string) error {
 		println(err.Error())
 		return err
 	}
+
+	var ctx context.Context
+	ctx, c.cancelCtxFunc = context.WithCancel(context.Background())
+
+	go func() {
+		for {
+			state := c.grpcConn.GetState()
+			MainThread.Run(func() {
+				c.SetConnState(state.String())
+			})
+			if ok := c.grpcConn.WaitForStateChange(ctx, state); !ok {
+				break
+			}
+		}
+	}()
 
 	// TODO [RC] monitor connection status
 
@@ -160,6 +179,9 @@ func (c *workspaceController) send(service, method string) {
 				}
 				if err != nil {
 					println(err.Error())
+					MainThread.Run(func() {
+						outputCtrl.SetStatus(int(status.Code(err)))
+					})
 					return
 				}
 				MainThread.Run(func() {
@@ -172,6 +194,10 @@ func (c *workspaceController) send(service, method string) {
 		resp, err := stub.InvokeRpc(context.Background(), md, req, grpc.Header(&header), grpc.Trailer(&trailer))
 		if err != nil {
 			println(err.Error())
+			MainThread.Run(func() {
+				outputCtrl.SetStatus(int(status.Code(err)))
+			})
+			return
 		}
 
 		fmt.Printf("%+v\n", resp)
@@ -200,5 +226,7 @@ func processFields(msg *dynamic.Message, fields []*model.Field) {
 		case descriptor.FieldDescriptorProto_TYPE_STRING:
 			msg.SetFieldByNumber(f.Tag(), f.Value())
 		}
+
+		msg.AddRepeatedFieldByNumber
 	}
 }

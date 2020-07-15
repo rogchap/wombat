@@ -5,6 +5,7 @@ package app
 import (
 	"errors"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
@@ -103,7 +104,8 @@ func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
 		field.SetFullname(f.GetFullyQualifiedName())
 
 		ft := f.GetType()
-		field.SetType(descriptor.FieldDescriptorProto_Type_name[int32(ft)])
+		typeName := strings.ToLower(descriptor.FieldDescriptorProto_Type_name[int32(ft)][5:])
+		field.SetType(typeName)
 
 		switch ft {
 		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
@@ -112,6 +114,7 @@ func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
 			msg.SetLabel(m.GetFullyQualifiedName())
 			msg.SetFields(getMessageFields(m))
 			field.SetMessage(msg)
+			field.SetDelegate("message")
 		case descriptor.FieldDescriptorProto_TYPE_ENUM:
 			e := f.GetEnumType()
 			var enumValues []string
@@ -121,8 +124,19 @@ func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
 			enumListModel := model.NewStringList(nil)
 			enumListModel.SetStringList(enumValues)
 			field.SetEnumListModel(enumListModel)
-
+			field.SetDelegate("enum")
+		case descriptor.FieldDescriptorProto_TYPE_BYTES:
+			field.SetDelegate("textArea")
+		case descriptor.FieldDescriptorProto_TYPE_BOOL:
+			field.SetDelegate("bool")
+		default:
+			field.SetDelegate("text")
 		}
+
+		if f.IsRepeated() {
+			// TODO
+		}
+
 		fields = append(fields, field)
 	}
 	return fields
