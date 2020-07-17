@@ -10,7 +10,7 @@ ListView {
 
     spacing: 10
 
-    width: parent.width
+    width: contentWidth
     height: contentHeight
     
     delegate: DelegateChooser {
@@ -18,7 +18,9 @@ ListView {
 
         DelegateChoice {
             roleValue: "text"
-            DelegateTextField {}
+            DelegateTextField {
+                onTextChanged: root.model.updateFieldValue(index, text) 
+            }
         }
         
         DelegateChoice {
@@ -33,50 +35,7 @@ ListView {
 
         DelegateChoice {
             roleValue: "message"
-            Item {
-                height: msgPane.height + msgLabel.height + 10
-
-                Label {
-                    id: msgLabel
-                    text: label
-                    anchors.left: parent.left
-                    anchors.leftMargin: 5
-                }
-
-                Label { 
-                    anchors.left: msgLabel.right
-                    anchors.leftMargin: 10
-                    color: Qt.darker(Style.textColor3, 1.6)
-                    text: message.label
-                }
-
-                Pane {
-                    id: msgPane
-
-                    width: msgLoader.width
-                    height: msgLoader.height
-                    anchors.top: msgLabel.bottom
-
-                    Loader {
-                        id: msgLoader
-
-                        source: "MessageFields.qml"
-                        onLoaded: {
-                            item.model = message
-                        }
-                    }
-
-                    Rectangle {
-                        width: 1
-                        height: msgPane.height + 5
-                        color: Style.accentColor
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.leftMargin: -7
-                        anchors.topMargin: -5
-                    }
-                }
-            }
+            DelegateMessageField {} 
         }
 
         DelegateChoice {
@@ -96,6 +55,11 @@ ListView {
                 model: enumListModel
                 onDisplayTextChanged: root.model.updateFieldValue(index, displayText)
             }
+        }
+
+        DelegateChoice {
+            roleValue: "text_repeated"
+            DelegateRepeatedTextField {}
         }
     }
 }

@@ -11,11 +11,14 @@ type StringList struct {
 	core.QStringListModel
 
 	_ func() `constructor:"init"`
+
+	_ func(string) `slot:"add"`
 }
 
 func (s *StringList) init() {
 	s.ConnectData(s.data)
 	s.ConnectRowCount(s.rowCount)
+	s.ConnectAdd(s.add)
 }
 
 func (s *StringList) data(idx *core.QModelIndex, role int) *core.QVariant {
@@ -32,4 +35,10 @@ func (s *StringList) data(idx *core.QModelIndex, role int) *core.QVariant {
 
 func (s *StringList) rowCount(parent *core.QModelIndex) int {
 	return len(s.StringList())
+}
+
+func (s *StringList) add(val string) {
+	s.BeginInsertRows(core.NewQModelIndex(), len(s.StringList()), len(s.StringList()))
+	s.SetStringList(append(s.StringList(), ""))
+	s.EndInsertRows()
 }

@@ -134,7 +134,10 @@ func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
 		}
 
 		if f.IsRepeated() {
-			// TODO
+			field.SetDelegate(field.Delegate() + "_repeated")
+			// TODO If field is a message we need to use a list of messages not strings
+			vl := model.NewRepeatedValues(nil)
+			field.SetValueListModel(vl)
 		}
 
 		fields = append(fields, field)

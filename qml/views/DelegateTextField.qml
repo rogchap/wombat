@@ -7,28 +7,27 @@ TextField {
     labelText: label
     hintText: type
     text: val
-    onTextChanged: root.model.updateFieldValue(index, text) 
     
     Component.onCompleted: {
         switch(type) {
-            case "TYPE_DOUBLE":
-            case "TYPE_FLOAT":
+            case "double":
+            case "float":
             validator = vDouble
             break
-            case "TYPE_INT64":
-            case "TYPE_FIXED64":
-            case "TYPE_SFIXED64":
-            case "TYPE_SINT64":
+            case "int64":
+            case "fixed64":
+            case "sfixed64":
+            case "sint64":
             validator = vInt64
             break
-            case "TYPE_UINT64":
-            case "TYPE_UINT32":
+            case "uint64":
+            case "uint32":
             validator = vUInt64
             break
-            case "TYPE_INT32":
-            case "TYPE_FIXED32":
-            case "TYPE_SFIXED32":
-            case "TYPE_SINT32":
+            case "int32":
+            case "fixed32":
+            case "sfixed32":
+            case "sint32":
             validator = vInt32
             break
         }

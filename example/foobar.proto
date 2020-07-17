@@ -3,6 +3,7 @@ syntax = "proto3";
 package main;
 
 service Foobar {
+    rpc Bar(BarRequest) returns (BarResponse) {}
     rpc Foo(FooRequest) returns (FooResponse) {}
 }
 
@@ -38,3 +39,10 @@ message FooRequest {
 }
 
 message FooResponse {}
+
+message BarRequest {
+    repeated string type_repeated_string = 1;
+    float type_float = 2;
+}
+
+message BarResponse {}

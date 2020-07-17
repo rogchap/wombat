@@ -226,7 +226,5 @@ func processFields(msg *dynamic.Message, fields []*model.Field) {
 		case descriptor.FieldDescriptorProto_TYPE_STRING:
 			msg.SetFieldByNumber(f.Tag(), f.Value())
 		}
-
-		msg.AddRepeatedFieldByNumber
 	}
 }

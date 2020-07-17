@@ -10,6 +10,7 @@ const (
 	FieldLabel
 	FieldFullname
 	FieldVal
+	FieldValues
 	FieldMsg
 	FieldEnum
 )
@@ -18,15 +19,15 @@ const (
 type Field struct {
 	core.QObject
 
-	_ string      `property:"type"`
-	_ string      `property:"delegate"`
-	_ string      `property:"label"`
-	_ string      `property:"fullname"`
-	_ int         `property:"tag"`
-	_ string      `property:"value"`
-	_ *StringList `property:"valueListModel"`
-	_ *Message    `property:"message"`
-	_ *StringList `property:"enumListModel"`
+	_ string          `property:"type"`
+	_ string          `property:"delegate"`
+	_ string          `property:"label"`
+	_ string          `property:"fullname"`
+	_ int             `property:"tag"`
+	_ string          `property:"value"`
+	_ *RepeatedValues `property:"valueListModel"`
+	_ *Message        `property:"message"`
+	_ *StringList     `property:"enumListModel"`
 }
 
 //go:generate qtmoc
@@ -49,6 +50,7 @@ func (i *Message) init() {
 		FieldLabel:    core.NewQByteArray2("label", -1),
 		FieldFullname: core.NewQByteArray2("fullname", -1),
 		FieldVal:      core.NewQByteArray2("val", -1),
+		FieldValues:   core.NewQByteArray2("valueListModel", -1),
 		FieldMsg:      core.NewQByteArray2("message", -1),
 		FieldEnum:     core.NewQByteArray2("enumListModel", -1),
 	})
@@ -83,6 +85,8 @@ func (i *Message) data(index *core.QModelIndex, role int) *core.QVariant {
 		return core.NewQVariant1(f.Fullname())
 	case FieldVal:
 		return core.NewQVariant1(f.Value())
+	case FieldValues:
+		return core.NewQVariant1(f.ValueListModel())
 	case FieldMsg:
 		return core.NewQVariant1(f.Message())
 	case FieldEnum:
