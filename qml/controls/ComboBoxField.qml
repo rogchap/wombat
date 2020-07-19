@@ -10,6 +10,7 @@ Item {
     property alias labelText: label.text
     property alias model: combobox.model
     property alias displayText: combobox.displayText
+    property int labelLeftMargin: 5
 
     height: label.height + combobox.height + 5
     implicitWidth: combobox.width
@@ -19,7 +20,7 @@ Item {
 
         anchors {
             left: control.left
-            leftMargin: 5
+            leftMargin: labelLeftMargin
         }
     }
 

@@ -3,6 +3,7 @@
 package model
 
 import (
+	"github.com/jhump/protoreflect/desc"
 	"github.com/therecipe/qt/core"
 )
 
@@ -22,6 +23,8 @@ type RepeatedValue struct {
 //go:generate qtmoc
 type RepeatedValues struct {
 	core.QAbstractListModel
+
+	ref *desc.MessageDescriptor
 
 	_ func() `constructor:"init"`
 
@@ -84,7 +87,11 @@ func (m *RepeatedValues) roleNames() map[int]*core.QByteArray {
 
 func (m *RepeatedValues) addValue() {
 	m.BeginInsertRows(core.NewQModelIndex(), len(m.Values()), len(m.Values()))
-	m.SetValues(append(m.Values(), &RepeatedValue{}))
+	rv := NewRepeatedValue(nil)
+	if m.ref != nil {
+		rv.SetMsgValue(MapMessage(m.ref))
+	}
+	m.SetValues(append(m.Values(), rv))
 	m.EndInsertRows()
 	m.SetCount(m.Count() + 1)
 }

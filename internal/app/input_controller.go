@@ -5,10 +5,7 @@ package app
 import (
 	"errors"
 	"path/filepath"
-	"strings"
 
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/therecipe/qt/core"
 	"rogchap.com/courier/internal/model"
 	"rogchap.com/courier/internal/pb"
@@ -86,61 +83,5 @@ func (c *inputController) methodChanged(service, method string) {
 		return
 	}
 
-	input := md.GetInputType()
-	reqModel := c.RequestModel()
-
-	reqModel.BeginResetModel()
-	reqModel.SetLabel(input.GetFullyQualifiedName())
-	reqModel.SetFields(getMessageFields(input))
-	reqModel.EndResetModel()
-}
-
-func getMessageFields(msg *desc.MessageDescriptor) []*model.Field {
-	var fields []*model.Field
-	for _, f := range msg.GetFields() {
-		field := model.NewField(nil)
-		field.SetLabel(f.GetName())
-		field.SetTag(int(f.GetNumber()))
-		field.SetFullname(f.GetFullyQualifiedName())
-
-		ft := f.GetType()
-		typeName := strings.ToLower(descriptor.FieldDescriptorProto_Type_name[int32(ft)][5:])
-		field.SetType(typeName)
-
-		switch ft {
-		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			m := f.GetMessageType()
-			msg := model.NewMessage(nil)
-			msg.SetLabel(m.GetFullyQualifiedName())
-			msg.SetFields(getMessageFields(m))
-			field.SetMessage(msg)
-			field.SetDelegate("message")
-		case descriptor.FieldDescriptorProto_TYPE_ENUM:
-			e := f.GetEnumType()
-			var enumValues []string
-			for _, enum := range e.GetValues() {
-				enumValues = append(enumValues, enum.GetName())
-			}
-			enumListModel := model.NewStringList(nil)
-			enumListModel.SetStringList(enumValues)
-			field.SetEnumListModel(enumListModel)
-			field.SetDelegate("enum")
-		case descriptor.FieldDescriptorProto_TYPE_BYTES:
-			field.SetDelegate("textArea")
-		case descriptor.FieldDescriptorProto_TYPE_BOOL:
-			field.SetDelegate("bool")
-		default:
-			field.SetDelegate("text")
-		}
-
-		if f.IsRepeated() {
-			field.SetDelegate(field.Delegate() + "_repeated")
-			// TODO If field is a message we need to use a list of messages not strings
-			vl := model.NewRepeatedValues(nil)
-			field.SetValueListModel(vl)
-		}
-
-		fields = append(fields, field)
-	}
-	return fields
+	c.SetRequestModel(model.MapMessage(md.GetInputType()))
 }

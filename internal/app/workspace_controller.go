@@ -147,6 +147,10 @@ func (c *workspaceController) connect(addr string) error {
 }
 
 func (c *workspaceController) send(service, method string) {
+	if c.grpcConn == nil {
+		return
+	}
+
 	inputCtrl := c.InputCtrl()
 	outputCtrl := c.OutputCtrl()
 

@@ -4,6 +4,8 @@ import QtQuick.Controls 2.13
 import "../controls"
 
 TextField {
+    id: root
+
     labelText: label
     hintText: type
     text: val

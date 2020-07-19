@@ -9,6 +9,13 @@ service Foobar {
 
 message Bar {
     string id = 1;
+    
+    message Nested {
+        string name = 1;
+        bool is_nested = 2;
+    }
+
+    repeated Nested names = 3;
 }
 
 enum Baz {
@@ -42,7 +49,11 @@ message FooResponse {}
 
 message BarRequest {
     repeated string type_repeated_string = 1;
-    float type_float = 2;
+    repeated float type_repeated_float = 2;
+    repeated bool type_repeated_bool = 3;
+    repeated Baz type_repeated_enum = 4;
+    repeated bytes type_repeated_bytes = 5;
+    repeated Bar type_repeated_message = 6;
 }
 
 message BarResponse {}

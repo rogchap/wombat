@@ -12,6 +12,7 @@ Item {
     property alias labelText: label.text
     property alias hintText: hint.text
     property alias validator: textField.validator
+    property int labelLeftMargin: 5
 
     height: label.height + textField.height + 5
     implicitWidth: textField.width
@@ -21,7 +22,7 @@ Item {
 
         anchors {
             left: control.left
-            leftMargin: 5
+            leftMargin: labelLeftMargin
         }
     }
 

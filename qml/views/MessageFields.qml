@@ -10,8 +10,8 @@ ListView {
 
     spacing: 10
 
-    width: contentWidth
-    height: contentHeight
+    implicitWidth: contentWidth
+    implicitHeight: contentHeight
     
     delegate: DelegateChooser {
         role: "delegate"
@@ -59,7 +59,122 @@ ListView {
 
         DelegateChoice {
             roleValue: "text_repeated"
-            DelegateRepeatedTextField {}
+            DelegateRepeatedField {
+                delegate: Item {
+                    height: textField.height
+                    width: parent.width
+
+                    DelegateTextField {
+                        id: textField
+                        hintText: type 
+                        labelLeftMargin: 21
+                    }
+
+                    CrossButton {
+                        color: Style.bgColor3
+                        rotation: 45
+                        onClicked: valueListModel.remove(index)
+                    }
+                }
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "bool_repeated"
+            DelegateRepeatedField {
+                delegate: Item{
+                    height: checkboxField.height
+                    width: parent.width
+
+                    CheckBox {
+                        id: checkboxField
+                        text: label
+                        anchors.left: parent.left
+                        anchors.leftMargin: 16
+                    }
+
+                    CrossButton {
+                        color: Style.bgColor3
+                        rotation: 45
+                        onClicked: valueListModel.remove(index)
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                }
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "enum_repeated"
+            DelegateRepeatedField {
+                delegate: Item{
+                    height: comboField.height
+                    width: parent.width
+
+                    ComboBoxField {
+                        id: comboField
+                        labelText: label
+                        labelLeftMargin: 21
+                        model: enumListModel
+                    }
+
+                    CrossButton {
+                        color: Style.bgColor3
+                        rotation: 45
+                        onClicked: valueListModel.remove(index)
+                    }
+
+                }
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "textArea_repeated"
+            DelegateRepeatedField {
+                delegate: Item{
+                    height: areaField.height
+                    width: parent.width
+
+                    TextAreaField {
+                        id: areaField
+                        labelText: label
+                        labelLeftMargin: 21
+                        hintText: type
+                    }
+
+                    CrossButton {
+                        color: Style.bgColor3
+                        rotation: 45
+                        onClicked: valueListModel.remove(index)
+                    }
+
+                }
+            }
+        }
+
+        DelegateChoice {
+            roleValue: "message_repeated"
+            DelegateRepeatedField {
+                hintText: "repeated "+ message.label
+                delegate: Item{
+                    height: msgField.height
+                    width: parent.width
+
+                    DelegateMessageField {
+                        id: msgField
+                        msgOverride: msgValue
+                        labelLeftMargin: 21
+                        labelColor: Style.accentColor2
+                    }
+
+                    CrossButton {
+                        color: Style.bgColor3
+                        rotation: 45
+                        onClicked: valueListModel.remove(index)
+                    }
+
+                }
+            }
         }
     }
 }

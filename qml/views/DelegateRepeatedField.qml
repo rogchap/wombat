@@ -7,10 +7,10 @@ import "../controls"
 Item {
     id: root
 
-    property string rType: type
-    property string rLabel: label
+    property alias hintText: hint.text
+    property alias delegate: listView.delegate
 
-    height: pane.height + lblRow.height + 10
+    height: pane.height + lblRow.height + 14
 
     Row {
         id: lblRow
@@ -26,6 +26,7 @@ Item {
         }
 
         Label { 
+            id: hint
             color: Qt.darker(Style.textColor3, 1.6)
             text: "repeated " + type
         }
@@ -46,7 +47,6 @@ Item {
         height: listView.height
 
         visible: valueListModel.count > 0 
-        Component.onCompleted: print(valueListModel.count) 
 
         ListView {
             id: listView
@@ -57,29 +57,11 @@ Item {
             height: contentHeight
 
             model: valueListModel
-            delegate: Item{
-                height: dTextField.height
-                width: parent.width
-                DelegateTextField {
-                    id: dTextField
-                    hintText: root.rType
-                }
-                CrossButton {
-                    anchors.left: dTextField.right
-                    anchors.leftMargin: 5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    color: Style.bgColor3
-                    rotation: 45
-
-                    onClicked: valueListModel.remove(index)
-                }
-            }
         }
 
         Rectangle {
             width: 1
-            height: listView.height + 5
+            height: listView.height + 7
             color: Style.accentColor2
             anchors.left: parent.left
             anchors.top: parent.top

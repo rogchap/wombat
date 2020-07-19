@@ -5,16 +5,23 @@ import "../."
 import "../controls"
 
 Item {
+    id: root
+
+    property alias labelColor: msgLabel.color
+    property int labelLeftMargin: 5
+    property variant msgOverride
+
     height: msgPane.height + msgLabel.height + 10
+    implicitWidth: msgPane.width
 
     Label {
         id: msgLabel
         text: label
         anchors.left: parent.left
-        anchors.leftMargin: 5
+        anchors.leftMargin: labelLeftMargin
     }
 
-    Label { 
+    Label {
         anchors.left: msgLabel.right
         anchors.leftMargin: 10
         color: Qt.darker(Style.textColor3, 1.6)
@@ -24,8 +31,7 @@ Item {
     Pane {
         id: msgPane
 
-        width: msgLoader.width
-        height: msgLoader.height
+        implicitHeight: msgLoader.height
         anchors.top: msgLabel.bottom
 
         Loader {
@@ -33,7 +39,7 @@ Item {
 
             source: "MessageFields.qml"
             onLoaded: {
-                item.model = message
+                item.model = msgOverride || message
             }
         }
 
