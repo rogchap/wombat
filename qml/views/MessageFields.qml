@@ -26,6 +26,7 @@ ListView {
         DelegateChoice {
             roleValue: "bool"
             CheckBox {
+                rhs: true
                 text: label
                 checked: val == "true" ? true : false
                 onCheckedChanged: root.model.updateFieldValue(index, checked) 
@@ -53,7 +54,9 @@ ListView {
             ComboBoxField {
                 labelText: label
                 model: enumListModel
-                onDisplayTextChanged: root.model.updateFieldValue(index, displayText)
+                onDisplayTextChanged: {
+                    root.model.updateFieldValue(index, enumListModel.valAt(currentIndex))
+                }
             }
         }
 
@@ -88,6 +91,7 @@ ListView {
 
                     CheckBox {
                         id: checkboxField
+                        rhs: true
                         text: label
                         anchors.left: parent.left
                         anchors.leftMargin: 16

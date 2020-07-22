@@ -20,6 +20,14 @@ TabButton {
         color: Style.bgColor
 
         Rectangle {
+            width: parent.width
+            height: 1
+            color: Style.borderColor
+            anchors.bottom: parent.top
+            visible: control.checked ? true : false
+        }
+
+        Rectangle {
             width: 1
             height: parent.height
             color: Style.borderColor

@@ -10,6 +10,7 @@ Item {
     property alias labelText: label.text
     property alias model: combobox.model
     property alias displayText: combobox.displayText
+    property alias currentIndex: combobox.currentIndex
     property int labelLeftMargin: 5
 
     height: label.height + combobox.height + 5

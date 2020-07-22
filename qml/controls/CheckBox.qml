@@ -7,10 +7,12 @@ import "."
 CheckBox {
     id: control
 
+    property bool rhs: false
     spacing: 10
 
     contentItem: Label {
-        rightPadding: control.indicator.width + control.spacing
+        rightPadding: rhs ? control.indicator.width + control.spacing : 0
+        leftPadding: rhs ? 0 : control.indicator.width + control.spacing / 2
         text: control.text
         verticalAlignment: Text.AlignVCenter
     }
@@ -18,7 +20,7 @@ CheckBox {
     indicator: Rectangle {
         implicitWidth: 24
         implicitHeight: 24
-        x: control.width - width - control.rightPadding
+        x: rhs ? control.width - width - control.rightPadding : 0
         y: control.topPadding + control.availableHeight / 2 - height / 2
 
         color: Style.bgInputColor

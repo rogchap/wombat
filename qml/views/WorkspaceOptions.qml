@@ -2,7 +2,6 @@ import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
 import QtQuick.Dialogs 1.1
-import Qt.labs.platform 1.1
 
 import "../."
 import "../controls"
@@ -14,74 +13,73 @@ Modal {
 
     headerText: qsTr("Workspace")
 
-    Column {
-        spacing: 10
+    ColumnLayout {
+        spacing: 0
 
-        TextField {
-            id: txtAddr
-            labelText: qsTr("gRPC server address:")
-            placeholderText: "localhost:9090"
-            text: wc.addr 
-        }
-
-        FileList {
-            labelText: qsTr("Proto files:")
-            actionButtonColor: Style.primaryColor
-            actionButtonText: qsTr("Find *.proto files")
-
-            model: wc.protoListModel
-
-            onOpened: fdProtos.open()
-
-            FolderDialog {
-                id: fdProtos
-                acceptLabel: qsTr("Find *.proto files")
-                onAccepted: wc.findProtoFiles(folder)
+        TabBar {
+            id: tabbar
+            background: Rectangle {
+                color: Style.bgColor
             }
-        }
 
-        FileList {
-            labelText: qsTr("Import proto paths:")
+            TabButton {
+                text: qsTr("Basic")
+            }
 
-            model: wc.importListModel
-
-            onOpened: fdImports.open()
-
-            FolderDialog {
-                id: fdImports
-                onAccepted: wc.addImport(folder)
+            TabButton {
+                text: qsTr("TLS")
             }
         }
 
         Rectangle {
+            Layout.fillWidth: true
+            Layout.topMargin: -1
+            Layout.leftMargin: tabbar.width
             height: 1
-            width: parent.width
+            color: Style.borderColor
+        }
+
+        StackLayout {
+            currentIndex: tabbar.currentIndex
+
+            WorkspaceOptionsBasic {
+                id: basics
+            }
+
+            WorkspaceOptionsTls {}
+
+        }
+
+        Rectangle {
+            height: 1
+            Layout.fillWidth: true
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
             color: Style.borderColor
         }
 
         Button {
-            anchors.right: parent.right
+            Layout.alignment: Qt.AlignRight
             bgColor: Style.accentColor3
 
             text: qsTr("Connect")
 
             onClicked: {
-                // TODO: handle any errors
                 let err = wc.processProtos()
                 if (err) {
                     print(err)
                     return
                 }
-                err = wc.connect(txtAddr.text)
+                err = wc.connect(basics.addr)
                 if (err) {
                     print(err)
                     return
                 }
                 root.close()
             }
-            
         }
-        
     }
+
+
 
 }

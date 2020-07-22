@@ -3,6 +3,7 @@
 package model
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -11,6 +12,7 @@ import (
 
 func MapMessage(md *desc.MessageDescriptor) *Message {
 	msg := NewMessage(nil)
+	msg.Ref = md
 	msg.SetLabel(md.GetFullyQualifiedName())
 
 	var fields []*Field
@@ -21,6 +23,7 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 		field.SetFullname(fd.GetFullyQualifiedName())
 
 		ft := fd.GetType()
+		field.FdType = ft
 		typeName := strings.ToLower(descriptor.FieldDescriptorProto_Type_name[int32(ft)][5:])
 		field.SetType(typeName)
 
@@ -30,12 +33,12 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 			field.SetDelegate("message")
 		case descriptor.FieldDescriptorProto_TYPE_ENUM:
 			e := fd.GetEnumType()
-			var enumValues []string
+			var enumValues []keyval
 			for _, enum := range e.GetValues() {
-				enumValues = append(enumValues, enum.GetName())
+				enumValues = append(enumValues, keyval{enum.GetName(), strconv.Itoa(int(enum.GetNumber()))})
 			}
-			enumListModel := NewStringList(nil)
-			enumListModel.SetStringList(enumValues)
+			enumListModel := NewKeyvalList(nil)
+			enumListModel.list = enumValues
 			field.SetEnumListModel(enumListModel)
 			field.SetDelegate("enum")
 		case descriptor.FieldDescriptorProto_TYPE_BYTES:
@@ -47,6 +50,7 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 		}
 
 		if fd.IsRepeated() {
+			field.IsRepeated = true
 			field.SetDelegate(field.Delegate() + "_repeated")
 			vl := NewRepeatedValues(nil)
 			vl.ref = fd.GetMessageType()

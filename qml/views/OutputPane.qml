@@ -9,8 +9,6 @@ Pane {
     id: root
     padding: 0
 
-    readonly property var oc: mc.workspaceCtrl.outputCtrl
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -50,9 +48,7 @@ Pane {
         StackLayout {
             currentIndex: tabbar.currentIndex
 
-            Pane {
-                Label {text: oc.output }
-            }
+            ResponseData {}
 
             Pane {
                 Label { text: "Header content" }

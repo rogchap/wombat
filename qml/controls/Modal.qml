@@ -30,11 +30,12 @@ Popup {
             y: 1
 
             width: control.width - 2
-            height: 40
+            height: 44
 
             Label {
                 id: lblHeader
                 font.weight: Font.DemiBold
+                font.pointSize: 16
             }
 
             AbstractButton {
@@ -46,7 +47,7 @@ Popup {
                 anchors {
                     right: parent.right
                     top: parent.top
-                    topMargin: -8
+                    topMargin: -5
                 }
 
                 contentItem: Label {

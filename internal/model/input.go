@@ -2,7 +2,11 @@
 
 package model
 
-import "github.com/therecipe/qt/core"
+import (
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/therecipe/qt/core"
+)
 
 const (
 	FieldType = int(core.Qt__UserRole) + 1<<iota
@@ -19,6 +23,9 @@ const (
 type Field struct {
 	core.QObject
 
+	FdType     descriptor.FieldDescriptorProto_Type
+	IsRepeated bool
+
 	_ string          `property:"type"`
 	_ string          `property:"delegate"`
 	_ string          `property:"label"`
@@ -27,7 +34,7 @@ type Field struct {
 	_ string          `property:"value"`
 	_ *RepeatedValues `property:"valueListModel"`
 	_ *Message        `property:"message"`
-	_ *StringList     `property:"enumListModel"`
+	_ *KeyvalList     `property:"enumListModel"`
 }
 
 //go:generate qtmoc
@@ -35,6 +42,8 @@ type Message struct {
 	core.QAbstractListModel
 
 	_ func() `constructor:"init"`
+
+	Ref *desc.MessageDescriptor
 
 	_ map[int]*core.QByteArray `property:"roles"`
 	_ string                   `property:"label"`

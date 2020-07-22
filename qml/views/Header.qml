@@ -33,7 +33,7 @@ Pane {
     Label {
         id: lblAddr
         anchors.centerIn: parent
-        text: mc.workspaceCtrl.addr
+        text: mc.workspaceCtrl.options.addr
         font.pointSize: 14
         font.weight: Font.DemiBold
         color: Style.primaryColor

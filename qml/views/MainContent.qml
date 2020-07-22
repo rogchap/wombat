@@ -13,10 +13,10 @@ SplitView {
         color: Style.borderColor
     }
 
-    SideBar {
-        SplitView.minimumWidth: 25
-        SplitView.preferredWidth: 200
-    }
+    // SideBar {
+    //     SplitView.minimumWidth: 25
+    //     SplitView.preferredWidth: 200
+    // }
 
     InputPane {
         SplitView.fillWidth: true

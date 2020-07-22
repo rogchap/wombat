@@ -34,10 +34,8 @@ type workspaceController struct {
 	_ *inputController  `property:"inputCtrl"`
 	_ *outputController `property:"outputCtrl"`
 
-	_ string            `property:"addr"`
-	_ string            `property:"connState"`
-	_ *model.StringList `property:protoListModel"`
-	_ *model.StringList `property:importListModel"`
+	_ *model.WorkspaceOptions `property:"options"`
+	_ string                  `property:"connState"`
 
 	_ func(path string)            `slot:"findProtoFiles"`
 	_ func(path string)            `slot:"addImport"`
@@ -50,8 +48,7 @@ func (c *workspaceController) init() {
 	c.SetInputCtrl(NewInputController(nil))
 	c.SetOutputCtrl(NewOutputController(nil))
 
-	c.SetProtoListModel(model.NewStringList(nil))
-	c.SetImportListModel(model.NewStringList(nil))
+	c.SetOptions(model.NewWorkspaceOptions(nil))
 
 	c.ConnectFindProtoFiles(c.findProtoFiles)
 	c.ConnectAddImport(c.addImport)
@@ -77,12 +74,12 @@ func (c *workspaceController) findProtoFiles(path string) {
 	}
 
 	// TODO [RC] Shoud we be replacing or adding?
-	c.ProtoListModel().SetStringList(protoFiles)
+	c.Options().ProtoListModel().SetStringList(protoFiles)
 }
 
 func (c *workspaceController) addImport(path string) {
 	path = path[7:]
-	lm := c.ImportListModel()
+	lm := c.Options().ImportListModel()
 	for _, p := range lm.StringList() {
 		if p == path {
 			return
@@ -92,8 +89,8 @@ func (c *workspaceController) addImport(path string) {
 }
 
 func (c *workspaceController) processProtos() error {
-	imports := c.ImportListModel().StringList()
-	protos := c.ProtoListModel().StringList()
+	imports := c.Options().ImportListModel().StringList()
+	protos := c.Options().ProtoListModel().StringList()
 	return c.InputCtrl().processProtos(imports, protos)
 }
 
@@ -102,7 +99,7 @@ func (c *workspaceController) connect(addr string) error {
 		return errors.New("no address to connect")
 	}
 
-	if c.Addr() == addr {
+	if c.Options().Addr() == addr {
 		return nil
 	}
 
@@ -110,15 +107,9 @@ func (c *workspaceController) connect(addr string) error {
 		c.grpcConn.Close()
 		c.cancelCtxFunc()
 	}
-	// TODO [RC] setup grpc options
-	opts := []grpc.DialOption{
-		grpc.WithInsecure(),
-		grpc.WithBlock(),
-		grpc.FailOnNonTempDialError(true),
-	}
 
 	var err error
-	c.grpcConn, err = grpc.Dial(addr, opts...)
+	c.grpcConn, err = BlockDial(addr, c.Options())
 	if err != nil {
 		// TODO [RC] hndle error back to user
 		println(err.Error())
@@ -140,9 +131,7 @@ func (c *workspaceController) connect(addr string) error {
 		}
 	}()
 
-	// TODO [RC] monitor connection status
-
-	c.SetAddr(addr)
+	c.Options().SetAddr(addr)
 	return nil
 }
 
@@ -157,12 +146,19 @@ func (c *workspaceController) send(service, method string) {
 	outputCtrl.clear()
 
 	go func() {
-
 		md := inputCtrl.pbSource.GetMethodDesc(service, method)
-		req := dynamic.NewMessage(md.GetInputType())
-		processFields(req, c.InputCtrl().RequestModel().Fields())
 
+		req := processMessage(c.InputCtrl().RequestModel())
 		stub := grpcdynamic.NewStub(c.grpcConn)
+
+		if md.IsClientStreaming() && md.IsServerStreaming() {
+			println("Bidirectional streaming not supported yet")
+			return
+		}
+
+		if md.IsClientStreaming() {
+			println("Client streaming not supported yet")
+		}
 
 		if md.IsServerStreaming() {
 			stream, err := stub.InvokeRpcServerStream(context.Background(), md, req)
@@ -188,8 +184,11 @@ func (c *workspaceController) send(service, method string) {
 					})
 					return
 				}
+				dm, _ := dynamic.AsDynamicMessage(resp)
+				b, _ := dm.MarshalTextIndent()
+
 				MainThread.Run(func() {
-					outputCtrl.SetOutput(fmt.Sprintf("%s%+v\n", outputCtrl.Output(), resp))
+					outputCtrl.SetOutput(fmt.Sprintf("%s%+v\n", outputCtrl.Output(), string(b)))
 				})
 			}
 			return
@@ -198,37 +197,88 @@ func (c *workspaceController) send(service, method string) {
 		resp, err := stub.InvokeRpc(context.Background(), md, req, grpc.Header(&header), grpc.Trailer(&trailer))
 		if err != nil {
 			println(err.Error())
+			st := status.Convert(err)
+			dm, _ := dynamic.AsDynamicMessage(st.Proto())
+			b, _ := dm.MarshalTextIndent()
 			MainThread.Run(func() {
 				outputCtrl.SetStatus(int(status.Code(err)))
+				outputCtrl.SetOutput(string(b))
 			})
 			return
 		}
 
-		fmt.Printf("%+v\n", resp)
+		dm, _ := dynamic.AsDynamicMessage(resp)
+		b, _ := dm.MarshalTextIndent()
+
 		fmt.Printf("%+v\n", header)
 		fmt.Printf("%+v\n", trailer)
 		MainThread.Run(func() {
 			outputCtrl.SetStatus(0)
-			outputCtrl.SetOutput(fmt.Sprintf("%+v\n", resp))
+			outputCtrl.SetOutput(fmt.Sprintf("%+v\n", string(b)))
 		})
 	}()
 }
 
-func processFields(msg *dynamic.Message, fields []*model.Field) {
-	for _, f := range fields {
-		switch descriptor.FieldDescriptorProto_Type(descriptor.FieldDescriptorProto_Type_value[f.Type()]) {
+func processMessage(msg *model.Message) *dynamic.Message {
+	dm := dynamic.NewMessage(msg.Ref)
+	for _, f := range msg.Fields() {
+		switch f.FdType {
 		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			fd := msg.FindFieldDescriptor(int32(f.Tag()))
-			m := dynamic.NewMessage(fd.GetMessageType())
-			processFields(m, f.Message().Fields())
-			msg.SetFieldByNumber(f.Tag(), m)
+			if f.IsRepeated {
+				for idx, v := range f.ValueListModel().Values() {
+					dm.SetRepeatedFieldByNumber(f.Tag(), idx, processMessage(v.MsgValue()))
+				}
+				break
+			}
+			dm.SetFieldByNumber(f.Tag(), processMessage(f.Message()))
 
-		case descriptor.FieldDescriptorProto_TYPE_INT32:
-			v, _ := strconv.Atoi(f.Value())
-			msg.SetFieldByNumber(f.Tag(), int32(v))
-
-		case descriptor.FieldDescriptorProto_TYPE_STRING:
-			msg.SetFieldByNumber(f.Tag(), f.Value())
+		default:
+			if f.IsRepeated {
+				for idx, v := range f.ValueListModel().Values() {
+					dm.SetRepeatedFieldByNumber(f.Tag(), idx, parseStringValue(f.FdType, v.Value()))
+				}
+				break
+			}
+			dm.SetFieldByNumber(f.Tag(), parseStringValue(f.FdType, f.Value()))
 		}
+	}
+
+	return dm
+}
+
+func parseStringValue(fdType descriptor.FieldDescriptorProto_Type, val string) interface{} {
+	switch fdType {
+	case descriptor.FieldDescriptorProto_TYPE_DOUBLE:
+		v, _ := strconv.ParseFloat(val, 64)
+		return v
+	case descriptor.FieldDescriptorProto_TYPE_FLOAT:
+		v, _ := strconv.ParseFloat(val, 32)
+		return float32(v)
+	case descriptor.FieldDescriptorProto_TYPE_INT32,
+		descriptor.FieldDescriptorProto_TYPE_SINT32,
+		descriptor.FieldDescriptorProto_TYPE_SFIXED32,
+		descriptor.FieldDescriptorProto_TYPE_ENUM:
+		v, _ := strconv.ParseInt(val, 10, 32)
+		return int32(v)
+	case descriptor.FieldDescriptorProto_TYPE_INT64,
+		descriptor.FieldDescriptorProto_TYPE_SINT64,
+		descriptor.FieldDescriptorProto_TYPE_SFIXED64:
+		v, _ := strconv.ParseInt(val, 10, 64)
+		return v
+	case descriptor.FieldDescriptorProto_TYPE_UINT32,
+		descriptor.FieldDescriptorProto_TYPE_FIXED32:
+		v, _ := strconv.ParseUint(val, 10, 32)
+		return uint32(v)
+	case descriptor.FieldDescriptorProto_TYPE_UINT64,
+		descriptor.FieldDescriptorProto_TYPE_FIXED64:
+		v, _ := strconv.ParseUint(val, 10, 64)
+		return v
+	case descriptor.FieldDescriptorProto_TYPE_BOOL:
+		v, _ := strconv.ParseBool(val)
+		return v
+	case descriptor.FieldDescriptorProto_TYPE_BYTES:
+		return []byte(val)
+	default:
+		return val
 	}
 }
