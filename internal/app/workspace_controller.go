@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"rogchap.com/courier/internal/model"
+	"rogchap.com/wombat/internal/model"
 )
 
 //go:generate qtmoc

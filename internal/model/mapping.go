@@ -33,12 +33,15 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 			field.SetDelegate("message")
 		case descriptor.FieldDescriptorProto_TYPE_ENUM:
 			e := fd.GetEnumType()
-			var enumValues []keyval
+			var enumValues []*Keyval
 			for _, enum := range e.GetValues() {
-				enumValues = append(enumValues, keyval{enum.GetName(), strconv.Itoa(int(enum.GetNumber()))})
+				kv := NewKeyval(nil)
+				kv.SetKey(enum.GetName())
+				kv.SetVal(strconv.Itoa(int(enum.GetNumber())))
+				enumValues = append(enumValues, kv)
 			}
 			enumListModel := NewKeyvalList(nil)
-			enumListModel.list = enumValues
+			enumListModel.SetList(enumValues)
 			field.SetEnumListModel(enumListModel)
 			field.SetDelegate("enum")
 		case descriptor.FieldDescriptorProto_TYPE_BYTES:

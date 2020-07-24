@@ -38,6 +38,7 @@ Pane {
                 model: wc.options.protoListModel
 
                 onOpened: fdProtos.open()
+                onCleared: wc.options.clearProtoList()
 
                 FolderDialog {
                     id: fdProtos
@@ -52,6 +53,7 @@ Pane {
                 model: wc.options.importListModel
 
                 onOpened: fdImports.open()
+                onCleared: wc.options.clearImportList()
 
                 FolderDialog {
                     id: fdImports

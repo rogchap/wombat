@@ -5,7 +5,7 @@ package app
 import (
 	"github.com/therecipe/qt/core"
 
-	"rogchap.com/courier/internal/pb"
+	"rogchap.com/wombat/internal/pb"
 )
 
 //go:generate qtmoc

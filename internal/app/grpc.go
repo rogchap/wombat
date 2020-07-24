@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"rogchap.com/courier/internal/model"
+	"rogchap.com/wombat/internal/model"
 )
 
 type transportCreds struct {

@@ -57,9 +57,7 @@ Pane {
                 inputData: ic.requestModel
             }
 
-            Pane {
-                Label { text: "Metadata content" }
-            }
+            Metadata {}
         }
     }
 

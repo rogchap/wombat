@@ -1,5 +1,6 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
+import QtQuick.Layouts 1.13
 
 import "../."
 import "."
@@ -14,46 +15,48 @@ Item {
     property alias validator: textField.validator
     property int labelLeftMargin: 5
 
-    height: label.height + textField.height + 5
-    implicitWidth: textField.width
+    implicitWidth: 400
+    height: col.height
 
-    Label {
-        id: label
+    onWidthChanged: textField.width = width
 
-        anchors {
-            left: control.left
-            leftMargin: labelLeftMargin
-        }
-    }
+    Column {
+        id: col
+        spacing: 5
+        RowLayout {
 
-    Label {
-        id: hint
-        anchors {
-            right: control.right
-            rightMargin: 5
-        }
+            width: textField.width
+            visible: labelText.length > 0
+            
+            Label {
+                id: label
 
-        color: Qt.darker(Style.textColor3, 1.6)
-    }
+                leftPadding: labelLeftMargin
+            }
 
-    TextField {
-        id: textField
+            Label {
+                id: hint
+                Layout.alignment: Qt.AlignRight
+                Layout.rightMargin: 5
 
-        anchors {
-            top: label.bottom
-            topMargin: 5
+                color: Qt.darker(Style.textColor3, 1.6)
+            }
         }
 
-        color: Style.textColor
-        placeholderTextColor: Style.borderColor
-        selectByMouse: true
-        selectionColor: Style.accentColor2
+        TextField {
+            id: textField
 
-        background: Rectangle {
-            implicitHeight: 40
-            implicitWidth: 400
-            color: Style.bgInputColor
-            border.color: Style.borderColor
+            color: Style.textColor
+            placeholderTextColor: Style.borderColor
+            selectByMouse: true
+            selectionColor: Style.accentColor2
+
+            background: Rectangle {
+                implicitHeight: 40
+                implicitWidth: 400
+                color: Style.bgInputColor
+                border.color: Style.borderColor
+            }
         }
     }
 }

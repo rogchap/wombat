@@ -6,18 +6,21 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
-type keyval struct {
-	key string
-	val string
+//go:generate qtmoc
+type Keyval struct {
+	core.QObject
+
+	_ string `property:"key"`
+	_ string `property:"val"`
 }
 
 //go:generate qtmoc
 type KeyvalList struct {
 	core.QAbstractListModel
 
-	list []keyval
-
 	_ func() `constructor:"init"`
+
+	_ []*Keyval `property:"list"`
 
 	_ func(int) string `slot:"valAt"`
 }
@@ -35,18 +38,18 @@ func (m *KeyvalList) data(index *core.QModelIndex, role int) *core.QVariant {
 		return core.NewQVariant()
 	}
 
-	kv := m.list[index.Row()]
+	kv := m.List()[index.Row()]
 
 	switch role {
 	case int(core.Qt__DisplayRole):
-		return core.NewQVariant1(kv.key)
+		return core.NewQVariant1(kv.Key())
 	default:
-		return core.NewQVariant1(kv.val)
+		return core.NewQVariant1(kv)
 	}
 }
 
 func (m *KeyvalList) rowCount(parent *core.QModelIndex) int {
-	return len(m.list)
+	return len(m.List())
 }
 
 func (m *KeyvalList) columnCount(parent *core.QModelIndex) int {
@@ -54,5 +57,5 @@ func (m *KeyvalList) columnCount(parent *core.QModelIndex) int {
 }
 
 func (m *KeyvalList) valAt(idx int) string {
-	return m.list[idx].val
+	return m.List()[idx].Val()
 }

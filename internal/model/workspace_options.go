@@ -25,9 +25,20 @@ type WorkspaceOptions struct {
 }
 
 func (m *WorkspaceOptions) init() {
+	m.SetReflect(false)
 	m.SetPlaintext(false)
 	m.SetInsecure(false)
-
 	m.SetProtoListModel(NewStringList(nil))
 	m.SetImportListModel(NewStringList(nil))
+
+	m.ConnectClearProtoList(m.clearProtoList)
+	m.ConnectClearImportList(m.clearImportList)
+}
+
+func (m *WorkspaceOptions) clearProtoList() {
+	m.ProtoListModel().SetStringList(nil)
+}
+
+func (m *WorkspaceOptions) clearImportList() {
+	m.ImportListModel().SetStringList(nil)
 }

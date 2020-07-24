@@ -3,13 +3,15 @@
 <plist version="1.0">
 <dict>
 <key>CFBundleExecutable</key>
-	<string>courier</string>
+	<string>Wombat</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Created by Rogchap</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.rogchap.courier</string>
+    <key>CFBundleIconFile</key>
+    <string>Wombat.icns</string>
+    <key>CFBundleIdentifier</key>
+	<string>com.rogchap.wombat</string>
 	<key>CFBundleName</key>
-	<string>Courier</string>
+	<string>Wombat</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

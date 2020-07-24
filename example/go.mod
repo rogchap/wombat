@@ -1,4 +1,4 @@
-module rogchap.com/courier/example
+module rogchap.com/wombat/example
 
 go 1.14
 

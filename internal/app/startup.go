@@ -10,18 +10,18 @@ import (
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/qml"
 
-	"rogchap.com/courier/internal/debug"
+	"rogchap.com/wombat/internal/debug"
 )
 
 // The following variables are set via LDFlags at build time
 var (
 	semver  = "master"
-	isDebug = true
+	isDebug = false
 )
 
 // Startup is the main startup of the application
 func Startup() int {
-	core.QCoreApplication_SetApplicationName("Courier")
+	core.QCoreApplication_SetApplicationName("Wombat")
 	core.QCoreApplication_SetOrganizationName("Rogchap")
 	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 

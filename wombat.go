@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"rogchap.com/courier/internal/app"
+	"rogchap.com/wombat/internal/app"
 )
 
 func main() {

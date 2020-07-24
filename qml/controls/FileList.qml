@@ -82,6 +82,7 @@ Item {
 
         Button {
             text: qsTr("Clear")
+            onClicked: control.cleared()
         }
     }
 }

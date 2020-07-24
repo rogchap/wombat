@@ -5,7 +5,7 @@ package pb_test
 import (
 	"testing"
 
-	"rogchap.com/courier/internal/pb"
+	"rogchap.com/wombat/internal/pb"
 )
 
 func TestGetSourceFromProtoFiles(t *testing.T) {

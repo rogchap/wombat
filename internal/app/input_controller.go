@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/therecipe/qt/core"
-	"rogchap.com/courier/internal/model"
-	"rogchap.com/courier/internal/pb"
+	"rogchap.com/wombat/internal/model"
+	"rogchap.com/wombat/internal/pb"
 )
 
 //go:generate qtmoc
@@ -22,6 +22,7 @@ type inputController struct {
 	_ *model.StringList `property:"serviceListModel"`
 	_ *model.StringList `property:"methodListModel"`
 	_ *model.Message    `property:"requestModel"`
+	_ *model.KeyvalList `property:"metadataListModel"`
 
 	_ func(service string)         `slot:"serviceChanged"`
 	_ func(service, method string) `slot:"methodChanged"`
@@ -31,6 +32,10 @@ func (c *inputController) init() {
 	c.SetServiceListModel(model.NewStringList(nil))
 	c.SetMethodListModel(model.NewStringList(nil))
 	c.SetRequestModel(model.NewMessage(nil))
+
+	mdList := model.NewKeyvalList(nil)
+	mdList.SetList([]*model.Keyval{model.NewKeyval(nil)})
+	c.SetMetadataListModel(mdList)
 
 	c.ConnectServiceChanged(c.serviceChanged)
 	c.ConnectMethodChanged(c.methodChanged)

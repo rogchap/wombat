@@ -9,7 +9,7 @@ import "views"
 ApplicationWindow {
     id: window
     visible: true
-    title: "Courier" 
+    title: "Wombat" 
     minimumWidth: 1200
     minimumHeight: 820
     color: Style.bgColor
