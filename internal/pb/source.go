@@ -71,8 +71,6 @@ func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 		}
 	}
 
-	fmt.Printf("%+v\n", methods)
-
 	return &fileSource{
 		files:    fds,
 		services: services,

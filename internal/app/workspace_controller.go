@@ -155,18 +155,22 @@ func processMessage(msg *model.Message) *dynamic.Message {
 		switch f.FdType {
 		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
 			if f.IsRepeated {
-				for idx, v := range f.ValueListModel().Values() {
-					dm.SetRepeatedFieldByNumber(f.Tag(), idx, processMessage(v.MsgValue()))
+				var fields []interface{}
+				for _, v := range f.ValueListModel().Values() {
+					fields = append(fields, processMessage(v.MsgValue()))
 				}
+				dm.SetFieldByNumber(f.Tag(), fields)
 				break
 			}
 			dm.SetFieldByNumber(f.Tag(), processMessage(f.Message()))
 
 		default:
 			if f.IsRepeated {
-				for idx, v := range f.ValueListModel().Values() {
-					dm.SetRepeatedFieldByNumber(f.Tag(), idx, parseStringValue(f.FdType, v.Value()))
+				var fields []interface{}
+				for _, v := range f.ValueListModel().Values() {
+					fields = append(fields, parseStringValue(f.FdType, v.Value()))
 				}
+				dm.SetFieldByNumber(f.Tag(), fields)
 				break
 			}
 			dm.SetFieldByNumber(f.Tag(), parseStringValue(f.FdType, f.Value()))

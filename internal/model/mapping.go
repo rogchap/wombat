@@ -3,11 +3,13 @@
 package model
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
+	"google.golang.org/grpc/metadata"
 )
 
 func MapMessage(md *desc.MessageDescriptor) *Message {
@@ -65,4 +67,21 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 
 	msg.SetFields(fields)
 	return msg
+}
+
+func MapMetadata(md metadata.MD) []*Keyval {
+	keys := make([]string, 0, len(md))
+	for k := range md {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	var kvs []*Keyval
+	for _, k := range keys {
+		kv := NewKeyval(nil)
+		kv.SetKey(k)
+		kv.SetVal(strings.Join(md.Get(k), ", "))
+		kvs = append(kvs, kv)
+	}
+	return kvs
 }

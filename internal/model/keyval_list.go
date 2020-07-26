@@ -118,3 +118,9 @@ func (m *KeyvalList) removeAt(row int) {
 	m.SetList(append(m.List()[:row], m.List()[row+1:]...))
 	m.EndRemoveRows()
 }
+
+func (m *KeyvalList) UpdateList(l []*Keyval) {
+	m.BeginResetModel()
+	m.SetList(l)
+	m.EndResetModel()
+}

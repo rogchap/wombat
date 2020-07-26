@@ -54,9 +54,7 @@ ListView {
             ComboBoxField {
                 labelText: label
                 model: enumListModel
-                onDisplayTextChanged: {
-                    root.model.updateFieldValue(index, enumListModel.valAt(currentIndex))
-                }
+                onDisplayTextChanged: root.model.updateFieldValue(index, enumListModel.valAt(currentIndex))
             }
         }
 
@@ -71,6 +69,7 @@ ListView {
                         id: textField
                         hintText: type 
                         labelLeftMargin: 21
+                        onTextChanged: valueListModel.editValueAt(index, text)
                     }
 
                     CrossButton {
@@ -95,6 +94,8 @@ ListView {
                         text: label
                         anchors.left: parent.left
                         anchors.leftMargin: 16
+
+                        onCheckedChanged: valueListModel.editValueAt(index, checked) 
                     }
 
                     CrossButton {
@@ -120,6 +121,8 @@ ListView {
                         labelText: label
                         labelLeftMargin: 21
                         model: enumListModel
+                        onDisplayTextChanged: valueListModel.editValueAt(index, enumListModel.valAt(currentIndex))
+
                     }
 
                     CrossButton {
@@ -144,6 +147,8 @@ ListView {
                         labelText: label
                         labelLeftMargin: 21
                         hintText: type
+
+                        onTextChanged: valueListModel.editValueAt(index, text)
                     }
 
                     CrossButton {

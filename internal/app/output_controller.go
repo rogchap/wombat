@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
+	"rogchap.com/wombat/internal/model"
 )
 
 //go:generate qtmoc
@@ -25,16 +26,23 @@ type outputController struct {
 	_ int32  `property:"status"`
 	_ string `property:"output"` // Temp property, should be a list model
 
+	_ *model.KeyvalList `property:"headers"`
+	_ *model.KeyvalList `property:"trailers"`
+
 	_ func() `constructor:"init"`
 }
 
 func (c *outputController) init() {
 	c.SetStatus(-1)
+	c.SetHeaders(model.NewKeyvalList(nil))
+	c.SetTrailers(model.NewKeyvalList(nil))
 }
 
 func (c *outputController) clear() {
 	c.SetOutput("")
 	c.SetStatus(-1)
+	c.Headers().UpdateList(nil)
+	c.Trailers().UpdateList(nil)
 }
 
 func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDescriptor, req *dynamic.Message, meta map[string]string) {
@@ -73,11 +81,8 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 	}
 
 	go func() {
-		var header, trailer metadata.MD
-		resp, err := stub.InvokeRpc(ctx, md, req, grpc.Header(&header), grpc.Trailer(&trailer))
+		resp, err := stub.InvokeRpc(ctx, md, req)
 		c.processResponse(resp, err, false)
-
-		// TODO deal with headers and trailers
 	}()
 
 }
@@ -118,6 +123,12 @@ func (c *outputController) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) cont
 
 func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	fmt.Printf("%T: %+[1]v\n\n", stat)
+	switch s := stat.(type) {
+	case *stats.InHeader:
+		c.Headers().UpdateList(model.MapMetadata(s.Header))
+	case *stats.InTrailer:
+		c.Trailers().SetList(model.MapMetadata(s.Trailer))
+	}
 }
 
 func (c *outputController) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {

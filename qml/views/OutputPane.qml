@@ -33,7 +33,7 @@ Pane {
             }
 
             TabButton {
-                text: qsTr("Header/Trailer")
+                text: qsTr("Headers/Trailers")
             }
 
             TabButton {
@@ -54,9 +54,7 @@ Pane {
 
             ResponseData {}
 
-            Pane {
-                Label { text: "Header content" }
-            }
+            ResponseHeadersTrailers {}
 
             Pane {
                 Label { text: "Stats" }

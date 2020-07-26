@@ -32,8 +32,9 @@ type RepeatedValues struct {
 	_ []*RepeatedValue         `property:"values"`
 	_ int                      `property:"count"`
 
-	_ func()    `slot:"addValue"`
-	_ func(int) `slot:"remove"`
+	_ func()            `slot:"addValue"`
+	_ func(int)         `slot:"remove"`
+	_ func(int, string) `slot:"editValueAt"`
 }
 
 func (m *RepeatedValues) init() {
@@ -49,6 +50,7 @@ func (m *RepeatedValues) init() {
 	m.ConnectRoleNames(m.roleNames)
 	m.ConnectAddValue(m.addValue)
 	m.ConnectRemove(m.remove)
+	m.ConnectEditValueAt(m.editValueAt)
 }
 
 func (m *RepeatedValues) data(index *core.QModelIndex, role int) *core.QVariant {
@@ -101,4 +103,14 @@ func (m *RepeatedValues) remove(row int) {
 	m.SetValues(append(m.Values()[:row], m.Values()[row+1:]...))
 	m.EndRemoveRows()
 	m.SetCount(m.Count() - 1)
+}
+
+func (m *RepeatedValues) editValueAt(row int, val string) {
+	rv := m.Values()[row]
+	if rv.Value() == val {
+		return
+	}
+	rv.SetValue(val)
+	idx := m.Index(row, 0, core.NewQModelIndex())
+	m.DataChanged(idx, idx, []int{RepeatedValueValue})
 }
