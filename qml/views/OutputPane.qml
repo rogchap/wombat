@@ -35,6 +35,10 @@ Pane {
             TabButton {
                 text: qsTr("Header/Trailer")
             }
+
+            TabButton {
+                text: qsTr("Statistics")
+            }
         }
 
         Rectangle {
@@ -52,6 +56,10 @@ Pane {
 
             Pane {
                 Label { text: "Header content" }
+            }
+
+            Pane {
+                Label { text: "Stats" }
             }
         }
 

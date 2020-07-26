@@ -6,10 +6,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/stats"
 
 	"rogchap.com/wombat/internal/model"
 )
@@ -27,7 +29,7 @@ func (t *transportCreds) ClientHandshake(ctx context.Context, addr string, in ne
 	return out, auth, err
 }
 
-func BlockDial(addr string, opts *model.WorkspaceOptions) (*grpc.ClientConn, error) {
+func BlockDial(addr string, opts *model.WorkspaceOptions, statHandler stats.Handler) (*grpc.ClientConn, error) {
 	var conn *grpc.ClientConn
 	errc := make(chan error)
 
@@ -35,6 +37,8 @@ func BlockDial(addr string, opts *model.WorkspaceOptions) (*grpc.ClientConn, err
 		dopts := []grpc.DialOption{
 			grpc.WithBlock(),
 			grpc.FailOnNonTempDialError(true),
+			grpc.WithStatsHandler(statHandler),
+			grpc.WithUserAgent(fmt.Sprintf("%s/%s", appname, semver)),
 		}
 
 		if !opts.IsPlaintext() {

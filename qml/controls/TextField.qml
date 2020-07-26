@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.13
 import "../."
 import "."
 
-Item {
+FocusScope {
     id: control
 
     property alias text: textField.text

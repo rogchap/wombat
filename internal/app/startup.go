@@ -15,13 +15,14 @@ import (
 
 // The following variables are set via LDFlags at build time
 var (
+	appname = "Wombat"
 	semver  = "master"
-	isDebug = false
+	isDebug = true
 )
 
 // Startup is the main startup of the application
 func Startup() int {
-	core.QCoreApplication_SetApplicationName("Wombat")
+	core.QCoreApplication_SetApplicationName(appname)
 	core.QCoreApplication_SetOrganizationName("Rogchap")
 	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 

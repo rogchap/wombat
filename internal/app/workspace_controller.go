@@ -5,19 +5,14 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/dynamic"
-	"github.com/jhump/protoreflect/dynamic/grpcdynamic"
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 
 	"rogchap.com/wombat/internal/model"
 )
@@ -109,7 +104,7 @@ func (c *workspaceController) connect(addr string) error {
 	}
 
 	var err error
-	c.grpcConn, err = BlockDial(addr, c.Options())
+	c.grpcConn, err = BlockDial(addr, c.Options(), c.OutputCtrl())
 	if err != nil {
 		// TODO [RC] hndle error back to user
 		println(err.Error())
@@ -140,83 +135,18 @@ func (c *workspaceController) send(service, method string) {
 		return
 	}
 
-	inputCtrl := c.InputCtrl()
-	outputCtrl := c.OutputCtrl()
+	md := c.InputCtrl().pbSource.GetMethodDesc(service, method)
+	req := processMessage(c.InputCtrl().RequestModel())
 
-	outputCtrl.clear()
-
-	go func() {
-		md := inputCtrl.pbSource.GetMethodDesc(service, method)
-
-		req := processMessage(c.InputCtrl().RequestModel())
-		stub := grpcdynamic.NewStub(c.grpcConn)
-
-		if md.IsClientStreaming() && md.IsServerStreaming() {
-			println("Bidirectional streaming not supported yet")
-			return
+	meta := make(map[string]string)
+	for _, kv := range c.InputCtrl().MetadataListModel().List() {
+		if kv.Key() == "" {
+			continue
 		}
+		meta[kv.Key()] = kv.Val()
+	}
 
-		if md.IsClientStreaming() {
-			println("Client streaming not supported yet")
-		}
-
-		if md.IsServerStreaming() {
-			stream, err := stub.InvokeRpcServerStream(context.Background(), md, req)
-			if err != nil {
-				println(err.Error())
-				return
-			}
-			for {
-				resp, err := stream.RecvMsg()
-				_ = resp
-				if err == io.EOF {
-
-					MainThread.Run(func() {
-						outputCtrl.SetStatus(0)
-						outputCtrl.SetOutput(fmt.Sprintf("%sEOF\n", outputCtrl.Output()))
-					})
-					break
-				}
-				if err != nil {
-					println(err.Error())
-					MainThread.Run(func() {
-						outputCtrl.SetStatus(int(status.Code(err)))
-					})
-					return
-				}
-				dm, _ := dynamic.AsDynamicMessage(resp)
-				b, _ := dm.MarshalTextIndent()
-
-				MainThread.Run(func() {
-					outputCtrl.SetOutput(fmt.Sprintf("%s%+v\n", outputCtrl.Output(), string(b)))
-				})
-			}
-			return
-		}
-		var header, trailer metadata.MD
-		resp, err := stub.InvokeRpc(context.Background(), md, req, grpc.Header(&header), grpc.Trailer(&trailer))
-		if err != nil {
-			println(err.Error())
-			st := status.Convert(err)
-			dm, _ := dynamic.AsDynamicMessage(st.Proto())
-			b, _ := dm.MarshalTextIndent()
-			MainThread.Run(func() {
-				outputCtrl.SetStatus(int(status.Code(err)))
-				outputCtrl.SetOutput(string(b))
-			})
-			return
-		}
-
-		dm, _ := dynamic.AsDynamicMessage(resp)
-		b, _ := dm.MarshalTextIndent()
-
-		fmt.Printf("%+v\n", header)
-		fmt.Printf("%+v\n", trailer)
-		MainThread.Run(func() {
-			outputCtrl.SetStatus(0)
-			outputCtrl.SetOutput(fmt.Sprintf("%+v\n", string(b)))
-		})
-	}()
+	c.OutputCtrl().invokeMethod(c.grpcConn, md, req, meta)
 }
 
 func processMessage(msg *model.Message) *dynamic.Message {

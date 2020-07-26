@@ -10,6 +10,8 @@ Button {
     property color bgColor: Style.bgColor
     property bool hideBorder: true
 
+    focusPolicy: Qt.NoFocus
+
     contentItem: Text {
         id: text
 

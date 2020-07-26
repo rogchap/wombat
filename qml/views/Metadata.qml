@@ -5,9 +5,14 @@ import "../."
 import "../controls"
 
 Pane {
+    id: root
+
+    property variant model: mc.workspaceCtrl.inputCtrl.metadataListModel
 
     ListView {
-        model: mc.workspaceCtrl.inputCtrl.metadataListModel
+        id: lv
+
+        model: root.model
 
         spacing: 10
 
@@ -25,12 +30,23 @@ Pane {
             TextField {
                 id: txtKey
                 width: txtWidth
-                placeholderText: "key"
+                placeholderText: qsTr("key")
                 text: display
+
+                onFocusChanged: {
+                    if (focus && index + 1 === lv.count) {
+                         root.model.addEmpty()
+                    }
+                }
+
+                onTextChanged: root.model.editKeyAt(index, text)
             }
             TextField {
                 width: txtWidth
-                placeholderText: "value"
+                placeholderText: qsTr("value")
+                text: val
+
+                onTextChanged: root.model.editValAt(index, text) 
             }
 
             CrossButton {
@@ -39,7 +55,8 @@ Pane {
 
                 color: Style.bgColor3
                 rotation: 45
-                onClicked: print("clicked")
+                onClicked: root.model.removeAt(index)
+                visible: lv.count > 1
             }
 
         }

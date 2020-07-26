@@ -9,6 +9,8 @@ AbstractButton {
     property color color
     property alias rotation: canvas.rotation
 
+    focusPolicy: Qt.NoFocus
+
     height: 16
     width: 16
 

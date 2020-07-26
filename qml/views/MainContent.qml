@@ -23,8 +23,8 @@ SplitView {
     }
 
     OutputPane {
-        SplitView.minimumWidth: 25
-        SplitView.preferredWidth: 400
+        SplitView.minimumWidth: 250
+        SplitView.preferredWidth: 500
     }
 }
 

@@ -20,7 +20,8 @@ ScrollView {
         readOnly: true
         selectByMouse: true
         selectionColor: Style.accentColor2
-        wrapMode: TextEdit.Wrap
+
+        Component.onCompleted: wrapMode = TextEdit.Wrap
 
         MouseArea {
             width: parent.width
