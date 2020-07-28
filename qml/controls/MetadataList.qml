@@ -9,7 +9,7 @@ Item {
     id: control
 
     property string titleText
-    property alias model: lv.model
+    property string metadata
 
     implicitHeight: parent.height
     implicitWidth: parent.width
@@ -29,27 +29,30 @@ Item {
             width: control.width + 10
             clip: true
 
-            ListView {
-                id: lv
 
-                height: parent.height
-                width: parent.width
+            TextEdit {
+                id: te
 
-                delegate: TextEdit {
-                    textFormat: TextEdit.RichText
-                    leftPadding: 5
-                    color: Style.textColor
-                    selectionColor: Style.accentColor2
-                    text: "<span style=color:" + Style.accentColor + ">" + display + ":</span>&nbsp;<span>" + val + "</span>"
-                    readOnly: true
-                    selectByMouse: true
-
-                    MouseArea {
-                        width: parent.width
-                        height: parent.height
-                        cursorShape: Qt.IBeamCursor
-                        enabled: false
+                function getCSS() {
+                    return `
+                    <style>
+                    span {
+                        color: ${Style.primaryColor}
                     }
+                    </style>
+                    `
+                }
+                text: getCSS() + metadata
+                textFormat: TextEdit.RichText
+                color: Style.textColor
+                selectionColor: Style.accentColor2
+                readOnly: true
+                selectByMouse: true
+                MouseArea {
+                    width: parent.width
+                    height: parent.height
+                    cursorShape: Qt.IBeamCursor
+                    enabled: false
                 }
             }
         }

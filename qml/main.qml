@@ -1,8 +1,5 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
-import QtQuick.Layouts 1.13
-import Qt.labs.platform 1.1
-import Qt.labs.qmlmodels 1.0
 
 import "views"
 
@@ -16,7 +13,8 @@ ApplicationWindow {
     flags: Qt.WindowFullscreenButtonHint
    
     // flags: Qt.WindowStaysOnTopHint
-    // onActiveFocusItemChanged: print(activeFocusItem)
+
+    MacOSMenuBar {}
 
     header: Header {}
 

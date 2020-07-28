@@ -56,9 +56,7 @@ Pane {
 
             ResponseHeadersTrailers {}
 
-            Pane {
-                Label { text: "Stats" }
-            }
+            StatsData {}
         }
 
     }

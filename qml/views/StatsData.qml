@@ -12,12 +12,29 @@ ScrollView {
     readonly property var oc: mc.workspaceCtrl.outputCtrl
 
     clip: true
+
+    function getCSS() {
+        return `
+        <style>
+        .yellow {
+            color: ${Style.yellowColor}
+        }
+        .green {
+            color: ${Style.greenColor}
+        }
+        .red {
+            color: ${Style.redColor}
+        }
+        </style>
+        `
+    }
     
     TextEdit {
         id: outTxt
-        text: oc.output
-        color: Style.purpleColor
+        text: getCSS() + oc.stats
+        color: Style.textColor3
         readOnly: true
+        textFormat: TextEdit.RichText
         selectByMouse: true
         selectionColor: Style.accentColor2
 
@@ -29,7 +46,5 @@ ScrollView {
             cursorShape: Qt.IBeamCursor
             enabled: false
         }
-
     }
-
 }

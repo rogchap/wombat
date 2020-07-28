@@ -16,11 +16,11 @@ type mainController struct {
 
 	_ func() `constructor:"init"`
 
+	_ string               `property:"version"`
 	_ *workspaceController `property:"workspaceCtrl"`
-
-	_ string `property:"output"`
 }
 
 func (c *mainController) init() {
 	c.SetWorkspaceCtrl(NewWorkspaceController(nil))
+	c.SetVersion(semver)
 }

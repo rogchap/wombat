@@ -23,8 +23,8 @@ SplitView {
         SplitView.preferredHeight: root.height / 2
 
         MetadataList {
-            titleText: qsTr("Headers")
-            model: oc.headers
+            titleText: qsTr("Header")
+            metadata: oc.header
         }
 
     }
@@ -33,8 +33,8 @@ SplitView {
         SplitView.preferredHeight: root.height / 2
 
         MetadataList {
-            titleText: qsTr("Trailers")
-            model: oc.trailers
+            titleText: qsTr("Trailer")
+            metadata: oc.trailer
         }
     }
 }
