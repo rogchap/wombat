@@ -15,14 +15,14 @@ Pane {
 
         CheckBox {
             text: qsTr("Use plain-text HTTP/2 when connecting to server (no TLS)")
+            checked: wc.options.plaintext
             onCheckedChanged: wc.options.plaintext = checked
-            Component.onCompleted: checked = wc.options.plaintext
         }
 
         CheckBox {
             text: qsTr("Skip server certificate and domain verification (insecure)")
+            checked: wc.options.insecure
             onCheckedChanged: wc.options.insecure = checked 
-            Component.onCompleted: checked = wc.options.insecure
         }
 
         TextAreaField {

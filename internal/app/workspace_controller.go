@@ -14,6 +14,7 @@ import (
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
 
+	"rogchap.com/wombat/internal/db"
 	"rogchap.com/wombat/internal/model"
 )
 
@@ -23,6 +24,7 @@ type workspaceController struct {
 
 	grpcConn      *grpc.ClientConn
 	cancelCtxFunc context.CancelFunc
+	store         *db.Store
 
 	_ func() `constructor:"init"`
 
@@ -50,6 +52,33 @@ func (c *workspaceController) init() {
 	c.ConnectProcessProtos(c.processProtos)
 	c.ConnectConnect(c.connect)
 	c.ConnectSend(c.send)
+
+	dbPath := core.QStandardPaths_WritableLocation(core.QStandardPaths__AppDataLocation)
+	if isDebug {
+		dbPath = filepath.Join(".", ".data")
+	}
+	c.store = db.NewStore(dbPath)
+
+	go func() {
+		w := c.store.Get()
+		if w == nil {
+			return
+		}
+
+		opts := c.Options()
+		MainThread.Run(func() {
+			opts.SetReflect(w.Reflect)
+			opts.SetInsecure(w.Insecure)
+			opts.SetPlaintext(w.Plaintext)
+			opts.SetRootca(w.Rootca)
+			opts.SetClientcert(w.Clientcert)
+			opts.SetClientkey(w.Clientkey)
+			opts.ProtoListModel().SetStringList(w.ProtoFiles)
+			opts.ImportListModel().SetStringList(w.ImportFiles)
+			c.ProcessProtos()
+			c.connect(w.Addr)
+		})
+	}()
 }
 
 func (c *workspaceController) findProtoFiles(path string) {
@@ -127,6 +156,22 @@ func (c *workspaceController) connect(addr string) error {
 	}()
 
 	c.Options().SetAddr(addr)
+
+	go func() {
+		opts := c.Options()
+		w := &db.Workspace{
+			Addr:        addr,
+			Reflect:     opts.IsReflect(),
+			Insecure:    opts.IsInsecure(),
+			Plaintext:   opts.IsPlaintext(),
+			Rootca:      opts.Rootca(),
+			Clientcert:  opts.Clientcert(),
+			Clientkey:   opts.Clientkey(),
+			ProtoFiles:  opts.ProtoListModel().StringList(),
+			ImportFiles: opts.ImportListModel().StringList(),
+		}
+		c.store.Put(w)
+	}()
 	return nil
 }
 

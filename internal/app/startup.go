@@ -23,7 +23,6 @@ var (
 // Startup is the main startup of the application
 func Startup() int {
 	core.QCoreApplication_SetApplicationName(appname)
-	core.QCoreApplication_SetOrganizationName("Roger Chapman")
 	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
 
 	app := gui.NewQGuiApplication(len(os.Args), os.Args)

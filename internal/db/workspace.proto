@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package db;
+option go_package = "rogchap.com/wombat/internal/db";
+
+message Workspace {
+    string addr = 1;
+    bool reflect = 2;
+    bool insecure = 3;
+    bool plaintext = 4;
+    string rootca = 5;
+    string clientcert = 6;
+    string clientkey = 7;
+    repeated string proto_files = 8;
+    repeated string import_files = 9;
+}

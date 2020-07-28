@@ -126,7 +126,6 @@ func (c *outputController) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) cont
 }
 
 func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
-	fmt.Printf("%T: %+[1]v\n\n", stat)
 	statStr := ""
 	switch s := stat.(type) {
 	case *stats.Begin:
@@ -153,9 +152,7 @@ func (c *outputController) TagConn(ctx context.Context, _ *stats.ConnTagInfo) co
 	return ctx
 }
 
-func (c *outputController) HandleConn(ctx context.Context, stat stats.ConnStats) {
-	fmt.Printf("%T: %+[1]v\n\n", stat)
-}
+func (c *outputController) HandleConn(ctx context.Context, stat stats.ConnStats) {}
 
 func formatMetadata(md metadata.MD) string {
 	keys := make([]string, 0, len(md))
