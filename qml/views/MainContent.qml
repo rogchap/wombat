@@ -9,7 +9,7 @@ SplitView {
     orientation: Qt.Horizontal
 
     handle: Rectangle {
-        implicitWidth: 1
+        implicitWidth: 4
         color: Style.borderColor
     }
 
@@ -20,10 +20,11 @@ SplitView {
 
     InputPane {
         SplitView.fillWidth: true
+        SplitView.minimumWidth: root.width / 2
     }
 
     OutputPane {
-        SplitView.minimumWidth: 250
+        SplitView.minimumWidth: 350
         SplitView.preferredWidth: 500
     }
 }

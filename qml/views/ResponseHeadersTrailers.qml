@@ -15,7 +15,7 @@ SplitView {
     orientation: Qt.Vertical
 
     handle: Rectangle {
-        implicitHeight: 1
+        implicitHeight: 4
         color: Style.borderColor
     }
 

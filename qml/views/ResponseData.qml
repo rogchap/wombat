@@ -15,13 +15,14 @@ ScrollView {
     
     TextEdit {
         id: outTxt
+
+        width: root.width - root.padding * 2
         text: oc.output
         color: Style.purpleColor
         readOnly: true
         selectByMouse: true
         selectionColor: Style.accentColor2
-
-        Component.onCompleted: wrapMode = TextEdit.Wrap
+        wrapMode: TextEdit.Wrap
 
         MouseArea {
             width: parent.width
