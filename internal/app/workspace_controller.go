@@ -13,6 +13,7 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 
 	"rogchap.com/wombat/internal/db"
 	"rogchap.com/wombat/internal/model"
@@ -82,10 +83,11 @@ func (c *workspaceController) init() {
 }
 
 func (c *workspaceController) findProtoFiles(path string) {
+	path = core.NewQUrl3(path, core.QUrl__StrictMode).ToLocalFile()
 	var protoFiles []string
 
 	// TODO [RC] We should do the search async and show a loading/searching icon to the user
-	filepath.Walk(path[7:], func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".proto" {
 			protoFiles = append(protoFiles, path)
 		}
@@ -102,7 +104,7 @@ func (c *workspaceController) findProtoFiles(path string) {
 }
 
 func (c *workspaceController) addImport(path string) {
-	path = path[7:]
+	path = core.NewQUrl3(path, core.QUrl__StrictMode).ToLocalFile()
 	lm := c.Options().ImportListModel()
 	for _, p := range lm.StringList() {
 		if p == path {
@@ -123,13 +125,14 @@ func (c *workspaceController) connect(addr string) error {
 		return errors.New("no address to connect")
 	}
 
-	if c.Options().Addr() == addr {
+	if c.Options().Addr() == addr && c.grpcConn != nil {
 		return nil
 	}
 
 	if c.grpcConn != nil {
 		c.grpcConn.Close()
 		c.cancelCtxFunc()
+		c.grpcConn = nil
 	}
 
 	var err error
@@ -145,6 +148,13 @@ func (c *workspaceController) connect(addr string) error {
 
 	go func() {
 		for {
+			if c.grpcConn == nil {
+				MainThread.Run(func() {
+					c.SetConnState(connectivity.Shutdown.String())
+				})
+				break
+
+			}
 			state := c.grpcConn.GetState()
 			MainThread.Run(func() {
 				c.SetConnState(state.String())

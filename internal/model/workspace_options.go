@@ -8,6 +8,7 @@ import "github.com/therecipe/qt/core"
 type WorkspaceOptions struct {
 	core.QObject
 
+
 	_ func() `constructor:"init"`
 
 	_ string      `property:"addr"`

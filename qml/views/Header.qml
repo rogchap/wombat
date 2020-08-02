@@ -7,6 +7,7 @@ import "../controls"
 
 Pane {
     id: root 
+
     background: Rectangle {
         implicitHeight: 40 + topPadding + bottomPadding
         color: Style.bgColor

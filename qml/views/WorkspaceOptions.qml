@@ -1,7 +1,7 @@
 import QtQuick 2.13
 import QtQuick.Controls 2.13
 import QtQuick.Layouts 1.13
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.3
 
 import "../."
 import "../controls"
@@ -67,19 +67,24 @@ Modal {
             onClicked: {
                 let err = wc.processProtos()
                 if (err) {
-                    print(err)
+                    errMsg.title = qsTr("Error reading proto files")
+                    errMsg.text = err
+                    errMsg.open()
                     return
                 }
                 err = wc.connect(basics.addr)
                 if (err) {
-                    print(err)
+                    errMsg.title = qsTr("Error connecting to server")
+                    errMsg.text = err
+                    errMsg.open()
                     return
                 }
                 root.close()
             }
+
+            MessageBox {
+                id: errMsg
+            }
         }
     }
-
-
-
 }

@@ -34,3 +34,20 @@ darwin-icon:
 	sips -z 1024 1024 $(IN) --out $(OUT)/icon_512x512@2x.png
 	iconutil -c icns -o darwin/Contents/Resources/Wombat.icns $(OUT)
 	rm -rf $(OUT)
+
+.PHONY: win-icon
+IN=wombat_512@2x.png
+OUT=windows/iconset
+win-icon:
+	mkdir -p $(OUT)
+	sips -z 16 16 $(IN) --out $(OUT)/icon_16.png
+	sips -z 24 24 $(IN) --out $(OUT)/icon_24.png
+	sips -z 32 32 $(IN) --out $(OUT)/icon_32.png
+	sips -z 48 48 $(IN) --out $(OUT)/icon_48.png
+	sips -z 64 64 $(IN) --out $(OUT)/icon_64.png
+	sips -z 128 128 $(IN) --out $(OUT)/icon_128.png
+	png2ico windows/icon.ico $(OUT)/icon_16.png $(OUT)/icon_24.png $(OUT)/icon_32.png $(OUT)/icon_48.png $(OUT)/icon_64.png $(OUT)/icon_128.png
+	rm -rf $(OUT)
+	rsrc -ico windows/icon.ico -o icon.syso -arch=amd64
+
+

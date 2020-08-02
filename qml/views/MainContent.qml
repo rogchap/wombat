@@ -5,7 +5,7 @@ import "../."
 
 SplitView {
     id: root
-    anchors.fill: parent
+
     orientation: Qt.Horizontal
 
     handle: Rectangle {
