@@ -4,6 +4,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -47,20 +48,18 @@ func (c *outputController) clear() {
 	c.SetStatus(-1)
 }
 
-func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDescriptor, req *dynamic.Message, meta map[string]string) {
+func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDescriptor, req *dynamic.Message, meta map[string]string) error {
 	c.clear()
 
 	stub := grpcdynamic.NewStub(conn)
 	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(meta))
 
 	if md.IsClientStreaming() && md.IsServerStreaming() {
-		println("Bidirectional streaming not supported yet")
-		return
+		return errors.New("Bidirectional streaming not supported yet")
 	}
 
 	if md.IsClientStreaming() {
-		println("Client streaming not supported yet")
-		return
+		return errors.New("Client streaming not supported yet")
 	}
 
 	if md.IsServerStreaming() {
@@ -79,14 +78,14 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 				}
 			}
 		}()
-		return
+		return nil
 	}
 
 	go func() {
 		resp, err := stub.InvokeRpc(ctx, md, req)
 		c.processResponse(resp, err, false)
 	}()
-
+	return nil
 }
 
 func (c *outputController) processResponse(resp proto.Message, err error, isStream bool) {

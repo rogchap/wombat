@@ -35,11 +35,11 @@ type workspaceController struct {
 	_ *model.WorkspaceOptions `property:"options"`
 	_ string                  `property:"connState"`
 
-	_ func(path string)            `slot:"findProtoFiles"`
-	_ func(path string)            `slot:"addImport"`
-	_ func() error                 `slot:"processProtos"`
-	_ func(addr string) error      `slot:"connect"`
-	_ func(service, method string) `slot:"send"`
+	_ func(path string)                  `slot:"findProtoFiles"`
+	_ func(path string)                  `slot:"addImport"`
+	_ func() error                       `slot:"processProtos"`
+	_ func(addr string) error            `slot:"connect"`
+	_ func(service, method string) error `slot:"send"`
 }
 
 func (c *workspaceController) init() {
@@ -185,9 +185,9 @@ func (c *workspaceController) connect(addr string) error {
 	return nil
 }
 
-func (c *workspaceController) send(service, method string) {
+func (c *workspaceController) send(service, method string) error {
 	if c.grpcConn == nil {
-		return
+		return nil
 	}
 
 	md := c.InputCtrl().pbSource.GetMethodDesc(service, method)
@@ -201,7 +201,7 @@ func (c *workspaceController) send(service, method string) {
 		meta[kv.Key()] = kv.Val()
 	}
 
-	c.OutputCtrl().invokeMethod(c.grpcConn, md, req, meta)
+	return c.OutputCtrl().invokeMethod(c.grpcConn, md, req, meta)
 }
 
 func processMessage(msg *model.Message) *dynamic.Message {
