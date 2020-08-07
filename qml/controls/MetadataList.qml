@@ -37,7 +37,7 @@ Item {
                     return `
                     <style>
                     span {
-                        color: ${Style.primaryColor}
+                        color: ${Style.accentColor2}
                     }
                     </style>
                     `

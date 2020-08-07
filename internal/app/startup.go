@@ -54,6 +54,9 @@ func Startup() int {
 }
 
 func crashlog(appData string) {
+	if isDebug {
+		return
+	}
 	if r := recover(); r != nil {
 		if _, err := os.Stat(appData); os.IsNotExist(err) {
 			os.MkdirAll(appData, 0700)
@@ -64,8 +67,5 @@ func crashlog(appData string) {
 		s := runtime.Stack(buf, true)
 		b.Write(buf[0:s])
 		ioutil.WriteFile(filepath.Join(appData, "crash.log"), b.Bytes(), 0644)
-		if isDebug {
-			panic(r)
-		}
 	}
 }

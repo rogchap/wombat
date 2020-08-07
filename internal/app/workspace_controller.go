@@ -60,26 +60,22 @@ func (c *workspaceController) init() {
 	}
 	c.store = db.NewStore(dbPath)
 
-	go func() {
-		w := c.store.Get()
-		if w == nil {
-			return
-		}
+	w := c.store.Get()
+	if w == nil {
+		return
+	}
 
-		opts := c.Options()
-		MainThread.Run(func() {
-			opts.SetReflect(w.Reflect)
-			opts.SetInsecure(w.Insecure)
-			opts.SetPlaintext(w.Plaintext)
-			opts.SetRootca(w.Rootca)
-			opts.SetClientcert(w.Clientcert)
-			opts.SetClientkey(w.Clientkey)
-			opts.ProtoListModel().SetStringList(w.ProtoFiles)
-			opts.ImportListModel().SetStringList(w.ImportFiles)
-			c.ProcessProtos()
-			c.connect(w.Addr)
-		})
-	}()
+	opts := c.Options()
+	opts.SetReflect(w.Reflect)
+	opts.SetInsecure(w.Insecure)
+	opts.SetPlaintext(w.Plaintext)
+	opts.SetRootca(w.Rootca)
+	opts.SetClientcert(w.Clientcert)
+	opts.SetClientkey(w.Clientkey)
+	opts.ProtoListModel().SetStringList(w.ProtoFiles)
+	opts.ImportListModel().SetStringList(w.ImportFiles)
+	c.processProtos()
+	c.connect(w.Addr)
 }
 
 func (c *workspaceController) findProtoFiles(path string) {
@@ -149,16 +145,12 @@ func (c *workspaceController) connect(addr string) error {
 	go func() {
 		for {
 			if c.grpcConn == nil {
-				MainThread.Run(func() {
-					c.SetConnState(connectivity.Shutdown.String())
-				})
+				c.SetConnState(connectivity.Shutdown.String())
 				break
 
 			}
 			state := c.grpcConn.GetState()
-			MainThread.Run(func() {
-				c.SetConnState(state.String())
-			})
+			c.SetConnState(state.String())
 			if ok := c.grpcConn.WaitForStateChange(ctx, state); !ok {
 				break
 			}

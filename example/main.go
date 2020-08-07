@@ -74,7 +74,7 @@ func (s *routeGuideServer) GetFeature(ctx context.Context, point *Point) (*Featu
 func (s *routeGuideServer) ListFeatures(rect *Rectangle, stream RouteGuide_ListFeaturesServer) error {
 	for _, feature := range s.savedFeatures {
 		if inRange(feature.Location, rect) {
-			time.Sleep(2 * time.Second)
+			time.Sleep(100 * time.Millisecond)
 			if err := stream.Send(feature); err != nil {
 				return err
 			}

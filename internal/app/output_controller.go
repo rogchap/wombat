@@ -91,31 +91,25 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 func (c *outputController) processResponse(resp proto.Message, err error, isStream bool) {
 	if err != nil {
 		if isStream && err == io.EOF {
-			MainThread.Run(func() {
-				c.SetStatus(0)
-			})
+			c.SetStatus(0)
 			return
 		}
 		dmErr, _ := dynamic.AsDynamicMessage(status.Convert(err).Proto())
-		strErr, _ := dmErr.MarshalTextIndent()
-		MainThread.Run(func() {
-			c.SetStatus(int(status.Code(err)))
-			// TODO: we should stream the data to the UI so we can use the TextEdit append
-			// function, which would have better performance than replacing the whole text
-			c.SetOutput(fmt.Sprintf("%s%s\n", c.Output(), string(strErr)))
-		})
+		strErr, _ := marshalTextFormatted(dmErr)
+		c.SetStatus(int(status.Code(err)))
+		// TODO: we should stream the data to the UI so we can use the TextEdit append
+		// function, which would have better performance than replacing the whole text
+		c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strErr)))
 		return
 	}
 
 	dmResp, _ := dynamic.AsDynamicMessage(resp)
-	strResp, _ := dmResp.MarshalTextIndent()
+	strResp, _ := marshalTextFormatted(dmResp)
 
-	MainThread.Run(func() {
-		if !isStream {
-			c.SetStatus(0)
-		}
-		c.SetOutput(fmt.Sprintf("%s%s\n", c.Output(), string(strResp)))
-	})
+	if !isStream {
+		c.SetStatus(0)
+	}
+	c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strResp)))
 }
 
 // gRPC Stats Handler interface

@@ -13,12 +13,35 @@ ScrollView {
 
     clip: true
     
+    function css() {
+        return `
+        <style>
+            .name {
+                color: ${Style.accentColor2}
+            }
+            .str {
+                color: ${Style.greenColor}
+            }
+            .bkt {
+                color: ${Style.primaryColor}
+            }
+            .num {
+                color: ${Style.purpleColor}
+            }
+            .bool {
+                color: ${Style.accentColor}
+            }
+        </style>
+        `
+    }
+
     TextEdit {
         id: outTxt
 
         width: root.width - root.padding * 2
-        text: oc.output
-        color: Style.purpleColor
+        text: css() + oc.output
+        color: Style.textColor
+        textFormat: TextEdit.RichText
         readOnly: true
         selectByMouse: true
         selectionColor: Style.accentColor2
