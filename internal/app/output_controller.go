@@ -28,6 +28,7 @@ type outputController struct {
 	core.QObject
 
 	_ int32  `property:"status"`
+	_ bool   `property:"running"`
 	_ string `property:"output"`
 	_ string `property:"stats"`
 	_ string `property:"header"`
@@ -37,6 +38,7 @@ type outputController struct {
 }
 
 func (c *outputController) init() {
+	c.SetRunning(false)
 	c.SetStatus(-1)
 }
 
@@ -50,6 +52,7 @@ func (c *outputController) clear() {
 
 func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDescriptor, req *dynamic.Message, meta map[string]string) error {
 	c.clear()
+	c.SetRunning(true)
 
 	stub := grpcdynamic.NewStub(conn)
 	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(meta))
@@ -64,6 +67,7 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 
 	if md.IsServerStreaming() {
 		go func() {
+			defer c.SetRunning(false)
 			stream, err := stub.InvokeRpcServerStream(ctx, md, req)
 			if err != nil {
 				// TODO: deal with error
@@ -82,6 +86,7 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 	}
 
 	go func() {
+		defer c.SetRunning(false)
 		resp, err := stub.InvokeRpc(ctx, md, req)
 		c.processResponse(resp, err, false)
 	}()

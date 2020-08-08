@@ -21,4 +21,13 @@ Pane {
         code: oc.status
     }
 
+    AutoProgressBar {
+        visible: oc.running
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottomMargin: -root.padding
+        anchors.leftMargin: -root.padding
+        anchors.rightMargin: -root.padding
+    }
 }
