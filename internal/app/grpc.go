@@ -45,7 +45,14 @@ func BlockDial(addr string, opts *model.WorkspaceOptions, statHandler stats.Hand
 			var tlsCfg tls.Config
 			tlsCfg.InsecureSkipVerify = opts.IsInsecure()
 
-			// TODO: Deal with client certs
+			if opts.Clientcert() != "" {
+				cert, err := tls.X509KeyPair([]byte(opts.Clientcert()), []byte(opts.Clientkey()))
+				if err != nil {
+					errc <- err
+					return
+				}
+				tlsCfg.Certificates = []tls.Certificate{cert}
+			}
 
 			var err error
 			tlsCfg.RootCAs, err = x509.SystemCertPool()

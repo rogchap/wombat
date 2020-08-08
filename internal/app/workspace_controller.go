@@ -134,8 +134,6 @@ func (c *workspaceController) connect(addr string) error {
 	var err error
 	c.grpcConn, err = BlockDial(addr, c.Options(), c.OutputCtrl())
 	if err != nil {
-		// TODO [RC] hndle error back to user
-		println(err.Error())
 		return err
 	}
 
