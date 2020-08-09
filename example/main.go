@@ -41,6 +41,7 @@ import (
 	"google.golang.org/grpc/testdata"
 
 	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -238,6 +239,7 @@ func main() {
 	}
 	grpcServer := grpc.NewServer(opts...)
 	RegisterRouteGuideServer(grpcServer, newServer())
+	reflection.Register(grpcServer)
 	grpcServer.Serve(lis)
 }
 

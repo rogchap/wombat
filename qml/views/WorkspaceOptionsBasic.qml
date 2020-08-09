@@ -25,6 +25,8 @@ Pane {
 
         CheckBox {
             text: qsTr("Use reflection to determine the RPC schema")
+            checked: wc.options.reflect
+            onCheckedChanged: wc.options.reflect = checked
         }
 
         Row {

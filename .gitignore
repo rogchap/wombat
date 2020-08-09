@@ -2,3 +2,4 @@ vendor
 deploy
 moc*
 rcc*
+.data

@@ -65,16 +65,16 @@ Modal {
             text: qsTr("Connect")
 
             onClicked: {
-                let err = wc.processProtos()
+                let err = wc.connect(basics.addr)
                 if (err) {
-                    errMsg.title = qsTr("Error reading proto files")
+                    errMsg.title = qsTr("Error connecting to server")
                     errMsg.text = err
                     errMsg.open()
                     return
                 }
-                err = wc.connect(basics.addr)
+                err = wc.processProtos()
                 if (err) {
-                    errMsg.title = qsTr("Error connecting to server")
+                    errMsg.title = qsTr("Error reading proto files")
                     errMsg.text = err
                     errMsg.open()
                     return

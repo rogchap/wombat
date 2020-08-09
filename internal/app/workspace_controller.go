@@ -74,8 +74,8 @@ func (c *workspaceController) init() {
 	opts.SetClientkey(w.Clientkey)
 	opts.ProtoListModel().SetStringList(w.ProtoFiles)
 	opts.ImportListModel().SetStringList(w.ImportFiles)
-	c.processProtos()
 	c.connect(w.Addr)
+	c.processProtos()
 }
 
 func (c *workspaceController) findProtoFiles(path string) {
@@ -111,6 +111,10 @@ func (c *workspaceController) addImport(path string) {
 }
 
 func (c *workspaceController) processProtos() error {
+	if c.Options().IsReflect() {
+		return c.InputCtrl().processReflectionAPI(c.grpcConn)
+	}
+
 	imports := c.Options().ImportListModel().StringList()
 	protos := c.Options().ProtoListModel().StringList()
 	return c.InputCtrl().processProtos(imports, protos)
@@ -119,10 +123,6 @@ func (c *workspaceController) processProtos() error {
 func (c *workspaceController) connect(addr string) error {
 	if addr == "" {
 		return errors.New("no address to connect")
-	}
-
-	if c.Options().Addr() == addr && c.grpcConn != nil {
-		return nil
 	}
 
 	if c.grpcConn != nil {

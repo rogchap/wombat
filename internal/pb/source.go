@@ -3,10 +3,15 @@
 package pb
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
+	"github.com/jhump/protoreflect/grpcreflect"
+	"google.golang.org/grpc"
+	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
 type Source interface {
@@ -15,31 +20,31 @@ type Source interface {
 	GetMethodDesc(srv, name string) *desc.MethodDescriptor
 }
 
-type fileSource struct {
-	files    []*desc.FileDescriptor
+type source struct {
 	services []string
 	methods  map[string][]*desc.MethodDescriptor
 }
 
-func (s *fileSource) Services() []string {
+func (s *source) Services() []string {
 	return s.services
 }
 
-func (s *fileSource) Methods() map[string][]*desc.MethodDescriptor {
+func (s *source) Methods() map[string][]*desc.MethodDescriptor {
 	return s.methods
 }
 
-func (s *fileSource) GetMethodDesc(srv, name string) *desc.MethodDescriptor {
-	for _, fd := range s.files {
-		sdesc := fd.FindService(srv)
-		if sdesc == nil {
-			continue
-		}
-		mdesc := sdesc.FindMethodByName(name)
-		if mdesc != nil {
-			return mdesc
+func (s *source) GetMethodDesc(srv, name string) *desc.MethodDescriptor {
+	methods := s.methods[srv]
+	if methods == nil {
+		return nil
+	}
+
+	for _, md := range methods {
+		if md.GetName() == name {
+			return md
 		}
 	}
+
 	return nil
 }
 
@@ -71,9 +76,45 @@ func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 		}
 	}
 
-	return &fileSource{
-		files:    fds,
+	return &source{
+		// files:    fds,
 		services: services,
 		methods:  methods,
 	}, nil
+}
+
+func GetSourceFromReflectionAPI(conn *grpc.ClientConn) (Source, error) {
+	if conn == nil {
+		return nil, errors.New("pb: no connection available")
+	}
+
+	stub := rpb.NewServerReflectionClient(conn)
+	client := grpcreflect.NewClient(context.Background(), stub)
+	defer client.Reset()
+
+	services, err := client.ListServices()
+	if err != nil {
+		return nil, err
+	}
+
+	methods := make(map[string][]*desc.MethodDescriptor)
+	for _, srv := range services {
+		sd, err := client.ResolveService(srv)
+
+		if err != nil {
+			return nil, err
+		}
+		var ms []*desc.MethodDescriptor
+		for _, md := range sd.GetMethods() {
+			ms = append(ms, md)
+		}
+		methods[srv] = ms
+
+	}
+
+	return &source{
+		services: services,
+		methods:  methods,
+	}, nil
+
 }

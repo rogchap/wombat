@@ -75,11 +75,7 @@ func BlockDial(addr string, opts *model.WorkspaceOptions, statHandler stats.Hand
 
 		ctxDialer := func(ctx context.Context, addr string) (net.Conn, error) {
 			d := &net.Dialer{}
-			conn, err := d.DialContext(ctx, "tcp", addr)
-			if err != nil {
-				errc <- err
-			}
-			return conn, err
+			return d.DialContext(ctx, "tcp", addr)
 		}
 		dopts = append(dopts, grpc.WithContextDialer(ctxDialer))
 

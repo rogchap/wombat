@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/therecipe/qt/core"
+	"google.golang.org/grpc"
 	"rogchap.com/wombat/internal/model"
 	"rogchap.com/wombat/internal/pb"
 )
@@ -39,6 +40,21 @@ func (c *inputController) init() {
 
 	c.ConnectServiceChanged(c.serviceChanged)
 	c.ConnectMethodChanged(c.methodChanged)
+}
+
+func (c *inputController) processReflectionAPI(conn *grpc.ClientConn) error {
+
+	var err error
+	c.pbSource, err = pb.GetSourceFromReflectionAPI(conn)
+	if err != nil {
+		return err
+	}
+
+	services := c.pbSource.Services()
+
+	c.ServiceListModel().SetStringList(services)
+	c.serviceChanged(services[0])
+	return nil
 }
 
 func (c *inputController) processProtos(imports, protos []string) error {
