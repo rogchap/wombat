@@ -21,17 +21,17 @@
 - View RPC Header and Trailer
 - View full RPC statistics
 - MacOS build
+- Reflection API to determine RPC schema
 
 ### Features still working on:
 
-- [ ] Error messages (will siliently fail on error)
+- [x] Error messages (will silently fail on error)
 - [ ] Windows build
 - [ ] Linux build
 - [ ] Support for client streaming
 - [ ] Support for bidirectional streaming
 - [ ] Support for `oneof` fields
-- [ ] Unsetting nested messages
-- [ ] Reflection API support
+- [x] Nullable nested messages
 - [ ] Multiple Workspaces
 - [ ] Multiple Request's within a Workspace
 
