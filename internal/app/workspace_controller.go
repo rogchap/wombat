@@ -195,6 +195,9 @@ func (c *workspaceController) send(service, method string) error {
 }
 
 func processMessage(msg *model.Message) *dynamic.Message {
+	if !msg.IsEnabled() {
+		return nil
+	}
 	dm := dynamic.NewMessage(msg.Ref)
 	for _, f := range msg.Fields() {
 		switch f.FdType {
@@ -202,13 +205,18 @@ func processMessage(msg *model.Message) *dynamic.Message {
 			if f.IsRepeated {
 				var fields []interface{}
 				for _, v := range f.ValueListModel().Values() {
-					fields = append(fields, processMessage(v.MsgValue()))
+					m := processMessage(v.MsgValue())
+					if m != nil {
+						fields = append(fields, m)
+					}
 				}
 				dm.SetFieldByNumber(f.Tag(), fields)
 				break
 			}
-			dm.SetFieldByNumber(f.Tag(), processMessage(f.Message()))
-
+			m := processMessage(f.Message())
+			if m != nil {
+				dm.SetFieldByNumber(f.Tag(), m)
+			}
 		default:
 			if f.IsRepeated {
 				var fields []interface{}

@@ -22,16 +22,28 @@ Item {
     }
 
     Label {
+        id: msgType
         anchors.left: msgLabel.right
         anchors.leftMargin: 10
         color: Qt.darker(Style.textColor3, 1.6)
         text: message.label
     }
 
+    CheckBox{
+        id: enabled
+        anchors.left: msgType.right
+        anchors.leftMargin: 10
+        anchors.verticalCenter: msgType.verticalCenter
+        checked: (msgOverride || message).enabled
+        onCheckedChanged: (msgOverride || message).enabled = checked 
+    }
+
     Pane {
         id: msgPane
 
-        implicitHeight: msgLoader.height
+        visible: enabled.checked
+
+        implicitHeight: visible ? msgLoader.height : 0
         anchors.top: msgLabel.bottom
 
         Loader {

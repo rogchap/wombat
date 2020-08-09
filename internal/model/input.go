@@ -47,6 +47,7 @@ type Message struct {
 
 	_ map[int]*core.QByteArray `property:"roles"`
 	_ string                   `property:"label"`
+	_ bool                     `property:"enabled"`
 	_ []*Field                 `property:"fields"`
 
 	_ func(row int, val string) `slot:"updateFieldValue"`
@@ -63,6 +64,10 @@ func (i *Message) init() {
 		FieldMsg:      core.NewQByteArray2("message", -1),
 		FieldEnum:     core.NewQByteArray2("enumListModel", -1),
 	})
+
+	// TODO: [RC] Should we default to enabled for nested meeasges?
+	// Maybe this should be a setting?
+	i.SetEnabled(true)
 
 	i.ConnectData(i.data)
 	i.ConnectRowCount(i.rowCount)

@@ -20,7 +20,7 @@ import (
 // The following variables are set via LDFlags at build time
 var (
 	appname = "Wombat"
-	semver  = "0.1.0-alpha.1"
+	semver  = "0.2.0-alpha"
 	isDebug = true
 )
 
