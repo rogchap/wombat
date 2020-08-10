@@ -27,7 +27,7 @@
 
 - [x] Error messages (will silently fail on error)
 - [ ] Windows build
-- [ ] Linux build
+- [x] Linux build
 - [ ] Support for client streaming
 - [ ] Support for bidirectional streaming
 - [ ] Support for `oneof` fields
