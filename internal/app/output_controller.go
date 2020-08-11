@@ -27,19 +27,32 @@ import (
 type outputController struct {
 	core.QObject
 
+	cancelFunc context.CancelFunc
+	streamReq  chan *dynamic.Message
+
 	_ int32  `property:"status"`
 	_ bool   `property:"running"`
+	_ bool   `property:"clientStreaming"`
+	_ bool   `property:"bidiStreaming"`
 	_ string `property:"output"`
 	_ string `property:"stats"`
 	_ string `property:"header"`
 	_ string `property:"trailer"`
+
+	_ func() `slot:"closeClientStream"`
+	_ func() `slot:"cancelRequest"`
 
 	_ func() `constructor:"init"`
 }
 
 func (c *outputController) init() {
 	c.SetRunning(false)
+	c.SetClientStreaming(false)
+	c.SetBidiStreaming(false)
 	c.SetStatus(-1)
+
+	c.ConnectCloseClientStream(c.closeClientStream)
+	c.ConnectCancelRequest(c.cancelRequest)
 }
 
 func (c *outputController) clear() {
@@ -48,26 +61,66 @@ func (c *outputController) clear() {
 	c.SetHeader("")
 	c.SetTrailer("")
 	c.SetStatus(-1)
+	c.SetClientStreaming(false)
+	c.SetBidiStreaming(false)
+}
+
+func (c *outputController) closeClientStream() {
+	close(c.streamReq)
+}
+
+func (c *outputController) cancelRequest() {
+	if c.cancelFunc == nil {
+		return
+	}
+	c.cancelFunc()
 }
 
 func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDescriptor, req *dynamic.Message, meta map[string]string) error {
+	if c.IsRunning() && md.IsClientStreaming() {
+		c.streamReq <- req
+		return nil
+	}
+
 	c.clear()
-	c.SetRunning(true)
+
+	ctx, cf := context.WithCancel(context.Background())
+	c.cancelFunc = cf
 
 	stub := grpcdynamic.NewStub(conn)
-	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(meta))
+	ctx = metadata.NewOutgoingContext(ctx, metadata.New(meta))
 
 	if md.IsClientStreaming() && md.IsServerStreaming() {
+		c.SetBidiStreaming(true)
 		return errors.New("Bidirectional streaming not supported yet")
 	}
 
 	if md.IsClientStreaming() {
-		return errors.New("Client streaming not supported yet")
+		c.SetClientStreaming(true)
+		c.streamReq = make(chan *dynamic.Message)
+		go func() {
+			defer c.SetRunning(false)
+			stream, err := stub.InvokeRpcClientStream(ctx, md)
+			if err != nil {
+				println(err.Error())
+				return
+			}
+			for r := range c.streamReq {
+				if err := stream.SendMsg(r); err != nil {
+					if err != io.EOF {
+						println(err.Error())
+					}
+					close(c.streamReq)
+				}
+			}
+			stream.CloseAndReceive()
+		}()
+
+		return nil
 	}
 
 	if md.IsServerStreaming() {
 		go func() {
-			defer c.SetRunning(false)
 			stream, err := stub.InvokeRpcServerStream(ctx, md, req)
 			if err != nil {
 				// TODO: deal with error
@@ -75,8 +128,7 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 				return
 			}
 			for {
-				resp, err := stream.RecvMsg()
-				c.processResponse(resp, err, true)
+				_, err := stream.RecvMsg()
 				if err != nil {
 					break
 				}
@@ -86,35 +138,9 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 	}
 
 	go func() {
-		defer c.SetRunning(false)
-		resp, err := stub.InvokeRpc(ctx, md, req)
-		c.processResponse(resp, err, false)
+		stub.InvokeRpc(ctx, md, req)
 	}()
 	return nil
-}
-
-func (c *outputController) processResponse(resp proto.Message, err error, isStream bool) {
-	if err != nil {
-		if isStream && err == io.EOF {
-			c.SetStatus(0)
-			return
-		}
-		dmErr, _ := dynamic.AsDynamicMessage(status.Convert(err).Proto())
-		strErr, _ := marshalTextFormatted(dmErr)
-		c.SetStatus(int(status.Code(err)))
-		// TODO: we should stream the data to the UI so we can use the TextEdit append
-		// function, which would have better performance than replacing the whole text
-		c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strErr)))
-		return
-	}
-
-	dmResp, _ := dynamic.AsDynamicMessage(resp)
-	strResp, _ := marshalTextFormatted(dmResp)
-
-	if !isStream {
-		c.SetStatus(0)
-	}
-	c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strResp)))
 }
 
 // gRPC Stats Handler interface
@@ -127,6 +153,7 @@ func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	statStr := ""
 	switch s := stat.(type) {
 	case *stats.Begin:
+		c.SetRunning(true)
 		statStr = formatBegin(s)
 	case *stats.OutHeader:
 		statStr = formatOutHeader(s)
@@ -139,8 +166,21 @@ func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 		c.SetTrailer(formatMetadata(s.Trailer))
 		statStr = formatInTrailer(s)
 	case *stats.InPayload:
+		dmResp, _ := dynamic.AsDynamicMessage(s.Payload.(proto.Message))
+		strResp, _ := marshalTextFormatted(dmResp)
+		c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strResp)))
 		statStr = formatInPayload(s)
 	case *stats.End:
+		c.SetRunning(false)
+		if s.Error == nil {
+			c.SetStatus(0)
+		}
+		if s.Error != nil {
+			dmErr, _ := dynamic.AsDynamicMessage(status.Convert(s.Error).Proto())
+			strErr, _ := marshalTextFormatted(dmErr)
+			c.SetStatus(int(status.Code(s.Error)))
+			c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strErr)))
+		}
 		statStr = formatEnd(s)
 	}
 	c.SetStats(fmt.Sprintf("%s%s", c.Stats(), statStr))

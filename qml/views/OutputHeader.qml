@@ -21,6 +21,33 @@ Pane {
         code: oc.status
     }
 
+    Button {
+        id: btnCancel
+        visible: oc.running
+
+        anchors.right: parent.right
+        anchors.rightMargin: -root.padding
+        anchors.verticalCenter: parent.verticalCenter
+
+        color: Style.orangeColor
+        text: qsTr("Cancel")
+
+        onClicked: oc.cancelRequest()
+    }
+
+    Button {
+        visible: oc.running && (oc.clientStreaming || oc.bidiStreaming)
+
+        anchors.right: btnCancel.left
+        anchors.rightMargin: padding
+        anchors.verticalCenter: parent.verticalCenter
+
+        color: Style.primaryColor
+        text: qsTr("Close & Receive")
+
+        onClicked: oc.closeClientStream()
+    }
+
     AutoProgressBar {
         visible: oc.running
         anchors.bottom: parent.bottom
