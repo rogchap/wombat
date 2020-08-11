@@ -4,7 +4,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -92,14 +91,43 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 
 	if md.IsClientStreaming() && md.IsServerStreaming() {
 		c.SetBidiStreaming(true)
-		return errors.New("Bidirectional streaming not supported yet")
+		c.streamReq = make(chan *dynamic.Message)
+		go func() {
+			stream, err := stub.InvokeRpcBidiStream(ctx, md)
+			if err != nil {
+				println(err.Error())
+				return
+			}
+
+			// server streaming
+			go func() {
+				for {
+					_, err := stream.RecvMsg()
+					if err != nil {
+						break
+					}
+				}
+			}()
+
+			// client streaming
+			for r := range c.streamReq {
+				if err := stream.SendMsg(r); err != nil {
+					if err != io.EOF {
+						println(err.Error())
+					}
+					close(c.streamReq)
+				}
+			}
+			stream.CloseSend()
+		}()
+		c.streamReq <- req
+		return nil
 	}
 
 	if md.IsClientStreaming() {
 		c.SetClientStreaming(true)
 		c.streamReq = make(chan *dynamic.Message)
 		go func() {
-			defer c.SetRunning(false)
 			stream, err := stub.InvokeRpcClientStream(ctx, md)
 			if err != nil {
 				println(err.Error())
@@ -115,7 +143,7 @@ func (c *outputController) invokeMethod(conn *grpc.ClientConn, md *desc.MethodDe
 			}
 			stream.CloseAndReceive()
 		}()
-
+		c.streamReq <- req
 		return nil
 	}
 
@@ -168,7 +196,7 @@ func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	case *stats.InPayload:
 		dmResp, _ := dynamic.AsDynamicMessage(s.Payload.(proto.Message))
 		strResp, _ := marshalTextFormatted(dmResp)
-		c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strResp)))
+		c.SetOutput(fmt.Sprintf("%s<p>%s</p>", c.Output(), string(strResp)))
 		statStr = formatInPayload(s)
 	case *stats.End:
 		c.SetRunning(false)

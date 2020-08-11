@@ -43,7 +43,7 @@ Pane {
         anchors.verticalCenter: parent.verticalCenter
 
         color: Style.primaryColor
-        text: qsTr("Close & Receive")
+        text: oc.bidiStreaming ? qsTr("Close Send") : qsTr("Close & Receive")
 
         onClicked: oc.closeClientStream()
     }
