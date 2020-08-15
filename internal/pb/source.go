@@ -14,6 +14,8 @@ import (
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
+type ctxInternal struct{}
+
 type Source interface {
 	Services() []string
 	Methods() map[string][]*desc.MethodDescriptor
@@ -89,7 +91,8 @@ func GetSourceFromReflectionAPI(conn *grpc.ClientConn) (Source, error) {
 	}
 
 	stub := rpb.NewServerReflectionClient(conn)
-	client := grpcreflect.NewClient(context.Background(), stub)
+	ctx := context.WithValue(context.Background(), "ctxInternal", struct{}{})
+	client := grpcreflect.NewClient(ctx, stub)
 	defer client.Reset()
 
 	services, err := client.ListServices()

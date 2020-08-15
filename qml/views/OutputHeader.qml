@@ -13,12 +13,21 @@ Pane {
     implicitWidth: parent.width
     
     Status {
+        id: stat
+
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.topMargin: -3
         anchors.leftMargin: -3
 
         code: oc.status
+    }
+
+    Label {
+        anchors.left: stat.right
+        anchors.leftMargin: 15
+        text: oc.time
+        visible: oc.status >= 0
     }
 
     Button {

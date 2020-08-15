@@ -37,6 +37,7 @@ type outputController struct {
 	_ string `property:"stats"`
 	_ string `property:"header"`
 	_ string `property:"trailer"`
+	_ string `property:"time"`
 
 	_ func() `slot:"closeClientStream"`
 	_ func() `slot:"cancelRequest"`
@@ -60,6 +61,7 @@ func (c *outputController) clear() {
 	c.SetHeader("")
 	c.SetTrailer("")
 	c.SetStatus(-1)
+	c.SetTime("")
 	c.SetClientStreaming(false)
 	c.SetBidiStreaming(false)
 }
@@ -178,6 +180,9 @@ func (c *outputController) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) cont
 }
 
 func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
+	if ok := ctx.Value("ctxInternal"); ok != nil {
+		return
+	}
 	statStr := ""
 	switch s := stat.(type) {
 	case *stats.Begin:
@@ -209,6 +214,7 @@ func (c *outputController) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 			c.SetStatus(int(status.Code(s.Error)))
 			c.SetOutput(fmt.Sprintf("%s%s<br/>", c.Output(), string(strErr)))
 		}
+		c.SetTime(fmt.Sprintf("%v", s.EndTime.Sub(s.BeginTime)))
 		statStr = formatEnd(s)
 	}
 	c.SetStats(fmt.Sprintf("%s%s", c.Stats(), statStr))
