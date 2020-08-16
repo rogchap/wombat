@@ -19,6 +19,8 @@ import (
 	"rogchap.com/wombat/internal/model"
 )
 
+const defaultWorkspaceKey = "wksp_default"
+
 //go:generate qtmoc
 type workspaceController struct {
 	core.QObject
@@ -58,10 +60,16 @@ func (c *workspaceController) init() {
 	if isDebug {
 		dbPath = filepath.Join(".", ".data")
 	}
-	c.store = db.NewStore(dbPath)
 
-	w := c.store.Get()
-	if w == nil {
+	var err error
+	c.store, err = db.NewStore(dbPath)
+	if err != nil {
+		println(err.Error())
+	}
+
+	w, err := c.store.GetWorkspace(defaultWorkspaceKey)
+	if err != nil {
+		println(err.Error())
 		return
 	}
 
@@ -170,7 +178,7 @@ func (c *workspaceController) connect(addr string) error {
 			ProtoFiles:  opts.ProtoListModel().StringList(),
 			ImportFiles: opts.ImportListModel().StringList(),
 		}
-		c.store.Put(w)
+		c.store.SetWorkspace(defaultWorkspaceKey, w)
 	}()
 	return nil
 }

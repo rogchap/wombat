@@ -3,47 +3,54 @@
 package db
 
 import (
-	"io/ioutil"
-	"os"
 	"path/filepath"
 
+	badger "github.com/dgraph-io/badger/v2"
 	"google.golang.org/protobuf/proto"
 )
 
 type Store struct {
-	dbPath string
+	db *badger.DB
 }
 
-// NewStore is a poor mans DB, should replace with domething like BadgerDB
-func NewStore(path string) *Store {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll(path, 0700)
-	}
-	dbPath := filepath.Join(path, "workspace.db")
-	return &Store{dbPath}
-}
-
-func (s *Store) Get() *Workspace {
-	raw, err := ioutil.ReadFile(s.dbPath)
+// NewStore creates a new store to save user data
+func NewStore(path string) (*Store, error) {
+	dbPath := filepath.Join(path, "db")
+	db, err := badger.Open(badger.DefaultOptions(dbPath))
 	if err != nil {
-		println(err.Error())
-		return nil
+		return nil, err
 	}
+
+	return &Store{db}, nil
+}
+
+func (s *Store) GetWorkspace(key string) (*Workspace, error) {
 	w := &Workspace{}
-	if err := proto.Unmarshal(raw, w); err != nil {
-		println(err.Error())
-		return nil
-	}
-	return w
+	err := s.db.View(func(txn *badger.Txn) error {
+		data, err := txn.Get([]byte(key))
+		if err != nil {
+			return err
+		}
+		return data.Value(func(val []byte) error {
+			return proto.Unmarshal(val, w)
+		})
+	})
+	return w, err
 }
 
-func (s *Store) Put(w *Workspace) {
-	raw, err := proto.Marshal(w)
+func (s *Store) SetWorkspace(key string, w *Workspace) error {
+	data, err := proto.Marshal(w)
 	if err != nil {
-		println(err.Error())
+		return err
+	}
+	return s.db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key), data)
+	})
+}
+
+func (s *Store) Close() {
+	if s == nil {
 		return
 	}
-	if err := ioutil.WriteFile(s.dbPath, raw, 0644); err != nil {
-		println(err.Error())
-	}
+	s.db.Close()
 }

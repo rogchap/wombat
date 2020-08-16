@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package db;
-option go_package = "rogchap.com/wombat/internal/db";
+option go_package = ".;db";
 
 message Workspace {
     string addr = 1;

@@ -33,11 +33,11 @@ darwin-icon:
 	sips -z 512 512 $(IN) --out $(OUT)/icon_512x512.png
 	sips -z 1024 1024 $(IN) --out $(OUT)/icon_512x512@2x.png
 	iconutil -c icns -o darwin/Contents/Resources/Wombat.icns $(OUT)
-	rm -rf $(OUT)
+	# rm -rf $(OUT)
 
 .PHONY: win-icon
 IN=wombat_512@2x.png
-OUT=windows/iconset
+# OUT=windows/iconset
 win-icon:
 	mkdir -p $(OUT)
 	sips -z 16 16 $(IN) --out $(OUT)/icon_16.png
