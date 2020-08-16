@@ -4,13 +4,18 @@ package db;
 option go_package = ".;db";
 
 message Workspace {
+    message Options {
+        bool reflect = 1;
+        bool insecure = 2;
+        bool plaintext = 3;
+        string rootca = 4;
+        string clientcert = 5;
+        string clientkey = 6;
+        repeated string proto_files = 9;
+        repeated string import_files = 10;
+    }
+
     string addr = 1;
-    bool reflect = 2;
-    bool insecure = 3;
-    bool plaintext = 4;
-    string rootca = 5;
-    string clientcert = 6;
-    string clientkey = 7;
-    repeated string proto_files = 8;
-    repeated string import_files = 9;
+    Options options = 2;
+    map<string, string> metadata = 3;
 }

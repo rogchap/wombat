@@ -8,6 +8,8 @@ import (
 
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
+
+	"rogchap.com/wombat/internal/db"
 	"rogchap.com/wombat/internal/model"
 	"rogchap.com/wombat/internal/pb"
 )
@@ -16,7 +18,9 @@ import (
 type inputController struct {
 	core.QObject
 
-	pbSource pb.Source
+	pbSource  pb.Source
+	store     *db.Store
+	workspace *db.Workspace
 
 	_ func() `constructor:"init"`
 
@@ -34,12 +38,28 @@ func (c *inputController) init() {
 	c.SetMethodListModel(model.NewStringList(nil))
 	c.SetRequestModel(model.NewMessage(nil))
 
-	mdList := model.NewKeyvalList(nil)
-	mdList.SetList([]*model.Keyval{model.NewKeyval(nil)})
-	c.SetMetadataListModel(mdList)
-
 	c.ConnectServiceChanged(c.serviceChanged)
 	c.ConnectMethodChanged(c.methodChanged)
+}
+
+func (c *inputController) with(store *db.Store, workspace *db.Workspace) *inputController {
+	c.store = store
+	c.workspace = workspace
+
+	var kvs []*model.Keyval
+	mds := c.workspace.GetMetadata()
+	for k, v := range mds {
+		kv := model.NewKeyval(nil)
+		kv.SetKey(k)
+		kv.SetVal(v)
+		kvs = append(kvs, kv)
+	}
+	kvs = append(kvs, model.NewKeyval(nil))
+	mdList := model.NewKeyvalList(nil)
+	mdList.SetList(kvs)
+	c.SetMetadataListModel(mdList)
+
+	return c
 }
 
 func (c *inputController) processReflectionAPI(conn *grpc.ClientConn) error {

@@ -28,6 +28,7 @@ type workspaceController struct {
 	grpcConn      *grpc.ClientConn
 	cancelCtxFunc context.CancelFunc
 	store         *db.Store
+	workspace     *db.Workspace
 
 	_ func() `constructor:"init"`
 
@@ -45,10 +46,6 @@ type workspaceController struct {
 }
 
 func (c *workspaceController) init() {
-	c.SetInputCtrl(NewInputController(nil))
-	c.SetOutputCtrl(NewOutputController(nil))
-
-	c.SetOptions(model.NewWorkspaceOptions(nil))
 
 	c.ConnectFindProtoFiles(c.findProtoFiles)
 	c.ConnectAddImport(c.addImport)
@@ -67,22 +64,28 @@ func (c *workspaceController) init() {
 		println(err.Error())
 	}
 
-	w, err := c.store.GetWorkspace(defaultWorkspaceKey)
+	c.workspace, err = c.store.GetWorkspace(defaultWorkspaceKey)
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
-	opts := c.Options()
-	opts.SetReflect(w.Reflect)
-	opts.SetInsecure(w.Insecure)
-	opts.SetPlaintext(w.Plaintext)
-	opts.SetRootca(w.Rootca)
-	opts.SetClientcert(w.Clientcert)
-	opts.SetClientkey(w.Clientkey)
-	opts.ProtoListModel().SetStringList(w.ProtoFiles)
-	opts.ImportListModel().SetStringList(w.ImportFiles)
-	c.connect(w.Addr)
+	c.SetInputCtrl(NewInputController(nil).with(c.store, c.workspace))
+	c.SetOutputCtrl(NewOutputController(nil))
+
+	c.SetOptions(model.NewWorkspaceOptions(nil))
+	if o := c.workspace.GetOptions(); o != nil {
+		opts := c.Options()
+		opts.SetReflect(o.Reflect)
+		opts.SetInsecure(o.Insecure)
+		opts.SetPlaintext(o.Plaintext)
+		opts.SetRootca(o.Rootca)
+		opts.SetClientcert(o.Clientcert)
+		opts.SetClientkey(o.Clientkey)
+		opts.ProtoListModel().SetStringList(o.ProtoFiles)
+		opts.ImportListModel().SetStringList(o.ImportFiles)
+	}
+	c.connect(c.workspace.Addr)
 	c.processProtos()
 }
 
@@ -167,8 +170,7 @@ func (c *workspaceController) connect(addr string) error {
 
 	go func() {
 		opts := c.Options()
-		w := &db.Workspace{
-			Addr:        addr,
+		c.workspace.Options = &db.Workspace_Options{
 			Reflect:     opts.IsReflect(),
 			Insecure:    opts.IsInsecure(),
 			Plaintext:   opts.IsPlaintext(),
@@ -178,7 +180,9 @@ func (c *workspaceController) connect(addr string) error {
 			ProtoFiles:  opts.ProtoListModel().StringList(),
 			ImportFiles: opts.ImportListModel().StringList(),
 		}
-		c.store.SetWorkspace(defaultWorkspaceKey, w)
+		c.workspace.Addr = addr
+
+		c.store.SetWorkspace(defaultWorkspaceKey, c.workspace)
 	}()
 	return nil
 }
@@ -198,6 +202,8 @@ func (c *workspaceController) send(service, method string) error {
 		}
 		meta[kv.Key()] = kv.Val()
 	}
+	c.workspace.Metadata = meta
+	c.store.SetWorkspace(defaultWorkspaceKey, c.workspace)
 
 	return c.OutputCtrl().invokeMethod(c.grpcConn, md, req, meta)
 }
