@@ -29,6 +29,7 @@ type KeyvalList struct {
 	_ map[int]*core.QByteArray `property:"roles"`
 
 	_ func(int) string  `slot:"valAt"`
+	_ func(string) int  `slot:"idxForVal"`
 	_ func()            `slot:"addEmpty"`
 	_ func(int, string) `slot:"editKeyAt"`
 	_ func(int, string) `slot:"editValAt"`
@@ -47,6 +48,7 @@ func (m *KeyvalList) init() {
 	m.ConnectColumnCount(m.columnCount)
 	m.ConnectRoleNames(m.roleNames)
 	m.ConnectValAt(m.valAt)
+	m.ConnectIdxForVal(m.idxForVal)
 	m.ConnectAddEmpty(m.addEmpty)
 	m.ConnectEditKeyAt(m.editKeyAt)
 	m.ConnectEditValAt(m.editValAt)
@@ -84,7 +86,19 @@ func (m *KeyvalList) roleNames() map[int]*core.QByteArray {
 }
 
 func (m *KeyvalList) valAt(idx int) string {
+	if idx < 0 {
+		return ""
+	}
 	return m.List()[idx].Val()
+}
+
+func (m *KeyvalList) idxForVal(val string) int {
+	for idx, kv := range m.List() {
+		if kv.Val() == val {
+			return idx
+		}
+	}
+	return 0
 }
 
 func (m *KeyvalList) addEmpty() {

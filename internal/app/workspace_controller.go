@@ -195,6 +195,10 @@ func (c *workspaceController) send(service, method string) error {
 	md := c.InputCtrl().pbSource.GetMethodDesc(service, method)
 	req := processMessage(c.InputCtrl().RequestModel())
 
+	if data, err := req.Marshal(); err == nil {
+		c.store.Set([]byte(md.GetFullyQualifiedName()), data)
+	}
+
 	meta := make(map[string]string)
 	for _, kv := range c.InputCtrl().MetadataListModel().List() {
 		if kv.Key() == "" {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"path/filepath"
 
+	"github.com/jhump/protoreflect/dynamic"
 	"github.com/therecipe/qt/core"
 	"google.golang.org/grpc"
 
@@ -124,5 +125,10 @@ func (c *inputController) methodChanged(service, method string) {
 		return
 	}
 
-	c.SetRequestModel(model.MapMessage(md.GetInputType()))
+	dm := dynamic.NewMessage(md.GetInputType())
+	if data, err := c.store.Get([]byte(md.GetFullyQualifiedName())); err == nil {
+		dm.Unmarshal(data)
+	}
+
+	c.SetRequestModel(model.MapMessage(dm))
 }

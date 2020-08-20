@@ -4,6 +4,7 @@ package model
 
 import (
 	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
 	"github.com/therecipe/qt/core"
 )
 
@@ -91,7 +92,7 @@ func (m *RepeatedValues) addValue() {
 	m.BeginInsertRows(core.NewQModelIndex(), len(m.Values()), len(m.Values()))
 	rv := NewRepeatedValue(nil)
 	if m.ref != nil {
-		rv.SetMsgValue(MapMessage(m.ref))
+		rv.SetMsgValue(MapMessage(dynamic.NewMessage(m.ref)))
 	}
 	m.SetValues(append(m.Values(), rv))
 	m.EndInsertRows()

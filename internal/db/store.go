@@ -48,6 +48,24 @@ func (s *Store) SetWorkspace(key string, w *Workspace) error {
 	})
 }
 
+func (s *Store) Get(key []byte) (val []byte, rtnErr error) {
+	rtnErr = s.db.View(func(txn *badger.Txn) error {
+		data, err := txn.Get(key)
+		if err != nil {
+			return err
+		}
+		val, err = data.ValueCopy(val)
+		return err
+	})
+	return
+}
+
+func (s *Store) Set(key, val []byte) error {
+	return s.db.Update(func(txn *badger.Txn) error {
+		return txn.Set(key, val)
+	})
+}
+
 func (s *Store) Close() {
 	if s == nil {
 		return

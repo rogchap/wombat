@@ -3,16 +3,21 @@
 package model
 
 import (
+	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-func MapMessage(md *desc.MessageDescriptor) *Message {
+func MapMessage(dm *dynamic.Message) *Message {
+	md := dm.GetMessageDescriptor()
 	msg := NewMessage(nil)
 	msg.Ref = md
 	msg.SetLabel(md.GetFullyQualifiedName())
@@ -26,14 +31,27 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 
 		ft := fd.GetType()
 		field.FdType = ft
-		typeName := strings.ToLower(descriptor.FieldDescriptorProto_Type_name[int32(ft)][5:])
+		typeName := strings.ToLower(descriptorpb.FieldDescriptorProto_Type_name[int32(ft)][5:])
 		field.SetType(typeName)
 
+		field.SetValue(stringValue(dm, fd))
+
 		switch ft {
-		case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-			field.SetMessage(MapMessage(fd.GetMessageType()))
+		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE:
+			val, _ := dm.TryGetField(fd)
+			var mdm *dynamic.Message
+			switch val.(type) {
+			case *dynamic.Message:
+				mdm = val.(*dynamic.Message)
+			case proto.Message:
+				mdm, _ = dynamic.AsDynamicMessage(val.(proto.Message))
+			}
+			if mdm == nil {
+				mdm = dynamic.NewMessage(fd.GetMessageType())
+			}
+			field.SetMessage(MapMessage(mdm))
 			field.SetDelegate("message")
-		case descriptor.FieldDescriptorProto_TYPE_ENUM:
+		case descriptorpb.FieldDescriptorProto_TYPE_ENUM:
 			e := fd.GetEnumType()
 			var enumValues []*Keyval
 			for _, enum := range e.GetValues() {
@@ -46,9 +64,9 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 			enumListModel.SetList(enumValues)
 			field.SetEnumListModel(enumListModel)
 			field.SetDelegate("enum")
-		case descriptor.FieldDescriptorProto_TYPE_BYTES:
+		case descriptorpb.FieldDescriptorProto_TYPE_BYTES:
 			field.SetDelegate("textArea")
-		case descriptor.FieldDescriptorProto_TYPE_BOOL:
+		case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
 			field.SetDelegate("bool")
 		default:
 			field.SetDelegate("text")
@@ -67,6 +85,37 @@ func MapMessage(md *desc.MessageDescriptor) *Message {
 
 	msg.SetFields(fields)
 	return msg
+}
+
+func stringValue(dm *dynamic.Message, fd *desc.FieldDescriptor) string {
+	v, err := dm.TryGetField(fd)
+	if err != nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(v)
+
+	switch t.Kind() {
+	case reflect.Slice:
+		if t.Elem().Kind() == reflect.Uint8 {
+			return string(v.([]byte))
+		}
+		return ""
+	case reflect.Map, reflect.Struct:
+		return ""
+	default:
+		if fd.GetType() == descriptorpb.FieldDescriptorProto_TYPE_ENUM {
+			return strconv.Itoa(int(v.(int32)))
+		}
+		// only return the string if it is not the default value
+		if t.Comparable() {
+			dv := fd.GetDefaultValue()
+			if dv != v {
+				return fmt.Sprintf("%v", v)
+			}
+		}
+		return ""
+	}
 }
 
 func MapMetadata(md metadata.MD) []*Keyval {

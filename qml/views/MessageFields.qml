@@ -54,6 +54,7 @@ ListView {
             ComboBoxField {
                 labelText: label
                 model: enumListModel
+                currentIndex: enumListModel.idxForVal(val)
                 onDisplayTextChanged: root.model.updateFieldValue(index, enumListModel.valAt(currentIndex))
             }
         }
