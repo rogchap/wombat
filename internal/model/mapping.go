@@ -34,22 +34,27 @@ func MapMessage(dm *dynamic.Message) *Message {
 		typeName := strings.ToLower(descriptorpb.FieldDescriptorProto_Type_name[int32(ft)][5:])
 		field.SetType(typeName)
 
-		field.SetValue(stringValue(dm, fd))
+		v, _ := dm.TryGetField(fd)
+		field.SetValue(stringValue(v, fd))
 
 		switch ft {
 		case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE:
-			val, _ := dm.TryGetField(fd)
+			enabled := true
 			var mdm *dynamic.Message
-			switch val.(type) {
+			switch v.(type) {
 			case *dynamic.Message:
-				mdm = val.(*dynamic.Message)
+				mdm = v.(*dynamic.Message)
 			case proto.Message:
-				mdm, _ = dynamic.AsDynamicMessage(val.(proto.Message))
+				mdm, _ = dynamic.AsDynamicMessage(v.(proto.Message))
 			}
 			if mdm == nil {
+				enabled = false
 				mdm = dynamic.NewMessage(fd.GetMessageType())
+
 			}
-			field.SetMessage(MapMessage(mdm))
+			msg := MapMessage(mdm)
+			msg.SetEnabled(enabled)
+			field.SetMessage(msg)
 			field.SetDelegate("message")
 		case descriptorpb.FieldDescriptorProto_TYPE_ENUM:
 			e := fd.GetEnumType()
@@ -77,6 +82,40 @@ func MapMessage(dm *dynamic.Message) *Message {
 			field.SetDelegate(field.Delegate() + "_repeated")
 			vl := NewRepeatedValues(nil)
 			vl.ref = fd.GetMessageType()
+			// TODO: populate any repeated fields that in the store
+			var rVals []*RepeatedValue
+			lg, _ := dm.TryFieldLength(fd)
+			for i := 0; i < lg; i++ {
+				rval := NewRepeatedValue(nil)
+				val, _ := dm.TryGetRepeatedField(fd, i)
+				rval.SetValue(stringValue(val, fd))
+
+				if ft == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
+
+					enabled := true
+					var mdm *dynamic.Message
+					switch val.(type) {
+					case *dynamic.Message:
+						mdm = val.(*dynamic.Message)
+					case proto.Message:
+						mdm, _ = dynamic.AsDynamicMessage(val.(proto.Message))
+					}
+					if mdm == nil {
+						enabled = false
+						mdm = dynamic.NewMessage(fd.GetMessageType())
+
+					}
+					msg := MapMessage(mdm)
+					msg.SetEnabled(enabled)
+					rval.SetMsgValue(msg)
+
+				}
+
+				rVals = append(rVals, rval)
+			}
+
+			vl.SetValues(rVals)
+			vl.SetCount(lg)
 			field.SetValueListModel(vl)
 		}
 
@@ -87,9 +126,8 @@ func MapMessage(dm *dynamic.Message) *Message {
 	return msg
 }
 
-func stringValue(dm *dynamic.Message, fd *desc.FieldDescriptor) string {
-	v, err := dm.TryGetField(fd)
-	if err != nil {
+func stringValue(v interface{}, fd *desc.FieldDescriptor) string {
+	if v == nil {
 		return ""
 	}
 

@@ -70,6 +70,7 @@ ListView {
                         id: textField
                         hintText: type 
                         labelLeftMargin: 21
+                        text: value
                         onTextChanged: valueListModel.editValueAt(index, text)
                     }
 
@@ -95,6 +96,7 @@ ListView {
                         text: label
                         anchors.left: parent.left
                         anchors.leftMargin: 16
+                        checked: value == "true" ? true : false
 
                         onCheckedChanged: valueListModel.editValueAt(index, checked) 
                     }
@@ -122,8 +124,8 @@ ListView {
                         labelText: label
                         labelLeftMargin: 21
                         model: enumListModel
+                        currentIndex: enumListModel.idxForVal(value)
                         onDisplayTextChanged: valueListModel.editValueAt(index, enumListModel.valAt(currentIndex))
-
                     }
 
                     CrossButton {
@@ -148,7 +150,7 @@ ListView {
                         labelText: label
                         labelLeftMargin: 21
                         hintText: type
-
+                        text: value
                         onTextChanged: valueListModel.editValueAt(index, text)
                     }
 
