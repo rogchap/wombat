@@ -20,8 +20,8 @@ import (
 // The following variables are set via LDFlags at build time
 var (
 	appname = "Wombat"
-	semver  = "0.1.0-alpha.3"
-	isDebug = true
+	semver  = "0.1.0-beta"
+	isDebug = false
 )
 
 // Startup is the main startup of the application

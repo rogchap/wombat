@@ -17,23 +17,27 @@ mod:
 clean-moc:
 	find ./internal -name 'moc*' -delete
 
+define make_icns
+	mkdir _temp.iconset
+	sips -z 16 16 $(1) --out _temp.iconset/icon_16x16.png
+	sips -z 32 32 $(1) --out _temp.iconset/icon_16x16@2x.png
+	sips -z 32 32 $(1) --out _temp.iconset/icon_32x32.png
+	sips -z 64 64 $(1) --out _temp.iconset/icon_32x32@2x.png
+	sips -z 128 128 $(1) --out _temp.iconset/icon_128x128.png
+	sips -z 256 256 $(1) --out _temp.iconset/icon_128x128@2x.png
+	sips -z 256 256 $(1) --out _temp.iconset/icon_256x256.png
+	sips -z 512 512 $(1) --out _temp.iconset/icon_256x256@2x.png
+	sips -z 512 512 $(1) --out _temp.iconset/icon_512x512.png
+	sips -z 1024 1024 $(1) --out _temp.iconset/icon_512x512@2x.png
+	iconutil -c icns -o $(2) _temp.iconset
+	rm -rf _temp.iconset
+endef
+
 .PHONY: darwin-icon
 IN=wombat_512@2x.png
 OUT=darwin/wombat.iconset
 darwin-icon:
-	mkdir -p $(OUT)
-	sips -z 16 16 $(IN) --out $(OUT)/icon_16x16.png
-	sips -z 32 32 $(IN) --out $(OUT)/icon_16x16@2x.png
-	sips -z 32 32 $(IN) --out $(OUT)/icon_32x32.png
-	sips -z 64 64 $(IN) --out $(OUT)/icon_32x32@2x.png
-	sips -z 128 128 $(IN) --out $(OUT)/icon_128x128.png
-	sips -z 256 256 $(IN) --out $(OUT)/icon_128x128@2x.png
-	sips -z 256 256 $(IN) --out $(OUT)/icon_256x256.png
-	sips -z 512 512 $(IN) --out $(OUT)/icon_256x256@2x.png
-	sips -z 512 512 $(IN) --out $(OUT)/icon_512x512.png
-	sips -z 1024 1024 $(IN) --out $(OUT)/icon_512x512@2x.png
-	iconutil -c icns -o darwin/Contents/Resources/Wombat.icns $(OUT)
-	# rm -rf $(OUT)
+	$(call make_icns, wombar_512@2x.png, darwin/Content/Resources/Wombat.icns)
 
 .PHONY: win-icon
 IN=wombat_512@2x.png
@@ -50,4 +54,19 @@ win-icon:
 	rm -rf $(OUT)
 	rsrc -ico windows/icon.ico -o icon.syso -arch=amd64
 
+dmg-icon:
+	$(call make_icns, assets/darwin/dmg_icon.png, assets/darwin/dmg_icon.icns)
 
+dmg:
+	-rm Wombat.dmg	
+	create-dmg \
+		--volname "Wombat" \
+		--volicon "assets/darwin/dmg_icon.icns" \
+		--background "assets/darwin/dmg_bg.png" \
+		--window-size 512 360 \
+		--icon-size 100 \
+		--icon "Wombat.app" 100 185 \
+		--hide-extension "Wombat.app" \
+		--app-drop-link 388 185 \
+		"Wombat.dmg" \
+		"deploy/darwin"
