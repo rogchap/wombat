@@ -1,5 +1,5 @@
 <p align="center">
-<img src="assets/gh/title.png" width="50%" style="min-width:300px" alt="Wombat" />
+<img src="assets/gh/title.png" width="400px" alt="Wombat" />
 <h3 align="center">Cross platform gRPC client</h3>
 </p>
 
