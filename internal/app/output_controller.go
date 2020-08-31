@@ -46,13 +46,10 @@ type outputController struct {
 }
 
 func (c *outputController) init() {
-	c.SetRunning(false)
-	c.SetClientStreaming(false)
-	c.SetBidiStreaming(false)
-	c.SetStatus(-1)
-
 	c.ConnectCloseClientStream(c.closeClientStream)
 	c.ConnectCancelRequest(c.cancelRequest)
+
+	c.clear()
 }
 
 func (c *outputController) clear() {

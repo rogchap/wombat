@@ -17,6 +17,9 @@ mod:
 clean-moc:
 	find ./internal -name 'moc*' -delete
 
+clean:
+	rm rcc.cpp rcc.qrc rcc_cgo_darwin_darwin_amd64.go
+
 define make_icns
 	mkdir _temp.iconset
 	sips -z 16 16 $(1) --out _temp.iconset/icon_16x16.png

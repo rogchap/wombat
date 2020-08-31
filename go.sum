@@ -93,7 +93,12 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/therecipe/qt v0.0.0-20200701200531-7f61353ee73e h1:G0DQ/TRQyrEZjtLlLwevFjaRiG8eeCMlq9WXQ2OO2bk=
 github.com/therecipe/qt v0.0.0-20200701200531-7f61353ee73e/go.mod h1:SUUR2j3aE1z6/g76SdD6NwACEpvCxb3fvG82eKbD6us=
 github.com/therecipe/qt v0.0.0-20200815005552-589db8f837c7 h1:SQsqqBFlPRc1TcwSv3mFMpvOnlsBKnthYL2lHQ+uYQg=
+github.com/therecipe/qt v0.0.0-20200829165651-691a5b42a0b2 h1:I7P86kxBt8LHH08yR2CLKIpD0h04ClIHdTZ4rmyTR8s=
 github.com/therecipe/qt/internal/binding/files/docs v0.0.0-20191019224306-1097424d656c h1:/VhcwU7WuFEVgDHZ9V8PIYAyYqQ6KNxFUjBMOf2aFZM=
+github.com/therecipe/qt/internal/binding/files/docs/5.12.0 v0.0.0-20200829165651-691a5b42a0b2 h1:tlGZC6CSAHFUoGxnmG6iZQASSHXxJeyRplPwFrGUwMM=
+github.com/therecipe/qt/internal/binding/files/docs/5.12.0 v0.0.0-20200829165651-691a5b42a0b2/go.mod h1:7m8PDYDEtEVqfjoUQc2UrFqhG0CDmoVJjRlQxexndFc=
+github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200701200531-7f61353ee73e h1:Dzp+wJoABCWBsCa4VXgTsxgpwOS2OtWGLiZJ4WsIL4Q=
+github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200701200531-7f61353ee73e/go.mod h1:mH55Ek7AZcdns5KPp99O0bg+78el64YCYWHiQKrOdt4=
 github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200815005552-589db8f837c7 h1:bJ/Wx3/LK1jTb5x7WCRceHZ62ExNElriW9uoEQqJaWA=
 github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200815005552-589db8f837c7/go.mod h1:mH55Ek7AZcdns5KPp99O0bg+78el64YCYWHiQKrOdt4=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=

@@ -1,8 +1,14 @@
-# Wombat - cross platform gRPC client
+<p align="center">
+<img src="assets/gh/title.png" width="50%" alt="Wombat" />
+<h3 align="center">Cross platform gRPC client</h3>
+</p>
 
-<img src="screenshot.png" width="100%" />
+<p align="center">
+<a href="https://github.com/rogchap/wombat/releases"><img src="https://img.shields.io/github/v/release/rogchap/wombat?include_prereleases&style=flat-square" alt="Github release"></a>
+<img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/rogchap/wombat?style=flat-square">
+</p>
 
-**WARNING** - alpha software; this is in active development and is not fully-featured yet.
+<img src="assets/gh/screenshot.png" width="100%" alt="screenshot" />
 
 ## Features
 
@@ -17,24 +23,41 @@
 - Support for adding RPC metadata
 - Execute unary requests
 - Execute server streaming requests
+- Execute client streaming requests
+- Execute bidirectional requests
+- Cancel requests in-flight
+- Send EOF for client streaming and bi-directional streaming
 - View response messages
 - View RPC Header and Trailer
 - View full RPC statistics
 - MacOS build
+- Linux build (inc AppImage)
 - Reflection API to determine RPC schema
+- Error messages on failed gRPC connections
 
 ### Features still working on:
 
-- [x] Error messages (will silently fail on error)
 - [ ] Windows build
-- [x] Linux build
-- [ ] Support for client streaming
-- [ ] Support for bidirectional streaming
 - [ ] Support for `oneof` fields
-- [x] Nullable nested messages
 - [ ] Multiple Workspaces
 - [ ] Multiple Request's within a Workspace
 
 ## Download
 
 Visit the [Releases](releases) page for the latest downloads. 
+
+## Install
+
+### MacOS
+
+If you get this error message: `"Wombat.app" can't be opened because the identity of the developer cannot be
+confirmed.`, Install by **Right Click/Option Click** -> **Open** -> **Open**. You'll only need to do this on first
+install.
+
+### Linux
+
+If you are using the `AppImage`, just download and set the file as executable:
+
+```
+$ chmod +x Wombat.AppImage
+```

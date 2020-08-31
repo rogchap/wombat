@@ -67,7 +67,6 @@ func (c *workspaceController) init() {
 	c.workspace, err = c.store.GetWorkspace(defaultWorkspaceKey)
 	if err != nil {
 		println(err.Error())
-		return
 	}
 
 	c.SetInputCtrl(NewInputController(nil).with(c.store, c.workspace))
