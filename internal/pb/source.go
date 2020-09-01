@@ -16,9 +16,13 @@ import (
 
 type ctxInternal struct{}
 
+// Source is a file descriptor source for the gRPC service
 type Source interface {
+	// Services returns a list of services with the fully qulaified service name.
 	Services() []string
+	// Methods are a map of fully qualified name to the Method Descriptor.
 	Methods() map[string][]*desc.MethodDescriptor
+	// GetMethodDec returns the Method Descriptor for a given service and method name.
 	GetMethodDesc(srv, name string) *desc.MethodDescriptor
 }
 
@@ -50,6 +54,7 @@ func (s *source) GetMethodDesc(srv, name string) *desc.MethodDescriptor {
 	return nil
 }
 
+// GetSourceFromProtoFiles parses the protofiles and import paths
 func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 	filenames, err := protoparse.ResolveFilenames(importPaths, protoPaths...)
 	if err != nil {
@@ -85,6 +90,7 @@ func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 	}, nil
 }
 
+// GetSourceFromReflectionAPI uses the Reflection API to parse the RPC stubs available to a server
 func GetSourceFromReflectionAPI(conn *grpc.ClientConn) (Source, error) {
 	if conn == nil {
 		return nil, errors.New("pb: no connection available")

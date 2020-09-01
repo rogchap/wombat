@@ -8,6 +8,7 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
+// FieldType are all the roles for a Message.
 const (
 	FieldType = int(core.Qt__UserRole) + 1<<iota
 	FieldDelegate
@@ -20,6 +21,8 @@ const (
 )
 
 //go:generate qtmoc
+// Field is a QObject that represents a Message field. A field can be a
+// scaler value or a nested Message. Field values can also be repeated.
 type Field struct {
 	core.QObject
 
@@ -38,6 +41,7 @@ type Field struct {
 }
 
 //go:generate qtmoc
+// Message is a QObject that represents the protobuf Message Descriptor.
 type Message struct {
 	core.QAbstractListModel
 

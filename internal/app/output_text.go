@@ -37,9 +37,8 @@ func (b *indentBuffer) sep() error {
 	if b.indentCount >= 0 {
 		_, err := b.WriteString(": ")
 		return err
-	} else {
-		return b.WriteByte(':')
 	}
+	return b.WriteByte(':')
 }
 
 func (b *indentBuffer) end() error {
@@ -54,9 +53,8 @@ func (b *indentBuffer) maybeNext(first *bool) error {
 	if *first {
 		*first = false
 		return nil
-	} else {
-		return b.next()
 	}
+	return b.next()
 }
 
 func (b *indentBuffer) next() error {
@@ -332,16 +330,14 @@ func marshalKnownFieldText(b *indentBuffer, fd *desc.FieldDescriptor, v interfac
 			if vd == nil {
 				_, err := b.WriteString(strconv.FormatInt(rv.Int(), 10))
 				return err
-			} else {
-				_, err := b.WriteString(vd.GetName())
-				b.WriteString("</span>")
-				return err
 			}
-		} else {
-			_, err := b.WriteString(strconv.FormatInt(rv.Int(), 10))
+			_, err := b.WriteString(vd.GetName())
 			b.WriteString("</span>")
 			return err
 		}
+		_, err := b.WriteString(strconv.FormatInt(rv.Int(), 10))
+		b.WriteString("</span>")
+		return err
 	case reflect.Uint32, reflect.Uint64:
 		b.WriteString("<span class='num'>")
 		_, err := b.WriteString(strconv.FormatUint(rv.Uint(), 10))
@@ -410,10 +406,9 @@ func marshalKnownFieldText(b *indentBuffer, fd *desc.FieldDescriptor, v interfac
 		}
 		if group {
 			return b.WriteByte('}')
-		} else {
-			_, err := b.WriteString("<span class='bkt'>&gt;</span>")
-			return err
 		}
+		_, err := b.WriteString("<span class='bkt'>&gt;</span>")
+		return err
 	}
 }
 

@@ -8,12 +8,14 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
+// The roles for RepeatedValues
 const (
 	RepeatedValueValue = int(core.Qt__UserRole) + 1<<iota
 	RepeatedValueMsgValue
 )
 
 //go:generate qtmoc
+// RepeatedValue is a QObject that holds the value or Message value for a repeated field
 type RepeatedValue struct {
 	core.QObject
 
@@ -22,6 +24,7 @@ type RepeatedValue struct {
 }
 
 //go:generate qtmoc
+// RepeatedValues is an QAbstractListModel that has the list of repeated values
 type RepeatedValues struct {
 	core.QAbstractListModel
 

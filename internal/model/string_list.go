@@ -7,6 +7,7 @@ import (
 )
 
 //go:generate qtmoc
+// StringList is a generic QStringListModel
 type StringList struct {
 	core.QStringListModel
 

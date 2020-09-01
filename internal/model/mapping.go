@@ -16,6 +16,7 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+// MapMessage converts a dynamic message to the view model Message
 func MapMessage(dm *dynamic.Message) *Message {
 	md := dm.GetMessageDescriptor()
 	msg := NewMessage(nil)
@@ -92,6 +93,7 @@ func MapMessage(dm *dynamic.Message) *Message {
 
 				if ft == descriptorpb.FieldDescriptorProto_TYPE_MESSAGE {
 
+					// TODO: [RC] This should be refactored as it's a repeat of the code above
 					enabled := true
 					var mdm *dynamic.Message
 					switch val.(type) {
@@ -156,6 +158,7 @@ func stringValue(v interface{}, fd *desc.FieldDescriptor) string {
 	}
 }
 
+// MapMetadata coverts the Metadata map to a Key value view model slice
 func MapMetadata(md metadata.MD) []*Keyval {
 	keys := make([]string, 0, len(md))
 	for k := range md {

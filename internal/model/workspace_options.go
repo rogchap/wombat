@@ -1,13 +1,13 @@
-// Copyright 2020 Rogchap. All Rights Reserved.
+// Copyright 2020 Roger Chapman (rogchap). All Rights Reserved.
 
 package model
 
 import "github.com/therecipe/qt/core"
 
 //go:generate qtmoc
+// WOrkspaceOptions is a QObject that holds the options for the Workspace
 type WorkspaceOptions struct {
 	core.QObject
-
 
 	_ func() `constructor:"init"`
 

@@ -11,15 +11,17 @@ import (
 	"github.com/therecipe/qt/qml"
 )
 
+// Reloader reloads a QML application on changes to qml files
 type Reloader interface {
-	Close()
+	// Stop will end reloading
+	Stop()
 }
 
 type hotreloader struct {
 	*core.QFileSystemWatcher
 }
 
-func (h *hotreloader) Close() {
+func (h *hotreloader) Stop() {
 	h.DisconnectDirectoryChanged()
 }
 

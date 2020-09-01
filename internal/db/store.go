@@ -24,6 +24,7 @@ func NewStore(path string) (*Store, error) {
 	return &Store{db}, nil
 }
 
+// GetWorkspace will retrieve the data for the workspace and unmarshal to the Workspace struct
 func (s *Store) GetWorkspace(key string) (*Workspace, error) {
 	w := &Workspace{}
 	err := s.db.View(func(txn *badger.Txn) error {
@@ -38,6 +39,7 @@ func (s *Store) GetWorkspace(key string) (*Workspace, error) {
 	return w, err
 }
 
+// SetWorkspace will store the workspace data in the store
 func (s *Store) SetWorkspace(key string, w *Workspace) error {
 	data, err := proto.Marshal(w)
 	if err != nil {
@@ -48,6 +50,7 @@ func (s *Store) SetWorkspace(key string, w *Workspace) error {
 	})
 }
 
+// Get is a generic function to retrive the raw data in the store by key
 func (s *Store) Get(key []byte) (val []byte, rtnErr error) {
 	rtnErr = s.db.View(func(txn *badger.Txn) error {
 		data, err := txn.Get(key)
@@ -60,12 +63,14 @@ func (s *Store) Get(key []byte) (val []byte, rtnErr error) {
 	return
 }
 
+// Set is a generic function to store raw data for a given key
 func (s *Store) Set(key, val []byte) error {
 	return s.db.Update(func(txn *badger.Txn) error {
 		return txn.Set(key, val)
 	})
 }
 
+// Close will close the underling data store
 func (s *Store) Close() {
 	if s == nil {
 		return

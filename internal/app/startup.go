@@ -20,8 +20,8 @@ import (
 // The following variables are set via LDFlags at build time
 var (
 	appname = "Wombat"
-	semver  = "0.1.0-beta"
-	isDebug = false
+	semver  = "0.1.0-beta.1"
+	isDebug = true
 )
 
 // Startup is the main startup of the application
@@ -40,7 +40,7 @@ func Startup() int {
 		entry = filepath.Join(".", "qml", "main.qml")
 		appData = filepath.Join(".", ".data")
 
-		debug.HotReloader(engine)
+		defer debug.HotReloader(engine).Stop()
 		app.SetQuitOnLastWindowClosed(false)
 	}
 	defer crashlog(appData)
