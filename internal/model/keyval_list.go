@@ -11,7 +11,6 @@ const (
 	KeyvalValRole
 )
 
-//go:generate qtmoc
 // Keyval is a QObject for key/value
 type Keyval struct {
 	core.QObject
@@ -20,8 +19,7 @@ type Keyval struct {
 	_ string `property:"val"`
 }
 
-//go:generate qtmoc
-// LeyvalList is a QAbstractListModel of key/values
+// KeyvalList is a QAbstractListModel of key/values
 type KeyvalList struct {
 	core.QAbstractListModel
 

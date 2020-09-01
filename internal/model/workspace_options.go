@@ -4,8 +4,7 @@ package model
 
 import "github.com/therecipe/qt/core"
 
-//go:generate qtmoc
-// WOrkspaceOptions is a QObject that holds the options for the Workspace
+// WorkspaceOptions is a QObject that holds the options for the Workspace
 type WorkspaceOptions struct {
 	core.QObject
 

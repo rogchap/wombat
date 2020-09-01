@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Store is a wrapper to a DB to store data to disk
 type Store struct {
 	db *badger.DB
 }

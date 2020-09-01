@@ -361,7 +361,7 @@ func formatInPayload(s *stats.InPayload) string {
 	sb.WriteString("« Wire Length: ")
 	sb.WriteString(strconv.Itoa(s.WireLength))
 	sb.WriteString("<br/>")
-	sb.WriteString("« Recived Time: ")
+	sb.WriteString("« Received Time: ")
 	sb.WriteString(s.RecvTime.String())
 	sb.WriteString("<p>")
 	return sb.String()

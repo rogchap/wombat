@@ -1,5 +1,5 @@
 // This code has been copied from github.com/jhump/protoreflect/dynamic/text.go
-// and ammended to format specifically for this app
+// and amended to format specifically for this app
 
 package app
 

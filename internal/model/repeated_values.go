@@ -14,7 +14,6 @@ const (
 	RepeatedValueMsgValue
 )
 
-//go:generate qtmoc
 // RepeatedValue is a QObject that holds the value or Message value for a repeated field
 type RepeatedValue struct {
 	core.QObject
@@ -23,7 +22,6 @@ type RepeatedValue struct {
 	_ *Message `property:msgValue"`
 }
 
-//go:generate qtmoc
 // RepeatedValues is an QAbstractListModel that has the list of repeated values
 type RepeatedValues struct {
 	core.QAbstractListModel

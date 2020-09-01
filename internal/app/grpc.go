@@ -29,7 +29,7 @@ func (t *transportCreds) ClientHandshake(ctx context.Context, addr string, in ne
 	return out, auth, err
 }
 
-// BlockDIal isa wrapper to the regular grpc dial, but will block until the connection is made or an error occurs.
+// BlockDial isa wrapper to the regular grpc dial, but will block until the connection is made or an error occurs.
 func BlockDial(addr string, opts *model.WorkspaceOptions, statHandler stats.Handler) (*grpc.ClientConn, error) {
 	var conn *grpc.ClientConn
 	errc := make(chan error)

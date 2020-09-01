@@ -20,7 +20,6 @@ const (
 	FieldEnum
 )
 
-//go:generate qtmoc
 // Field is a QObject that represents a Message field. A field can be a
 // scaler value or a nested Message. Field values can also be repeated.
 type Field struct {
@@ -40,7 +39,6 @@ type Field struct {
 	_ *KeyvalList     `property:"enumListModel"`
 }
 
-//go:generate qtmoc
 // Message is a QObject that represents the protobuf Message Descriptor.
 type Message struct {
 	core.QAbstractListModel
