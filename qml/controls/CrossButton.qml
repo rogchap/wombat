@@ -7,34 +7,31 @@ AbstractButton {
     id: control
 
     property color color
-    property alias rotation: canvas.rotation
 
     focusPolicy: Qt.NoFocus
 
-    height: 16
-    width: 16
+    height: 17
+    width: 17
 
-    Canvas {
-        id: canvas
-        x: 2
-        y: 2
-        width: 12
-        height: 12
-        contextType: "2d"
+    Label {
+        id: label
 
-        onPaint: {
-            context.reset()
-            context.lineWidth = 2
-            context.strokeStyle = color
-            context.moveTo(0, height / 2);
-            context.lineTo(width, height/2);
-            context.moveTo(width / 2, 0)
-            context.lineTo(width / 2, height)
-            context.stroke();
+        anchors.top: control.top
+        anchors.left: control.left
+        anchors.topMargin: -6
+        anchors.leftMargin: 1
+
+        
+        color: control.color
+        text: "×"
+        font {
+            weight: Font.DemiBold
+            pointSize: 22
         }
     }
 
     background: Rectangle {
+        rotation: control.rotation - 90
         color: control.down ? Style.bgColor2 : Style.bgColor
     }
 }

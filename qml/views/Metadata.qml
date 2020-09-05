@@ -54,7 +54,6 @@ Pane {
                 anchors.verticalCenter: parent.verticalCenter
 
                 color: Style.bgColor3
-                rotation: 45
                 onClicked: root.model.removeAt(index)
                 visible: lv.count > 1
             }

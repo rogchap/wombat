@@ -38,22 +38,9 @@ Popup {
                 font.pointSize: 16
             }
 
-            AbstractButton {
-                text: "×"
-                font {
-                    weight: Font.DemiBold
-                    pointSize: 22
-                }
-                anchors {
-                    right: parent.right
-                    top: parent.top
-                    topMargin: -5
-                }
-
-                contentItem: Label {
-                    text: parent.text
-                }
-
+            CrossButton{
+                anchors.right: parent.right
+                color: Style.bgColor3
                 onClicked: control.close()
             }
         }

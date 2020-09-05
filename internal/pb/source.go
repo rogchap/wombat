@@ -11,6 +11,7 @@ import (
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
@@ -91,13 +92,14 @@ func GetSourceFromProtoFiles(importPaths, protoPaths []string) (Source, error) {
 }
 
 // GetSourceFromReflectionAPI uses the Reflection API to parse the RPC stubs available to a server
-func GetSourceFromReflectionAPI(conn *grpc.ClientConn) (Source, error) {
+func GetSourceFromReflectionAPI(conn *grpc.ClientConn, meta map[string]string) (Source, error) {
 	if conn == nil {
 		return nil, errors.New("pb: no connection available")
 	}
 
 	stub := rpb.NewServerReflectionClient(conn)
-	ctx := context.WithValue(context.Background(), "ctxInternal", struct{}{})
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(meta))
+	ctx = context.WithValue(ctx, "ctxInternal", struct{}{})
 	client := grpcreflect.NewClient(ctx, stub)
 	defer client.Reset()
 

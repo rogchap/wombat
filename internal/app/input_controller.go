@@ -65,8 +65,19 @@ func (c *inputController) with(store *db.Store, workspace *db.Workspace) *inputC
 
 func (c *inputController) processReflectionAPI(conn *grpc.ClientConn) error {
 
+	meta := make(map[string]string)
+	for _, kv := range c.MetadataListModel().List() {
+		if kv.Key() == "" {
+			continue
+		}
+		meta[kv.Key()] = kv.Val()
+	}
+	if c.workspace != nil {
+		c.workspace.Metadata = meta
+	}
+
 	var err error
-	c.pbSource, err = pb.GetSourceFromReflectionAPI(conn)
+	c.pbSource, err = pb.GetSourceFromReflectionAPI(conn, meta)
 	if err != nil {
 		return err
 	}

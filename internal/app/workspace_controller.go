@@ -151,6 +151,11 @@ func (c *workspaceController) connect(addr string) error {
 	ctx, c.cancelCtxFunc = context.WithCancel(context.Background())
 
 	go func() {
+		defer func() {
+			// TODO(rogchap) Should be a better way than swallowing this panic?
+			recover()
+		}()
+
 		for {
 			if c.grpcConn == nil {
 				c.SetConnState(connectivity.Shutdown.String())

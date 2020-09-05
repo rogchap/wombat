@@ -76,7 +76,6 @@ ListView {
 
                     CrossButton {
                         color: Style.bgColor3
-                        rotation: 45
                         onClicked: valueListModel.remove(index)
                     }
                 }
@@ -103,7 +102,6 @@ ListView {
 
                     CrossButton {
                         color: Style.bgColor3
-                        rotation: 45
                         onClicked: valueListModel.remove(index)
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -130,7 +128,6 @@ ListView {
 
                     CrossButton {
                         color: Style.bgColor3
-                        rotation: 45
                         onClicked: valueListModel.remove(index)
                     }
 
@@ -156,7 +153,6 @@ ListView {
 
                     CrossButton {
                         color: Style.bgColor3
-                        rotation: 45
                         onClicked: valueListModel.remove(index)
                     }
 
@@ -181,7 +177,6 @@ ListView {
 
                     CrossButton {
                         color: Style.bgColor3
-                        rotation: 45
                         onClicked: valueListModel.remove(index)
                     }
 

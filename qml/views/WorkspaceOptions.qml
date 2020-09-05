@@ -29,6 +29,10 @@ Modal {
             TabButton {
                 text: qsTr("TLS")
             }
+
+            TabButton {
+                text: qsTr("Metadata")
+            }
         }
 
         Rectangle {
@@ -47,6 +51,8 @@ Modal {
             }
 
             WorkspaceOptionsTls {}
+
+            Metadata {}
 
         }
 
