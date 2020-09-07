@@ -407,7 +407,7 @@ func marshalKnownFieldText(b *indentBuffer, fd *desc.FieldDescriptor, v interfac
 		if group {
 			return b.WriteByte('}')
 		}
-		_, err := b.WriteString("<span class='bkt'>&gt;</span>")
+		_, err = b.WriteString("<span class='bkt'>&gt;</span>")
 		return err
 	}
 }

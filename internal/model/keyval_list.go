@@ -6,6 +6,7 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
+// The roles for the KeyvalList
 const (
 	KeyvalKeyRole = int(core.Qt__UserRole) + 1<<iota
 	KeyvalValRole

@@ -33,6 +33,7 @@ Item {
         CrossButton {
             text: qsTr("add")
             color: Style.greenColor
+            rotation: 45
             onClicked: {
                 valueListModel.addValue()
             }
