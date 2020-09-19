@@ -6,8 +6,17 @@ import (
 	"path/filepath"
 
 	badger "github.com/dgraph-io/badger/v2"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
+
+type dbLogger struct {
+	*zap.SugaredLogger
+}
+
+func (l *dbLogger) Warningf(template string, args ...interface{}) {
+	l.Warnf(template, args...)
+}
 
 // Store is a wrapper to a DB to store data to disk
 type Store struct {
@@ -15,9 +24,11 @@ type Store struct {
 }
 
 // NewStore creates a new store to save user data
-func NewStore(path string) (*Store, error) {
+func NewStore(path string, logger *zap.SugaredLogger) (*Store, error) {
 	dbPath := filepath.Join(path, "db")
-	db, err := badger.Open(badger.DefaultOptions(dbPath))
+	opts := badger.DefaultOptions(dbPath)
+	opts = opts.WithLogger(&dbLogger{logger})
+	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
 	}

@@ -43,6 +43,17 @@ Item {
         anchors.right: parent.right
         text: qsTr("Send")
         color: Style.primaryColor
-        onClicked: wc.send(cbServiceList.displayText, cbMethodList.displayText)
+        onClicked: {
+            const err = wc.send(cbServiceList.displayText, cbMethodList.displayText)
+            if (err) {
+                errMsg.text = err
+                errMsg.open()
+            }
+        }
+
+        MessageBox {
+            id: errMsg
+            title: qsTr("Error invoking RPC")
+        }
     } 
 }

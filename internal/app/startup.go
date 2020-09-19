@@ -21,8 +21,13 @@ import (
 var (
 	appname = "Wombat"
 	semver  = "0.1.0-beta.1"
-	isDebug = true
+	isDebug = false
 )
+
+// (rogchap) would prefer to not have a global logger, but unfortunately QObject constructors
+// are unable to pass any arguments (for now). If this changes in the future, we should pass the logger
+// to the NewMainController constructor and so forth.
+var logger Logger
 
 // Startup is the main startup of the application
 func Startup() int {
@@ -45,11 +50,17 @@ func Startup() int {
 	}
 	defer crashlog(appData)
 
+	var err error
+	if logger, err = newLogger(appData); err != nil {
+		panic(err)
+	}
+
 	mc := NewMainController(nil)
 
 	engine.RootContext().SetContextProperty("mc", mc)
 	engine.Load(core.NewQUrl3(entry, 0))
 
+	logger.Infof("starting application: %s", semver)
 	return app.Exec()
 }
 

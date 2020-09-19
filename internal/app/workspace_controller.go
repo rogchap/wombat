@@ -5,6 +5,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/therecipe/qt/core"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
@@ -46,6 +48,7 @@ type workspaceController struct {
 }
 
 func (c *workspaceController) init() {
+	logger.Infof("initializing workspace controller")
 
 	c.ConnectFindProtoFiles(c.findProtoFiles)
 	c.ConnectAddImport(c.addImport)
@@ -59,7 +62,7 @@ func (c *workspaceController) init() {
 	}
 
 	var err error
-	c.store, err = db.NewStore(dbPath)
+	c.store, err = db.NewStore(dbPath, logger.(*zap.SugaredLogger))
 	if err != nil {
 		println(err.Error())
 	}
@@ -92,7 +95,7 @@ func (c *workspaceController) findProtoFiles(path string) {
 	path = core.NewQUrl3(path, core.QUrl__StrictMode).ToLocalFile()
 	var protoFiles []string
 
-	// TODO [RC] We should do the search async and show a loading/searching icon to the user
+	// TODO(roghcap) We should do the search async and show a loading/searching icon to the user
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".proto" {
 			protoFiles = append(protoFiles, path)
@@ -101,11 +104,10 @@ func (c *workspaceController) findProtoFiles(path string) {
 	})
 
 	if len(protoFiles) == 0 {
-		// TODO [RC] Show error to user that there is no proto files found
+		// TODO(rogchap) Show error to user that there is no proto files found
 		return
 	}
 
-	// TODO [RC] Shoud we be replacing or adding?
 	c.Options().ProtoListModel().SetStringList(protoFiles)
 }
 
@@ -131,8 +133,11 @@ func (c *workspaceController) processProtos() error {
 }
 
 func (c *workspaceController) connect(addr string) error {
+	logger.Infof("connect: %q", addr)
 	if addr == "" {
-		return errors.New("no address to connect")
+		err := errors.New("no address to connect")
+		logger.Infof("connect: %v", err)
+		return err
 	}
 
 	if c.grpcConn != nil {
@@ -144,6 +149,7 @@ func (c *workspaceController) connect(addr string) error {
 	var err error
 	c.grpcConn, err = BlockDial(addr, c.Options(), c.OutputCtrl())
 	if err != nil {
+		logger.Infof("connect BlockDial error: %v", err)
 		return err
 	}
 
@@ -153,7 +159,9 @@ func (c *workspaceController) connect(addr string) error {
 	go func() {
 		defer func() {
 			// TODO(rogchap) Should be a better way than swallowing this panic?
-			recover()
+			if r := recover(); r != nil {
+				logger.Errorf("panic waiting for gRPC state change: %v", r)
+			}
 		}()
 
 		for {
@@ -186,17 +194,32 @@ func (c *workspaceController) connect(addr string) error {
 		}
 		c.workspace.Addr = addr
 
+		logger.Infof("saving workspace to store")
 		c.store.SetWorkspace(defaultWorkspaceKey, c.workspace)
 	}()
 	return nil
 }
 
-func (c *workspaceController) send(service, method string) error {
+func (c *workspaceController) send(service, method string) (rerr error) {
+	defer func() {
+		if r := recover(); r != nil {
+			rerr = fmt.Errorf("unexpected error for \"%s/%s\": %v", service, method, r)
+			logger.Errorf("send panic: %v", rerr)
+		}
+	}()
+
 	if c.grpcConn == nil {
+		// noop
 		return nil
 	}
 
 	md := c.InputCtrl().pbSource.GetMethodDesc(service, method)
+	if md == nil {
+		rerr = fmt.Errorf("unable to find descriptor for \"%s/%s\"", service, method)
+		logger.Errorf("send: %v", rerr)
+		return
+	}
+
 	req := processMessage(c.InputCtrl().RequestModel())
 
 	if data, err := req.Marshal(); err == nil {

@@ -21,6 +21,7 @@ type mainController struct {
 }
 
 func (c *mainController) init() {
+	logger.Infof("initializing main controller")
 	c.SetWorkspaceCtrl(NewWorkspaceController(nil))
 	c.SetVersion(semver)
 }

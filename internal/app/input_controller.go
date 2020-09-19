@@ -35,6 +35,7 @@ type inputController struct {
 }
 
 func (c *inputController) init() {
+	logger.Infof("initializing input controller")
 	c.SetServiceListModel(model.NewStringList(nil))
 	c.SetMethodListModel(model.NewStringList(nil))
 	c.SetRequestModel(model.NewMessage(nil))
@@ -91,7 +92,9 @@ func (c *inputController) processReflectionAPI(conn *grpc.ClientConn) error {
 
 func (c *inputController) processProtos(imports, protos []string) error {
 	if len(protos) == 0 {
-		return errors.New("no *.proto files to process")
+		err := errors.New("no *.proto files to process")
+		logger.Infof("processProtos: %v", err)
+		return err
 	}
 	if len(imports) == 0 {
 		// optomistacally try and use a import path
@@ -106,7 +109,9 @@ func (c *inputController) processProtos(imports, protos []string) error {
 
 	services := c.pbSource.Services()
 	if len(services) == 0 {
-		return errors.New("no gRPC services found in proto files")
+		err := errors.New("no gRPC services found in proto files")
+		logger.Infof("processProtos: %v", err)
+		return err
 	}
 
 	c.ServiceListModel().SetStringList(services)
@@ -115,6 +120,8 @@ func (c *inputController) processProtos(imports, protos []string) error {
 }
 
 func (c *inputController) serviceChanged(service string) {
+	logger.Infof("serviceChanged: %q", service)
+
 	methods := c.pbSource.Methods()
 
 	srvMethods, ok := methods[service]
@@ -131,6 +138,7 @@ func (c *inputController) serviceChanged(service string) {
 }
 
 func (c *inputController) methodChanged(service, method string) {
+	logger.Infof("methodChanged: \"%s/%s\"", service, method)
 	md := c.pbSource.GetMethodDesc(service, method)
 	if md == nil {
 		return
