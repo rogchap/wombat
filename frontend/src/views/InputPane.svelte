@@ -1,0 +1,3 @@
+<div>
+    Input Pane
+</div>

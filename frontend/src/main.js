@@ -1,6 +1,7 @@
-import App from './App.svelte';
-
 import * as Wails from '@wailsapp/runtime';
+import App from './views/App.svelte';
+
+// window.addEventListener('contextmenu', e => e.preventDefault());
 
 let app;
 

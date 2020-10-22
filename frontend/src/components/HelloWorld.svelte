@@ -1,18 +1,13 @@
 <script>
-	import { getContext } from 'svelte';
-	import ModalContent from './ModalContent.svelte'
-	
-	const { open } = getContext('simple-modal');
 
-	const handleOpenModal = () => {
-		window.backend.basic().then((result) => {
-			open(ModalContent, { message: result });
-		});
-	};
 </script>
 
 <main>
-	<p><button on:click={handleOpenModal}>Hello</button></p>
+	<p class="bg">Hello World</p>
 </main>
 
-<style></style>
+<style>
+.bg {
+    color: var(--bg-color2);
+}
+</style>

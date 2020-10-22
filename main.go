@@ -14,12 +14,13 @@ func main() {
 	css := mewn.String("./frontend/public/build/bundle.css")
 
 	app := wails.CreateApp(&wails.AppConfig{
-		Width:  1024,
-		Height: 768,
-		Title:  "Wombat",
-		JS:     js,
-		CSS:    css,
-		Colour: "#2e3440",
+		Width:     1024,
+		Height:    768,
+		Resizable: true,
+		Title:     "Wombat",
+		JS:        js,
+		CSS:       css,
+		Colour:    "#2e3440",
 	})
 
 	app.Bind(basic)
