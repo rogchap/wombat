@@ -1,21 +1,25 @@
 <script>
     export let title;
-    export let bgColor;
+    export let color = "var(--text-color)";
+    export let bgColor = "var(--bg-color)";
 </script>
 
-<button on:click style="{bgColor && 'background-color:' + bgColor}">
+<button
+    on:click 
+            style="background-color:{bgColor}; color:{color};">
     {title}
 </button>
 
 <style>
     button {
         border: 0;
-        background-color: var(--bg-color);
-        color: var(--text-color);
+        min-width: 100px;
+        align-items: center;
+        justify-content: center;
         padding: var(--padding);
         font-size: var(--font-size);
     }
     button:active {
-        background-color: var(--bg-color2);
+        background-color: var(--bg-color2) !important;
     }
 </style>

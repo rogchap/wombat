@@ -16,6 +16,10 @@
             border: "var(--border)",
             color: "var(--text-color)",
         },
+        styleContent: {
+            padding: "var(--padding)",
+            width: "100%",
+        },
         styleCloseButton: {
             borderRadius: 0,
         },

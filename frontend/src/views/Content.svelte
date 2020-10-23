@@ -4,6 +4,16 @@
     import SplitPane from "../controls/SplitPane.svelte";
 </script>
 
+<style>
+.content {
+    flex: 1;
+}
+
+section {
+    width: 100%;
+}
+</style>
+
 <div class="content">
     <SplitPane>
         <section slot=a>
@@ -14,9 +24,3 @@
         </section>
     </SplitPane>
 </div>
-
-<style>
-.content {
-    flex: 1;
-}
-</style>
