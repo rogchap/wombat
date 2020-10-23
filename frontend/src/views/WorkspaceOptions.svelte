@@ -3,6 +3,9 @@
     import Tabs from "../controls/Tabs.svelte";
     import TabList from "../controls/TabList.svelte";
     import TabPanel from "../controls/TabPanel.svelte";
+    import Button from "../controls/Button.svelte";
+    import WorkspaceOptionsBasic from "./WorkspaceOptionsBasic.svelte";
+    import WorkspaceOptionsTls from "./WorkspaceOptionsTls.svelte";
 </script>
 
 <style>
@@ -18,6 +21,11 @@ h1 {
     font-weight: 600;
     border-bottom: var(--border);
 }
+footer {
+   justify-content: flex-end; 
+    padding-top: var(--padding);
+    border-top: var(--border);
+}
 </style>
 
 <div class="workspace-options">
@@ -30,15 +38,21 @@ h1 {
         </TabList>
 
         <TabPanel>
-            <h2>Basic panel</h2>
+            <WorkspaceOptionsBasic />
         </TabPanel>
 
         <TabPanel>
-            <h2>TLS panel</h2>
+            <WorkspaceOptionsTls />
         </TabPanel>
 
         <TabPanel>
             <h2>Metadata panel</h2>
         </TabPanel>
     </Tabs>
+    <footer>
+        <Button
+            text="Connect"
+            bgColor="var(--accent-color3)"
+        />
+    </footer>
 </div>

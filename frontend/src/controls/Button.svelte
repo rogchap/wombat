@@ -1,5 +1,5 @@
 <script>
-    export let title;
+    export let text;
     export let color = "var(--text-color)";
     export let bgColor = "var(--bg-color)";
 </script>
@@ -7,7 +7,7 @@
 <button
     on:click 
             style="background-color:{bgColor}; color:{color};">
-    {title}
+    {text}
 </button>
 
 <style>

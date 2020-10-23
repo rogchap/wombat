@@ -129,7 +129,7 @@
 	</div>
 
 	{#if !fixed}
-		<div class="{type} divider" style="{side}: calc({pos}% - 12px)" use:drag={setPos}></div>
+		<div class="{type} divider" style="{side}: calc({pos}% - 10px)" use:drag={setPos}></div>
 	{/if}
 </div>
 

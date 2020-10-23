@@ -14,7 +14,7 @@
 <div class="header">
     <div class="hitem">
         <Button
-            title="Workspace"
+            text="Workspace"
             bgColor="var(--accent-color3)"
             on:click={openWorkspaceOptions}
         />

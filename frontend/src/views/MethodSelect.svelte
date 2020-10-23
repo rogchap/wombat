@@ -7,7 +7,7 @@
         Dropdowns
     </div>
     <Button 
-        title="Send"
+        text="Send"
         color="var(--primary-color)"
     />
 </div>
