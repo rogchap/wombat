@@ -38,7 +38,7 @@ input:checked ~ .indicator > span {
 
 <label>
     {rhs ? "" : text}
-    <input type="checkbox" checked={checked} />
+    <input type="checkbox" bind:checked />
     <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
     {rhs ? text : ""}
 </label>

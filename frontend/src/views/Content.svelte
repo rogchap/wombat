@@ -16,10 +16,10 @@ section {
 
 <div class="content">
     <SplitPane>
-        <section slot=a>
+        <section slot="a">
             <InputPane />
         </section>
-        <section slot=b>
+        <section slot="b">
             <OutputPane />
         </section>
     </SplitPane>

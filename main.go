@@ -1,28 +1,10 @@
 package main
 
 import (
-	"github.com/leaanthony/mewn"
-	"github.com/wailsapp/wails"
+	"os"
+	"wombat/internal/app"
 )
 
-func basic() string {
-	return "World!"
-}
-
 func main() {
-	js := mewn.String("./frontend/public/build/bundle.js")
-	css := mewn.String("./frontend/public/build/bundle.css")
-
-	app := wails.CreateApp(&wails.AppConfig{
-		Width:     1024,
-		Height:    768,
-		Resizable: true,
-		Title:     "Wombat",
-		JS:        js,
-		CSS:       css,
-		Colour:    "#2e3440",
-	})
-
-	app.Bind(basic)
-	app.Run()
+	os.Exit(app.Run())
 }

@@ -1,6 +1,8 @@
 <script>
     import TextField from "../controls/TextField.svelte";
     import Checkbox from "../controls/Checkbox.svelte";
+
+    export let options = {};
 </script>
 
 <style>
@@ -11,6 +13,6 @@
 </style>
 
 <div class="workspace-options-basic">
-    <TextField label="gRPC server address:" />
+    <TextField label="gRPC server address:" bind:value={options.addr} />
     <Checkbox text="Use reflection to determine the RPC schema" rhs />
 </div>

@@ -1,4 +1,5 @@
 <script>
+    import { getContext } from 'svelte';
     import Tab from "../controls/Tab.svelte";
     import Tabs from "../controls/Tabs.svelte";
     import TabList from "../controls/TabList.svelte";
@@ -6,6 +7,17 @@
     import Button from "../controls/Button.svelte";
     import WorkspaceOptionsBasic from "./WorkspaceOptionsBasic.svelte";
     import WorkspaceOptionsTls from "./WorkspaceOptionsTls.svelte";
+
+    const { close } = getContext('modal');
+
+    let options = {}
+
+    const onConnectClicked = () => backend.api.Connect(options).
+        then(close).
+        catch(err => {
+            // TODO handle errors
+        });
+
 </script>
 
 <style>
@@ -38,11 +50,11 @@ footer {
         </TabList>
 
         <TabPanel>
-            <WorkspaceOptionsBasic />
+            <WorkspaceOptionsBasic options={options} />
         </TabPanel>
 
         <TabPanel>
-            <WorkspaceOptionsTls />
+            <WorkspaceOptionsTls options={options} />
         </TabPanel>
 
         <TabPanel>
@@ -53,6 +65,7 @@ footer {
         <Button
             text="Connect"
             bgColor="var(--accent-color3)"
+            on:click={onConnectClicked}
         />
     </footer>
 </div>

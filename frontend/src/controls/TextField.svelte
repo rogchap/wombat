@@ -1,8 +1,9 @@
 <script>
     export let label;
     export let hint = "";
-    export let placeholder;
+    export let placeholder = "";
     export let width = "400px";
+    export let value = "";
 </script>
 
 <style>
@@ -43,5 +44,5 @@
         <span>{hint}</span>
     </div>
     {/if}
-    <input type="text" placeholder={placeholder} />
+    <input type="text" placeholder={placeholder} bind:value />
 </div>

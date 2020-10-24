@@ -4,8 +4,13 @@
     import Button from '../controls/Button.svelte';
     import WorkspaceOptions from '../views/WorkspaceOptions.svelte';
 
-    const { open } = getContext('modal');
+    let addr = ""
+    wails.Events.On("wombat:client_connected", data => addr = data);
 
+    let status = ""
+    wails.Events.On("wombat:client_state_changed", data => status = data.toLowerCase())
+
+    const { open } = getContext('modal');
     const openWorkspaceOptions = () => {
         open(WorkspaceOptions);
     }
@@ -19,8 +24,9 @@
             on:click={openWorkspaceOptions}
         />
     </div>
-    <div>
-        TODO
+    <div class="connection">
+        <h1>{addr}</h1>
+        <h3>{status}</h3>
     </div>
     <div class="hitem" />
 </div>
@@ -33,6 +39,22 @@
     flex-flow: row;
     align-items: center;
     justify-content: space-between;
+}
+
+.connection {
+    flex-flow: column;
+    align-items: center;
+}
+
+h1 {
+    font-size: calc(var(--font-size) + 2px);
+    margin: 0;
+    color: var(--primary-color)
+}
+
+h3 {
+    font-size: var(--font-size);
+    margin: 0;
 }
 
 .hitem {
