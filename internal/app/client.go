@@ -12,11 +12,11 @@ type client struct {
 }
 
 type options struct {
-	Addr    string
-	Reflect bool
+	Addr    string `json:"addr"`
+	Reflect bool   `json:"reflect"`
 
-	Insecure  bool
-	Plaintext bool
+	Insecure  bool `json:"insecure"`
+	Plaintext bool `json:"plaintext"`
 }
 
 func (c *client) connect(o options) error {

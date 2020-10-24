@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/leaanthony/mewn"
@@ -30,8 +31,8 @@ func Run() int {
 
 	app.Bind(&api{})
 
-	if err := app.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "app: error running app: %v", err)
+	if err := app.Run(); err != nil && err != http.ErrServerClosed {
+		fmt.Fprintf(os.Stderr, "app: error running app: %v\n", err)
 		return 1
 	}
 	return 0

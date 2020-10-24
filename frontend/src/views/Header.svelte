@@ -26,7 +26,7 @@
     </div>
     <div class="connection">
         <h1>{addr}</h1>
-        <h3>{status}</h3>
+        <h3 class={status}>{status}</h3>
     </div>
     <div class="hitem" />
 </div>
@@ -55,6 +55,18 @@ h1 {
 h3 {
     font-size: var(--font-size);
     margin: 0;
+}
+
+h3.connecting {
+    color: var(--yellow-color);
+}
+
+h3.ready {
+    color: var(--green-color);
+}
+
+h3.transient_failure {
+    color: var(--red-color);
 }
 
 .hitem {

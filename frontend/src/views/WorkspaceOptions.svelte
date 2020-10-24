@@ -1,5 +1,5 @@
 <script>
-    import { getContext } from 'svelte';
+    import { getContext, onMount } from 'svelte';
     import Tab from "../controls/Tab.svelte";
     import Tabs from "../controls/Tabs.svelte";
     import TabList from "../controls/TabList.svelte";
@@ -11,6 +11,11 @@
     const { close } = getContext('modal');
 
     let options = {}
+    onMount(async () => {
+        backend.api.GetWorkspaceOptions().
+            then(o => options = o).
+            catch(e => {})
+    })
 
     const onConnectClicked = () => backend.api.Connect(options).
         then(close).

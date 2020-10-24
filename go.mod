@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/websocket v1.4.2 // indirect
