@@ -1,10 +1,12 @@
 <script>
     import Button from "../controls/Button.svelte";
+    import Dropdown from "../controls/Dropdown.svelte";
 </script>
 
 <div class="method-select">
     <div>
-        Dropdowns
+        <Dropdown frameless />
+        <Dropdown frameless />
     </div>
     <Button 
         text="Send"

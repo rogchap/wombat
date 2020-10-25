@@ -39,7 +39,9 @@
        --bg-color: #2e3440;
        --bg-color2: #434c5e;
        --bg-color3: #4c566a;
-       --bg-light-color: #eceffa;
+       --bg-inverse-color: #eceffa;
+       --bg-inverse-color2: #e5e9f0;
+       --bg-inverse-color3: #d8dee9;
        --bg-input-color: #242933;
        
        --border-color: #3b4252;
@@ -47,7 +49,7 @@
        --text-color: #eceff4;
        --text-color2: #d8dee9;
        --text-color3: #bcc7d9;
-       --text-dark-color: #2e3440;
+       --text-inverse-color: #2e3440;
 
        --primary-color: #88c0d0;
        --accent-color: #8fbcbb;

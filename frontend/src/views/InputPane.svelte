@@ -3,6 +3,7 @@
     import Tabs from "../controls/Tabs.svelte";
     import TabList from "../controls/TabList.svelte";
     import TabPanel from "../controls/TabPanel.svelte";
+    import Dropdown from "../controls/Dropdown.svelte";
     import MethodSelect from "./MethodSelect.svelte";
 </script>
 
@@ -16,6 +17,7 @@
 
         <TabPanel>
             <h2>Request panel</h2>
+            <Dropdown />
         </TabPanel>
 
         <TabPanel>

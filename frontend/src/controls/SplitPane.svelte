@@ -4,7 +4,7 @@
 	export let type = "horizontal";
 	export let pos = 50;
 	export let fixed = false;
-	export let min = 350;
+	export let min = 400;
 	// export let min1 = min;
 	// export let min2 = min;
 	const refs = {};

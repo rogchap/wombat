@@ -55,6 +55,12 @@ func (a *api) wailsLoaded(data ...interface{}) {
 // WailsShutdown is the shutdown function that is called when wails shuts down
 func (a *api) WailsShutdown() {
 	a.store.close()
+	if a.cancelCtxFunc != nil {
+		a.cancelCtxFunc()
+	}
+	if a.client != nil {
+		a.client.close()
+	}
 }
 
 // GetWorkspaceOptions gets the workspace options from the store
@@ -93,13 +99,13 @@ func (a *api) Connect(data interface{}) error {
 		return fmt.Errorf("app: failed to connect to server: %v", err)
 	}
 
-	go a.setWorkspaceOptions(opts)
-
 	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
 
 	ctx := context.Background()
 	ctx, a.cancelCtxFunc = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
+
+	go a.setWorkspaceOptions(opts)
 
 	return nil
 }
@@ -112,6 +118,13 @@ func (a *api) setWorkspaceOptions(opts options) {
 }
 
 func (a *api) monitorStateChanges(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// this will panic if we are waiting for a state change and the client (and it's connection)
+			// get GC'd without this context being canceled
+			a.logger.Errorf("panic monitoring state changes: %v", r)
+		}
+	}()
 	for {
 		if a.client == nil || a.client.conn == nil {
 			continue
