@@ -24,6 +24,10 @@
         }
     }
 
+    const methodSelectionChanged = ({ detail: { value } }) => {
+        backend.api.SelectMethod(value);
+    }
+
     const reset = () => {
         serviceOptions = [];
         serviceSelected = undefined;
@@ -35,7 +39,7 @@
 <div class="method-select">
     <div>
         <Dropdown frameless items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
-        <Dropdown frameless items={methodOptions} selectedValue={methodSelected} />
+        <Dropdown frameless items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
     </div>
     <Button 
         text="Send"

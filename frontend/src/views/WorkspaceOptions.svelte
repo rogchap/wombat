@@ -27,7 +27,8 @@
 
 <style>
 .workspace-options {
-    width: 100%;
+    width: calc(var(--padding) + 800px);
+    height: 650px;
     flex-flow: column;
 }
 h1 {
@@ -39,9 +40,10 @@ h1 {
     border-bottom: var(--border);
 }
 footer {
-   justify-content: flex-end; 
+    justify-content: flex-end; 
     padding-top: var(--padding);
     border-top: var(--border);
+    margin-top: calc(-1 * var(--padding));
 }
 </style>
 

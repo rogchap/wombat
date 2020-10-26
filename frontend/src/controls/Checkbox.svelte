@@ -6,8 +6,8 @@
 
 <style>
 label {
-    margin-bottom: 5px;
     align-items: center;
+    margin-bottom: var(--padding);
 }
 input {
     position: absolute;

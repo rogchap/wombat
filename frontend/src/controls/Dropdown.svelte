@@ -1,6 +1,9 @@
 <script>
-    import Select from "svelte-select"
+    import Select from "svelte-select";
+    import InputLabel from "./InputLabel.svelte";
 
+    export let label;
+    export let hint = "";
     export let frameless = false;
     export let items = [];
     export let selectedValue;
@@ -19,6 +22,7 @@
 .dropdown {
     display: block;
     width: 400px;
+    margin-bottom: var(--padding);
     --background: var(--bg-input-color);
     --borderRadius: 0;
     --borderFocusColor: var(--border-color);
@@ -39,9 +43,13 @@
     min-width: 150px;
     --border: none;
     --background: var(--bg-color);
+    margin: 0;
 }
 </style>
 
 <div class="dropdown" class:frameless>
-    <Select on:select {items} {selectedValue} {placeholder} {isClearable} {showIndicator} {isSearchable} />
+    {#if label}
+    <InputLabel {label} {hint} />
+    {/if}
+    <Select on:select {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
 </div>

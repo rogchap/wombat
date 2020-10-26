@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
@@ -202,4 +203,39 @@ func (a *api) monitorStateChanges(ctx context.Context) {
 			return
 		}
 	}
+}
+
+// SelectMethod is called when the user selects a new method by the given name
+func (a *api) SelectMethod(fullname string) error {
+	name := strings.Replace(fullname[1:], "/", ".", 1)
+	desc, err := a.protofiles.FindDescriptorByName(protoreflect.FullName(name))
+	if err != nil {
+		return fmt.Errorf("app: failed to find descriptor: %v", err)
+	}
+
+	methodDesc, ok := desc.(protoreflect.MethodDescriptor)
+	if !ok {
+		return fmt.Errorf("app: descriptor was not a method: %T", desc)
+	}
+
+	md := methodDesc.Input()
+
+	var in messageDesc
+	in.FullName = string(md.FullName())
+
+	fds := md.Fields()
+	for i := 0; i < fds.Len(); i++ {
+		fd := fds.Get(i)
+
+		var fdesc fieldDesc
+		fdesc.Name = string(fd.Name())
+		fdesc.Kind = fd.Kind().String()
+		fdesc.Repeated = fd.Cardinality() == protoreflect.Repeated
+
+		in.Fields = append(in.Fields, fdesc)
+	}
+
+	a.runtime.Events.Emit(eventMethodInputCahnged, in)
+
+	return nil
 }

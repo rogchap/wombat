@@ -19,13 +19,16 @@ func Run() int {
 		go server.Serve()
 	}
 
+	css := mewn.String("./frontend/public/build/bundle.css")
+	js := mewn.String("./frontend/public/build/bundle.js")
+
 	app := wails.CreateApp(&wails.AppConfig{
-		Width:     1024,
-		Height:    768,
+		Width:     1200,
+		Height:    820,
 		Resizable: true,
 		Title:     "Wombat",
-		JS:        mewn.String("./frontend/public/build/bundle.js"),
-		CSS:       mewn.String("./frontend/public/build/bundle.css"),
+		JS:        js,
+		CSS:       css,
 		Colour:    "#2e3440",
 	})
 

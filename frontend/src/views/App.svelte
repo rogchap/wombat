@@ -15,6 +15,7 @@
             backgroundColor: "var(--bg-color)",
             border: "var(--border)",
             color: "var(--text-color)",
+            width: "auto",
         },
         styleContent: {
             padding: "var(--padding)",

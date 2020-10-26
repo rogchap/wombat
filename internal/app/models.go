@@ -24,3 +24,15 @@ type serviceSelect struct {
 }
 
 type servicesSelect []serviceSelect
+
+type fieldDesc struct {
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	Kind     string `json:"kind"`
+	Repeated bool   `json:"repeated"`
+}
+
+type messageDesc struct {
+	FullName string      `json:"full_name"`
+	Fields   []fieldDesc `json:"fields"`
+}

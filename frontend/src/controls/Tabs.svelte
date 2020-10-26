@@ -49,6 +49,7 @@
 .tabs {
     flex-flow: column;
     width: 100%;
+    flex-grow: 1;
 }
 </style>
 

@@ -1,4 +1,6 @@
 <script>
+    import InputLabel from "./InputLabel.svelte";
+
     export let label;
     export let hint = "";
     export let placeholder = "";
@@ -10,16 +12,6 @@
     .text-field {
         flex-flow: column;
         margin-bottom: var(--padding);
-    }
-    .label {
-        justify-content: space-between;
-        margin-bottom: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
-    }
-    span {
-        color: var(--text-color3);
-        filter: brightness(60%);
     }
     input {
         background-color: var(--bg-input-color);
@@ -39,10 +31,7 @@
 
 <div class="text-field" style="width:{width};">
     {#if label}
-    <div class="label">
-        <label>{label}</label>
-        <span>{hint}</span>
-    </div>
+        <InputLabel {label} {hint} />
     {/if}
     <input type="text" placeholder={placeholder} bind:value />
 </div>
