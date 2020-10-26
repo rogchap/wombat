@@ -2,21 +2,29 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type client struct {
 	conn *grpc.ClientConn
 }
 
-type options struct {
-	Addr    string `json:"addr"`
-	Reflect bool   `json:"reflect"`
+type transportCreds struct {
+	credentials.TransportCredentials
+	errc chan<- error
+}
 
-	Insecure  bool `json:"insecure"`
-	Plaintext bool `json:"plaintext"`
+func (t *transportCreds) ClientHandshake(ctx context.Context, addr string, in net.Conn) (net.Conn, credentials.AuthInfo, error) {
+	out, auth, err := t.TransportCredentials.ClientHandshake(ctx, addr, in)
+	if err != nil {
+		t.errc <- err
+	}
+	return out, auth, err
 }
 
 func (c *client) connect(o options) error {
@@ -31,6 +39,31 @@ func (c *client) connect(o options) error {
 		// TODO: wombat user agent
 
 		if !o.Plaintext {
+			var tlsCfg tls.Config
+			tlsCfg.InsecureSkipVerify = o.Insecure
+
+			if o.Clientcert != "" {
+				cert, err := tls.X509KeyPair([]byte(o.Clientcert), []byte(o.Clientkey))
+				if err != nil {
+					errc <- err
+					return
+				}
+				tlsCfg.Certificates = []tls.Certificate{cert}
+			}
+
+			var err error
+			tlsCfg.RootCAs, err = x509.SystemCertPool()
+			if err != nil {
+				tlsCfg.RootCAs = x509.NewCertPool()
+			}
+			if o.Rootca != "" {
+				tlsCfg.RootCAs.AppendCertsFromPEM([]byte(o.Rootca))
+			}
+			creds := &transportCreds{
+				credentials.NewTLS(&tlsCfg),
+				errc,
+			}
+			opts = append(opts, grpc.WithTransportCredentials(creds))
 			// TODO: tls
 		}
 

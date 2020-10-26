@@ -6,10 +6,13 @@ import (
 	"encoding/gob"
 	"fmt"
 	"path/filepath"
+	"sort"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/lib/logger"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
 const defaultWorkspaceKey = "wksp_default"
@@ -19,6 +22,7 @@ type api struct {
 	logger        *logger.CustomLogger
 	client        *client
 	store         *store
+	protofiles    *protoregistry.Files
 	cancelCtxFunc context.CancelFunc
 }
 
@@ -105,9 +109,71 @@ func (a *api) Connect(data interface{}) error {
 	ctx, a.cancelCtxFunc = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
 
+	go a.loadProtoFiles(opts)
 	go a.setWorkspaceOptions(opts)
 
 	return nil
+}
+
+func (a *api) loadProtoFiles(opts options) {
+	a.runtime.Events.Emit(eventServicesSelectChanged)
+
+	var err error
+	if opts.Reflect {
+		if a.client == nil {
+			a.logger.Error("unable to load proto files via reflection: client is <nil>")
+		}
+		if a.protofiles, err = protoFilesFromReflectionAPI(a.client.conn, nil); err != nil {
+			//TODO Emit error to frontend
+			a.logger.Errorf("error getting proto files from reflection API: %v", err)
+		}
+	}
+	if !opts.Reflect {
+		// TODO: load protos from disk
+	}
+
+	a.emitServicesSelect()
+}
+
+func (a *api) emitServicesSelect() {
+	if a.protofiles == nil {
+		return
+	}
+
+	var ss servicesSelect
+	a.protofiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+		sds := fd.Services()
+		for i := 0; i < sds.Len(); i++ {
+			var s serviceSelect
+			sd := sds.Get(i)
+			s.FullName = string(sd.FullName())
+
+			mds := sd.Methods()
+			for j := 0; j < mds.Len(); j++ {
+				md := mds.Get(j)
+				fname := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
+				s.Methods = append(s.Methods, methodSelect{
+					Name:     string(md.Name()),
+					FullName: fname,
+				})
+			}
+			sort.SliceStable(s.Methods, func(i, j int) bool {
+				return s.Methods[i].Name < s.Methods[j].Name
+			})
+			ss = append(ss, s)
+		}
+		return true
+	})
+
+	if len(ss) == 0 {
+		return
+	}
+
+	sort.SliceStable(ss, func(i, j int) bool {
+		return ss[i].FullName < ss[j].FullName
+	})
+
+	a.runtime.Events.Emit(eventServicesSelectChanged, ss)
 }
 
 func (a *api) setWorkspaceOptions(opts options) {

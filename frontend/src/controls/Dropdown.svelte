@@ -8,6 +8,7 @@
     export let isClearable = false;
     export let showIndicator = true;
     export let isSearchable = false;
+    export let select = () => {};
 
 </script>
 
@@ -42,5 +43,5 @@
 </style>
 
 <div class="dropdown" class:frameless>
-    <Select {items} {selectedValue} {placeholder} {isClearable} {showIndicator} {isSearchable} />
+    <Select on:select {items} {selectedValue} {placeholder} {isClearable} {showIndicator} {isSearchable} />
 </div>
