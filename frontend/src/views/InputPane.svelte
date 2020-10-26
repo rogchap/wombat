@@ -1,28 +1,37 @@
 <script>
-    import Tab from "../controls/Tab.svelte";
-    import Tabs from "../controls/Tabs.svelte";
-    import TabList from "../controls/TabList.svelte";
-    import TabPanel from "../controls/TabPanel.svelte";
-    import MethodSelect from "./MethodSelect.svelte";
-    import MethodInput from "./MethodInput.svelte";
+  import Tab from "../controls/Tab.svelte";
+  import Tabs from "../controls/Tabs.svelte";
+  import TabList from "../controls/TabList.svelte";
+  import TabPanel from "../controls/TabPanel.svelte";
+  import MethodSelect from "./MethodSelect.svelte";
+  import MethodInput from "./MethodInput.svelte";
+
+  let methodInput = {
+    full_name: "",
+    fields: []
+  };
+  wails.Events.On("wombat:method_input_changed", data => {
+    methodInput = data;
+  });
+
 </script>
 
 <div class="input-pane">
-    <MethodSelect />
-    <Tabs>
-        <TabList>
-            <Tab>Request</Tab>
-            <Tab>Metadata</Tab>
-        </TabList>
+  <MethodSelect />
+  <Tabs>
+    <TabList>
+      <Tab>Request</Tab>
+      <Tab>Metadata</Tab>
+    </TabList>
 
-        <TabPanel>
-            <MethodInput />
-        </TabPanel>
+    <TabPanel>
+      <MethodInput {methodInput} />
+    </TabPanel>
 
-        <TabPanel>
-            <h2>Metadata panel</h2>
-        </TabPanel>
-    </Tabs>
+    <TabPanel>
+      <h2>Metadata panel</h2>
+    </TabPanel>
+  </Tabs>
 </div>
 
 <style>

@@ -26,10 +26,11 @@ type serviceSelect struct {
 type servicesSelect []serviceSelect
 
 type fieldDesc struct {
-	Name     string `json:"name"`
-	FullName string `json:"full_name"`
-	Kind     string `json:"kind"`
-	Repeated bool   `json:"repeated"`
+	Name     string       `json:"name"`
+	FullName string       `json:"full_name"`
+	Kind     string       `json:"kind"`
+	Repeated bool         `json:"repeated"`
+	Message  *messageDesc `json:"message"`
 }
 
 type messageDesc struct {

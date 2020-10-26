@@ -218,10 +218,15 @@ func (a *api) SelectMethod(fullname string) error {
 		return fmt.Errorf("app: descriptor was not a method: %T", desc)
 	}
 
-	md := methodDesc.Input()
+	in := messageViewFromDesc(methodDesc.Input())
+	a.runtime.Events.Emit(eventMethodInputChanged, in)
 
-	var in messageDesc
-	in.FullName = string(md.FullName())
+	return nil
+}
+
+func messageViewFromDesc(md protoreflect.MessageDescriptor) *messageDesc {
+	var rtn messageDesc
+	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
 	for i := 0; i < fds.Len(); i++ {
@@ -232,10 +237,12 @@ func (a *api) SelectMethod(fullname string) error {
 		fdesc.Kind = fd.Kind().String()
 		fdesc.Repeated = fd.Cardinality() == protoreflect.Repeated
 
-		in.Fields = append(in.Fields, fdesc)
+		if fmd := fd.Message(); fmd != nil {
+			fdesc.Message = messageViewFromDesc(fmd)
+		}
+
+		rtn.Fields = append(rtn.Fields, fdesc)
 	}
 
-	a.runtime.Events.Emit(eventMethodInputCahnged, in)
-
-	return nil
+	return &rtn
 }

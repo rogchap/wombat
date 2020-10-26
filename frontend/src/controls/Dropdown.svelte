@@ -2,17 +2,15 @@
     import Select from "svelte-select";
     import InputLabel from "./InputLabel.svelte";
 
-    export let label;
+    export let label = undefined;
     export let hint = "";
     export let frameless = false;
     export let items = [];
-    export let selectedValue;
+    export let selectedValue = undefined;
     export let placeholder = "";
     export let isClearable = false;
     export let showIndicator = true;
-    export let isSearchable = false;
-    export let select = () => {};
-
+    export let isSearchable = true;
 </script>
 
 <style>
@@ -43,6 +41,7 @@
     min-width: 150px;
     --border: none;
     --background: var(--bg-color);
+    color: var(--primary-color);
     margin: 0;
 }
 </style>
