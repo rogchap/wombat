@@ -14,10 +14,14 @@
     methodInput = data;
   });
 
+  const onSend = ({ detail: { method } }) => {
+    console.log(method, methodInput);
+  }
+
 </script>
 
 <div class="input-pane">
-  <MethodSelect />
+  <MethodSelect on:send={onSend} />
   <Tabs>
     <TabList>
       <Tab>Request</Tab>
@@ -35,8 +39,8 @@
 </div>
 
 <style>
-.input-pane {
+  .input-pane {
     width: 100%;
     flex-flow: column;
-}
+  }
 </style>

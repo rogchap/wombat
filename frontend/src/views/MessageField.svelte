@@ -1,5 +1,6 @@
 <script>
   import TextField from "../controls/TextField.svelte";
+  import TextArea from "../controls/TextArea.svelte";
 
   export let field = {}
 
@@ -49,8 +50,12 @@
     {/each}
   </div>
 
+{:else if field.kind == "bytes"}
+
+  <TextArea label={field.name} hint="bytes" />
+
 {:else}
 
-  <TextField label={field.name} hint={field.kind} />
+  <TextField label={field.name} hint={field.kind} bind:value={field.value} />
 
 {/if}
