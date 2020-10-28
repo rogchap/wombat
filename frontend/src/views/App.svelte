@@ -15,7 +15,7 @@
       backgroundColor: "var(--bg-color)",
       border: "var(--border)",
       color: "var(--text-color)",
-      width: "auto",
+      width: "max-content",
     },
     styleContent: {
       padding: "var(--padding)",
@@ -27,13 +27,6 @@
     closeButton: false,
   }
 </script>
-
-<main class="app">
-  <ModalContext {...modalSettings} >
-    <Header />
-    <Content />
-  </ModalContext>
-</main>
 
 <style>
   :root {
@@ -71,6 +64,7 @@
   :global(html,body) {
     margin: 0;
     height: 100%;
+    overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -82,13 +76,17 @@
     color: var(--text-color);
   }
 
-  :global(.app *) {
-    display: flex;
-  }
-
   .app {
     height: 100%;
     display: flex;
     flex-flow: column;
   }
 </style>
+
+<main class="app">
+  <ModalContext {...modalSettings} >
+    <Header />
+    <Content />
+  </ModalContext>
+</main>
+

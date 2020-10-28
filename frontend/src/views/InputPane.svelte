@@ -20,6 +20,13 @@
 
 </script>
 
+<style>
+  .input-pane {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
 <div class="input-pane">
   <MethodSelect on:send={onSend} />
   <Tabs>
@@ -38,9 +45,3 @@
   </Tabs>
 </div>
 
-<style>
-  .input-pane {
-    width: 100%;
-    flex-flow: column;
-  }
-</style>

@@ -21,6 +21,7 @@
     display: block;
     width: 400px;
     margin-bottom: var(--padding);
+    --height: 40px;
     --background: var(--bg-input-color);
     --borderRadius: 0;
     --borderFocusColor: var(--border-color);

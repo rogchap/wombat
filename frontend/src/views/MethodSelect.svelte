@@ -34,7 +34,6 @@
     dispatch("send", { method: methodSelected.value })
   }
 
-
   const reset = () => {
     serviceOptions = [];
     serviceSelected = undefined;
@@ -43,11 +42,22 @@
   }
 </script>
 
+<style>
+  .method-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: var(--border);
+  }
+  .spacer {
+    flex-grow: 1;
+  }
+</style>
+
 <div class="method-select">
-  <div>
-    <Dropdown frameless items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
-    <Dropdown frameless items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
-  </div>
+  <Dropdown frameless items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
+  <Dropdown frameless items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
+  <div class="spacer" />
   <Button 
     text="Send"
     color="var(--primary-color)"
@@ -55,10 +65,3 @@
   />
 </div>
 
-<style>
-  .method-select {
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: var(--border);
-  }
-</style>

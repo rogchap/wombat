@@ -14,20 +14,20 @@
   }
   .fields {
     padding-left: var(--padding);
-    flex-flow: column;
     position: relative;
   }
 
   .msg-border {
     position: absolute;
     width: 1px;
-    height: calc(100% - calc(var(--padding) / 2));
+    height: calc(100% + 5px);
     background-color: var(--accent-color);
-    top: calc(var(--padding) / -2);
+    top: -5px;
     left: 5px;
   }
 
   .field-label {
+    display: flex;
     padding-left: 5px;
     align-items: center;
   }

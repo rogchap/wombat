@@ -12,6 +12,8 @@
     margin-bottom: var(--padding);
 }
 textarea {
+    width: 100%;
+    box-sizing: border-box;
     background-color: var(--bg-input-color);
     border: var(--border);
     height: 150px;

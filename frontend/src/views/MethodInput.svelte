@@ -10,7 +10,8 @@
 <style>
   .method-input {
     padding: var(--padding);
-    flex-flow: column;
+    overflow: scroll;
+    height: calc(100% - 106px);
   }
   h2 {
     font-size: var(--font-size);

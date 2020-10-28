@@ -5,6 +5,7 @@
 
 <style>
 .input-label {
+    display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
     padding-left: 5px;

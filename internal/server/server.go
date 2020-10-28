@@ -9,10 +9,11 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-//go:generate protoc --go_out=:. --go-grpc_out=:. route_guide.proto
+//go:generate protoc --go_out=:. --go-grpc_out=:. route_guide.proto foobar.proto
 
-type routeGuideServer struct {
+type server struct {
 	UnimplementedRouteGuideServer
+	UnimplementedFoobarServer
 }
 
 // Serve stats serving a gRPC server that is used for testing
@@ -22,7 +23,8 @@ func Serve() {
 		fmt.Fprintf(os.Stderr, "server: failed to create listener: %v", err)
 	}
 	s := grpc.NewServer()
-	RegisterRouteGuideServer(s, &routeGuideServer{})
+	RegisterRouteGuideServer(s, server{})
+	RegisterFoobarServer(s, server{})
 	reflection.Register(s)
 	s.Serve(lis)
 }
