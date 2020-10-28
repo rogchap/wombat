@@ -10,7 +10,7 @@
     export let placeholder = "";
     export let isClearable = false;
     export let showIndicator = true;
-    export let isSearchable = true;
+    export let isSearchable = false;
 </script>
 
 <style>

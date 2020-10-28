@@ -1,8 +1,14 @@
 <script>
   import TextField from "../controls/TextField.svelte";
   import TextArea from "../controls/TextArea.svelte";
+  import Dropdown from "../controls/Dropdown.svelte";
 
   export let field = {}
+
+  // don't allow a null enum
+  if (field.kind == "enum" && !field.value) {
+    field.value = field.enum[0]
+  }
 
 </script>
 
@@ -37,7 +43,14 @@
   }
 </style>
 
-{#if field.kind == "group" || field.kind == "message"}
+{#if field.kind == "oneof"}
+
+  <div class="field-label">
+    <h2>oneof {field.name}</h2>
+    <h1 style="color:var(--red-color)">TODO</h1>
+  </div>
+
+{:else if field.kind == "group" || field.kind == "message"}
 
   <div class="field-label">
     <h2>{field.name}</h2>
@@ -52,7 +65,12 @@
 
 {:else if field.kind == "bytes"}
 
-  <TextArea label={field.name} hint="bytes" />
+  <TextArea label={field.name} hint="bytes" bind:value={field.value} />
+
+{:else if field.kind == "enum"}
+
+  <Dropdown label={field.name} items={field.enum} bind:selectedValue={field.value} />
+
 
 {:else}
 

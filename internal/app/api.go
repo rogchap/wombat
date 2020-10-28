@@ -229,20 +229,52 @@ func messageViewFromDesc(md protoreflect.MessageDescriptor) *messageDesc {
 	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
+	rtn.Fields = fieldViewsFromDesc(fds, false)
+
+	return &rtn
+}
+
+func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []fieldDesc {
+	var fields []fieldDesc
+
+	seenOneof := make(map[protoreflect.Name]struct{})
 	for i := 0; i < fds.Len(); i++ {
 		fd := fds.Get(i)
-
 		var fdesc fieldDesc
 		fdesc.Name = string(fd.Name())
 		fdesc.Kind = fd.Kind().String()
+		// TODO(rogchap): check for IsList() instead and then also use IsMap()
+		// to render maps differently rather than treating them as repeated messages
 		fdesc.Repeated = fd.Cardinality() == protoreflect.Repeated
+
+		if !isOneof {
+			if oneof := fd.ContainingOneof(); oneof != nil {
+				if _, ok := seenOneof[oneof.Name()]; ok {
+					continue
+				}
+				fdesc.Name = string(oneof.Name())
+				fdesc.Kind = "oneof"
+				fdesc.Oneof = fieldViewsFromDesc(oneof.Fields(), true)
+
+				seenOneof[oneof.Name()] = struct{}{}
+				goto appendField
+			}
+		}
+
+		if emd := fd.Enum(); emd != nil {
+			evals := emd.Values()
+			for i := 0; i < evals.Len(); i++ {
+				eval := evals.Get(i)
+				fdesc.Enum = append(fdesc.Enum, string(eval.Name()))
+			}
+		}
 
 		if fmd := fd.Message(); fmd != nil {
 			fdesc.Message = messageViewFromDesc(fmd)
 		}
 
-		rtn.Fields = append(rtn.Fields, fdesc)
+	appendField:
+		fields = append(fields, fdesc)
 	}
-
-	return &rtn
+	return fields
 }

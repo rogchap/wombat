@@ -30,6 +30,8 @@ type fieldDesc struct {
 	FullName string       `json:"full_name"`
 	Kind     string       `json:"kind"`
 	Repeated bool         `json:"repeated"`
+	Oneof    []fieldDesc  `json:"oneof"`
+	Enum     []string     `json:"enum"`
 	Message  *messageDesc `json:"message"`
 }
 

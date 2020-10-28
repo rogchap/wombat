@@ -15,7 +15,7 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/wailsapp/wails v1.8.0
+	github.com/wailsapp/wails v1.8.1-pre6
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/net v0.0.0-20201022231255-08b38378de70 // indirect
 	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
