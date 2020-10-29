@@ -2,8 +2,10 @@
   import TextField from "../controls/TextField.svelte";
   import TextArea from "../controls/TextArea.svelte";
   import Dropdown from "../controls/Dropdown.svelte";
+  import Checkbox from "../controls/Checkbox.svelte";
   import FieldMessage from "./FieldMessage.svelte";
   import FieldOneof from "./FieldOneof.svelte";
+  import RepeatedField from "./RepeatedField.svelte";
 
   export let field = {}
   export let oneof = false;
@@ -18,7 +20,11 @@
 <style>
 </style>
 
-{#if field.kind == "oneof"}
+{#if field.repeated }
+
+  <RepeatedField {field} />
+
+{:else if field.kind == "oneof"}
 
   <FieldOneof {field} />
 
@@ -34,7 +40,10 @@
 
   <Dropdown label={field.name} items={field.enum} bind:selectedValue={field.state} />
 
+{:else if field.kind == "bool"}
 
+  <Checkbox label={field.name} bind:checked={field.state} />
+  
 {:else}
 
   <TextField label={field.name} hint={field.kind} bind:value={field.state} />

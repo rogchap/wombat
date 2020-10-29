@@ -18,8 +18,8 @@
 </style>
 
 <div class="workspace-options-tls">
-  <Checkbox bind:checked={options.plaintext} text="Use plain-text HTTP/2 when connecting to server (no TLS)" rhs />
-  <Checkbox text="Skip server certificate and domain verification (insecure)" rhs />
+  <Checkbox bind:checked={options.plaintext} label="Use plain-text HTTP/2 when connecting to server (no TLS)" rhs />
+  <Checkbox label="Skip server certificate and domain verification (insecure)" rhs />
   <TextArea label="Trusted root certificate(s):" bind:value={options.rootca} />
   <div class="client-certs">
     <TextArea label="Client certificate (public key):" bind:value={options.clientcert} />

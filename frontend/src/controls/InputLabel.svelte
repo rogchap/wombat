@@ -16,8 +16,9 @@
   }
   .block {
     justify-content: flex-start;
+    margin-bottom: 0;
   }
-  span {
+  .hint {
     color: var(--text-color3);
     filter: brightness(60%);
     text-overflow: ellipsis;
@@ -27,6 +28,6 @@
 </style>
 
 <div class="input-label" class:block>
-  <label>{label}</label>
-  <span title={hint}>{hint}</span>
+  <span>{label}</span>
+  <span class="hint" title={hint}>{hint}</span>
 </div>

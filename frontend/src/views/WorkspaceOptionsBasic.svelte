@@ -14,5 +14,5 @@
 
 <div class="workspace-options-basic">
     <TextField label="gRPC server address:" bind:value={options.addr} />
-    <Checkbox text="Use reflection to determine the RPC schema" rhs bind:checked={options.reflect} />
+    <Checkbox label="Use reflection to determine the RPC schema" rhs bind:checked={options.reflect} />
 </div>

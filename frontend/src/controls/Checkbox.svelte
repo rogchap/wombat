@@ -1,5 +1,5 @@
 <script>
-  export let text = "";
+  export let label = "";
   export let rhs = false;
   export let checked = false;
   export let style = "";
@@ -41,8 +41,8 @@
 </style>
 
 <label {style}>
-  {rhs ? "" : text}
+  {rhs ? "" : label}
   <input type="checkbox" bind:checked />
   <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
-  {rhs ? text : ""}
+  {rhs ? label : ""}
 </label>

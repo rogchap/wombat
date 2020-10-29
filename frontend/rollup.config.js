@@ -38,6 +38,8 @@ export default {
 		name: 'app',
 		file: 'public/build/bundle.js'
 	},
+    context: 'null',
+     moduleContext: 'null',
 	plugins: [
 		image(),
 		svelte({
