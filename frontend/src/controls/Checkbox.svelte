@@ -2,6 +2,7 @@
   export let text = "";
   export let rhs = false;
   export let checked = false;
+  export let style = "";
 </script>
 
 <style>
@@ -39,7 +40,7 @@
 
 </style>
 
-<label>
+<label {style}>
   {rhs ? "" : text}
   <input type="checkbox" bind:checked />
   <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>

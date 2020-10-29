@@ -243,6 +243,8 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 		var fdesc fieldDesc
 		fdesc.Name = string(fd.Name())
 		fdesc.Kind = fd.Kind().String()
+		fdesc.FullName = string(fd.FullName())
+
 		// TODO(rogchap): check for IsList() instead and then also use IsMap()
 		// to render maps differently rather than treating them as repeated messages
 		fdesc.Repeated = fd.Cardinality() == protoreflect.Repeated

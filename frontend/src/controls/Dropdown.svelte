@@ -35,6 +35,11 @@
     --itemIsActiveBG: var(--bg-inverse-color3);
     --placeholderColor: var(--border-color);
     --indicatorColor: var(--border-color);
+    --clearSelectRight: calc(var(--padding) * 3);
+    --clearSelectBottom: 0;
+    --clearSelectTop: 3px;
+    --clearSelectColor: var(--border-color);
+    --clearSelectFocusColor: var(--border-color);
 }
 
 .frameless {
@@ -47,9 +52,9 @@
 }
 </style>
 
-<div class="dropdown" class:frameless>
+<div class="dropdown" class:frameless title={selectedValue ? selectedValue.label : ''} >
     {#if label}
     <InputLabel {label} {hint} />
     {/if}
-    <Select on:select {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
+    <Select on:select on:clear {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
 </div>
