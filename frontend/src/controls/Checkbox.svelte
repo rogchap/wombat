@@ -1,8 +1,17 @@
 <script>
+  import { createEventDispatcher, onMount } from "svelte";
+
   export let label = "";
   export let rhs = false;
   export let checked = false;
   export let style = "";
+
+  const dispatch = createEventDispatcher();
+
+  const onChanged = ({ target: { checked }}) => {
+    dispatch("check", checked);
+  }
+  
 </script>
 
 <style>
@@ -42,7 +51,7 @@
 
 <label {style}>
   {rhs ? "" : label}
-  <input type="checkbox" bind:checked />
+  <input type="checkbox" bind:checked on:change={onChanged} />
   <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
   {rhs ? label : ""}
 </label>

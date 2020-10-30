@@ -5,6 +5,8 @@
     full_name: "",
     fields: []
   };
+
+  export let state;
 </script>
 
 <style>
@@ -27,7 +29,7 @@
   <h2>{methodInput.full_name}</h2>
   <div class="fields">
     {#each methodInput.fields as field}
-      <MessageField {field} />
+      <MessageField {field} {state} />
     {/each}
   </div>
 </div>

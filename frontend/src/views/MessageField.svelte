@@ -3,11 +3,14 @@
   import TextArea from "../controls/TextArea.svelte";
   import Dropdown from "../controls/Dropdown.svelte";
   import Checkbox from "../controls/Checkbox.svelte";
+  import FieldText from "./FieldText.svelte";
+  import FieldBool from "./FieldBool.svelte";
   import FieldMessage from "./FieldMessage.svelte";
   import FieldOneof from "./FieldOneof.svelte";
   import RepeatedField from "./RepeatedField.svelte";
 
   export let field = {}
+  export let state;
   export let oneof = false;
 
   // don't allow a null enum
@@ -26,11 +29,11 @@
 
 {:else if field.kind == "oneof"}
 
-  <FieldOneof {field} />
+  <FieldOneof {field} {state} />
 
 {:else if field.kind == "group" || field.kind == "message"}
 
-  <FieldMessage name={field.name} message={field.message} {oneof} />
+  <FieldMessage name={field.name} message={field.message} {state} {oneof} />
 
 {:else if field.kind == "bytes"}
 
@@ -42,10 +45,10 @@
 
 {:else if field.kind == "bool"}
 
-  <Checkbox label={field.name} bind:checked={field.state} />
+  <FieldBool {field} {state} />
   
 {:else}
 
-  <TextField label={field.name} hint={field.kind} bind:value={field.state} />
+  <FieldText {field} {state} />
 
 {/if}

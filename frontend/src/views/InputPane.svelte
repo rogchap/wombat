@@ -10,12 +10,16 @@
     full_name: "",
     fields: []
   };
+
+  let state = {}
   wails.Events.On("wombat:method_input_changed", data => {
     methodInput = data;
+    //TODO(rogchap) load state from disk, or local cache by method url
+    state = {}
   });
 
   const onSend = ({ detail: { method } }) => {
-    console.log(method, methodInput);
+    console.log(method, state);
   }
 
 </script>
@@ -36,7 +40,7 @@
     </TabList>
 
     <TabPanel>
-      <MethodInput {methodInput} />
+      <MethodInput {methodInput} {state} />
     </TabPanel>
 
     <TabPanel>
