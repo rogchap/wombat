@@ -7,19 +7,20 @@
   export let name = "";
   export let message = {};
   export let state;
+  export let idx;
   export let oneof = false;
 
+  const val = idx >= 0 ? idx : name;
 
   onMount(() => {
-    if (!state[name] && oneof) {
-      state[name] = {}
+    if (!state[val] && (oneof || idx >= 0)) {
+      state[val] = {}
     }
   })
 
   const onEnabledChanged = ({ detail: checked}) => {
-    state[name] = checked ? {} : null
+    state[val] = checked ? {} : null
   }
-
 </script>
 
 <style>
@@ -47,14 +48,14 @@
 <div class="msg-label">
   <InputLabel label={name} hint={message.full_name} block />
   {#if !oneof}
-    <Checkbox style="margin-bottom: 0" checked={!!state[name]} on:check={onEnabledChanged}/>
+    <Checkbox style="margin-bottom: 0" checked={!!state[val]} on:check={onEnabledChanged}/>
   {/if}
 </div>
-{#if state[name] }
+{#if state[val] }
   <div class="fields">
     <div class="msg-border" />
     {#each message.fields as field }
-      <MessageField {field} state={state[name]} />
+      <MessageField {field} state={state[val]} />
     {/each}
   </div>
 {/if}

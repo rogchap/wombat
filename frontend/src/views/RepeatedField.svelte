@@ -1,14 +1,13 @@
 <script>
+  import { onMount } from 'svelte';
   import InputLabel from "../controls/InputLabel.svelte";
   import CrossButton from "../controls/CrossButton.svelte";
   import MessageField from "./MessageField.svelte";
 
-  export let field = {};
+  export let field;
+  export let state;
 
-  let hint = field.kind;
-  if (field.kind == "message" || field.kind == "group") {
-    hint = field.message.full_name;
-  }
+  let hint = '';
 
   const clone = target => {
     if (typeof target === 'object') {
@@ -23,17 +22,20 @@
     return f
   }
 
-  const base = clone(field)
-  base.repeated = false;
-  if (base.message) {
-    base.message.state = true;
-  }
+  // onMount(() => {
+    hint = field.kind;
+    if (field.kind === "message" || field.kind === "group") {
+      hint = field.message.full_name;
+    }
 
+    if (!state[field.name]) {
+      state[field.name] = []
+    }
 
-  let state = []
+  // })
 
   const onAddButtonClicked = () => {
-    state = [...state, clone(base)]
+    state[field.name] = [...state[field.name], null]
   }
 
 
@@ -68,7 +70,7 @@
 
 <div class="fields">
   <div class="msg-border" />
-  {#each state as field, i}
-    <MessageField {field} />
+  {#each state[field.name] as _, i}
+    <MessageField field={field} state={state[field.name]} idx={i} />
   {/each}
 </div>

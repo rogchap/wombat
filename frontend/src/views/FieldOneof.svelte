@@ -18,8 +18,6 @@
     }
   })
 
-
-
   const onSelectChanged = ({ detail: { value }}) => {
     state[field.name] = {};
     selectedValue = value;

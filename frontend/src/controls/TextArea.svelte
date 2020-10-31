@@ -32,5 +32,5 @@ textarea::selection {
     {#if label}
     <InputLabel {label} {hint} />
     {/if}
-    <textarea>{value}</textarea>
+    <textarea bind:value></textarea>
 </div>

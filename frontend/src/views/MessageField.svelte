@@ -1,9 +1,6 @@
 <script>
-  import TextField from "../controls/TextField.svelte";
-  import TextArea from "../controls/TextArea.svelte";
-  import Dropdown from "../controls/Dropdown.svelte";
-  import Checkbox from "../controls/Checkbox.svelte";
   import FieldText from "./FieldText.svelte";
+  import FieldEnum from "./FieldEnum.svelte";
   import FieldBool from "./FieldBool.svelte";
   import FieldMessage from "./FieldMessage.svelte";
   import FieldOneof from "./FieldOneof.svelte";
@@ -12,43 +9,31 @@
   export let field = {}
   export let state;
   export let oneof = false;
-
-  // don't allow a null enum
-  if (field.kind == "enum" && !field.state) {
-    field.state = field.enum[0]
-  }
-
+  export let idx = -1;
 </script>
 
-<style>
-</style>
+{#if field.repeated && idx < 0 }
 
-{#if field.repeated }
+  <RepeatedField {field} {state} />
 
-  <RepeatedField {field} />
-
-{:else if field.kind == "oneof"}
+{:else if field.kind === "oneof"}
 
   <FieldOneof {field} {state} />
 
-{:else if field.kind == "group" || field.kind == "message"}
+{:else if field.kind === "group" || field.kind === "message"}
 
-  <FieldMessage name={field.name} message={field.message} {state} {oneof} />
+  <FieldMessage name={field.name} message={field.message} {state} {oneof} {idx} />
 
-{:else if field.kind == "bytes"}
+{:else if field.kind === "enum"}
 
-  <TextArea label={field.name} hint="bytes" bind:value={field.state} />
+  <FieldEnum {field} {state} {idx} />
 
-{:else if field.kind == "enum"}
+{:else if field.kind === "bool"}
 
-  <Dropdown label={field.name} items={field.enum} bind:selectedValue={field.state} />
-
-{:else if field.kind == "bool"}
-
-  <FieldBool {field} {state} />
+  <FieldBool {field} {state} {idx} />
   
 {:else}
 
-  <FieldText {field} {state} />
+  <FieldText {field} {state} {idx} multiline={field.kind === "bytes"} />
 
 {/if}

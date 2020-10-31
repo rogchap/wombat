@@ -22,6 +22,7 @@ func Serve() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "server: failed to create listener: %v", err)
 	}
+
 	s := grpc.NewServer()
 	RegisterRouteGuideServer(s, server{})
 	RegisterFoobarServer(s, server{})
