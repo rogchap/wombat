@@ -1,23 +1,25 @@
 <script>
-    import Select from "svelte-select";
-    import InputLabel from "./InputLabel.svelte";
+  import Select from "svelte-select";
+  import InputLabel from "./InputLabel.svelte";
 
-    export let label = undefined;
-    export let hint = "";
-    export let frameless = false;
-    export let items = [];
-    export let selectedValue = undefined;
-    export let placeholder = "";
-    export let isClearable = false;
-    export let showIndicator = true;
-    export let isSearchable = false;
+  export let label = undefined;
+  export let hint = "";
+  export let frameless = false;
+  export let items = [];
+  export let selectedValue = undefined;
+  export let placeholder = "";
+  export let isClearable = false;
+  export let showIndicator = true;
+  export let isSearchable = false;
+  export let labelColor = undefined;
+  export let removeable = false;
 </script>
 
 <style>
-:global(.dropdown div) {
+  :global(.dropdown div) {
     display: block
-}
-.dropdown {
+  }
+  .dropdown {
     display: block;
     width: 400px;
     margin-bottom: var(--padding);
@@ -40,21 +42,21 @@
     --clearSelectTop: 3px;
     --clearSelectColor: var(--border-color);
     --clearSelectFocusColor: var(--border-color);
-}
+  }
 
-.frameless {
+  .frameless {
     width: auto;
     min-width: 150px;
     --border: none;
     --background: var(--bg-color);
     color: var(--primary-color);
     margin: 0;
-}
+  }
 </style>
 
 <div class="dropdown" class:frameless title={selectedValue ? selectedValue.label : ''} >
-    {#if label}
-    <InputLabel {label} {hint} />
-    {/if}
-    <Select on:select on:clear {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
+  {#if label}
+    <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
+  {/if}
+  <Select on:select on:clear {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
 </div>

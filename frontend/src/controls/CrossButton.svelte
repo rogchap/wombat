@@ -14,6 +14,7 @@
     background-color: var(--bg-color);
     border: none;
     padding: 0;
+    margin: 0 calc(var(--padding) * 0.5);
   }
   button:active {
     background-color: var(--bg-color2);

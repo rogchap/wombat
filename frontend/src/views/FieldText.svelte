@@ -17,14 +17,17 @@
     }
   }
 
+  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const removeable = idx >= 0;
+
   onMount(resetState)
   beforeUpdate(resetState)
 </script>
 
 {#if multiline }
-  <TextArea label={field.name} hint={field.kind} bind:value={state[val]} />
+  <TextArea on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} />
 {:else}
-  <TextField label={field.name} hint={field.kind} bind:value={state[val]} />
+  <TextField on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} />
 {/if}
 
 

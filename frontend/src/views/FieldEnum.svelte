@@ -14,10 +14,13 @@
     }
   })
 
+  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const removeable = idx >= 0;
+
   const onSelectChanged = ({ detail: { value }}) => {
     state[val] = value;
   }
 </script>
 
-<Dropdown label={field.name} items={field.enum} selectedValue={state[val]} on:select={onSelectChanged} />
+<Dropdown on:remove {removeable} {labelColor} label={field.name} items={field.enum} selectedValue={state[val]} on:select={onSelectChanged} />
 

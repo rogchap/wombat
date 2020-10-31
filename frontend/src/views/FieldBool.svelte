@@ -11,6 +11,8 @@
     state[val] = false;
   }
 
+  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const removeable = idx >= 0;
 </script>
 
 <style>
@@ -20,5 +22,5 @@
 </style>
 
 <div class="field-bool">
-  <Checkbox label={field.name} bind:checked={state[val]} />
+  <Checkbox on:remove {removeable} style={labelColor ? "color:"+labelColor : ""} label={field.name} bind:checked={state[val]} />
 </div>

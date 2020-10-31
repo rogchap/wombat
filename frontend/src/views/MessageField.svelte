@@ -22,18 +22,18 @@
 
 {:else if field.kind === "group" || field.kind === "message"}
 
-  <FieldMessage name={field.name} message={field.message} {state} {oneof} {idx} />
+  <FieldMessage on:remove name={field.name} message={field.message} {state} {oneof} {idx} />
 
 {:else if field.kind === "enum"}
 
-  <FieldEnum {field} {state} {idx} />
+  <FieldEnum on:remove {field} {state} {idx} />
 
 {:else if field.kind === "bool"}
 
-  <FieldBool {field} {state} {idx} />
+  <FieldBool on:remove {field} {state} {idx} />
   
 {:else}
 
-  <FieldText {field} {state} {idx} multiline={field.kind === "bytes"} />
+  <FieldText on:remove {field} {state} {idx} multiline={field.kind === "bytes"} />
 
 {/if}

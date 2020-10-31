@@ -6,6 +6,8 @@
   export let placeholder = "";
   export let width = "400px";
   export let value = "";
+  export let labelColor = undefined;
+  export let removeable = false;
 </script>
 
 <style>
@@ -32,7 +34,7 @@
 
 <div class="text-field" style="width:{width};">
   {#if label}
-    <InputLabel {label} {hint} />
+    <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
   <input type="text" placeholder={placeholder} bind:value />
 </div>

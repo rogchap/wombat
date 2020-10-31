@@ -11,6 +11,8 @@
   export let oneof = false;
 
   const val = idx >= 0 ? idx : name;
+  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const removeable = idx >= 0;
 
   onMount(() => {
     if (!state[val] && (oneof || idx >= 0)) {
@@ -46,7 +48,7 @@
 </style>
 
 <div class="msg-label">
-  <InputLabel label={name} hint={message.full_name} block />
+  <InputLabel on:remove {removeable} label={name} color={labelColor} hint={message.full_name} block />
   {#if !oneof}
     <Checkbox style="margin-bottom: 0" checked={!!state[val]} on:check={onEnabledChanged}/>
   {/if}

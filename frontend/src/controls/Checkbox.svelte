@@ -1,10 +1,12 @@
 <script>
   import { createEventDispatcher, onMount } from "svelte";
+  import CrossButton from "./CrossButton.svelte";
 
   export let label = "";
   export let rhs = false;
   export let checked = false;
   export let style = "";
+  export let removeable = false;
 
   const dispatch = createEventDispatcher();
 
@@ -12,13 +14,20 @@
     dispatch("check", checked);
   }
   
+  const onCrossClicked = () => {
+    dispatch("remove")
+  }
 </script>
 
 <style>
+  .checkbox {
+    display: flex;
+    margin-bottom: var(--padding);
+    align-items: center;
+  }
   label {
     display: flex;
     align-items: center;
-    margin-bottom: var(--padding);
   }
   input {
     position: absolute;
@@ -49,9 +58,14 @@
 
 </style>
 
-<label {style}>
-  {rhs ? "" : label}
-  <input type="checkbox" bind:checked on:change={onChanged} />
-  <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
-  {rhs ? label : ""}
-</label>
+<div class="checkbox" {style}>
+  {#if removeable}
+    <CrossButton on:click={onCrossClicked} style="margin-left: calc(var(--padding) * -0.5)" />
+  {/if}
+  <label>
+    {rhs ? "" : label}
+    <input type="checkbox" bind:checked on:change={onChanged} />
+    <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
+    {rhs ? label : ""}
+  </label>
+  </div>

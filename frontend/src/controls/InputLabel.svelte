@@ -1,7 +1,19 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  import CrossButton from "./CrossButton.svelte";
+
   export let label = "";
   export let hint = "";
   export let block = false;
+  export let removeable = false;
+  export let color = "var(--text-color)";
+
+  const dispatch = createEventDispatcher();
+
+  const onCrossClicked = () => {
+    dispatch("remove")
+  }
+
 </script>
 
 <style>
@@ -25,9 +37,16 @@
     overflow: hidden;
     padding-left: var(--padding);
   }
+  .spacer {
+    flex-grow: 1;
+  }
 </style>
 
 <div class="input-label" class:block>
-  <span>{label}</span>
+  {#if removeable}
+    <CrossButton on:click={onCrossClicked} style="margin-left: calc(var(--padding) * -0.5)" />
+  {/if}
+  <span style="color:{color}">{label}</span>
+  <div class="spacer" />
   <span class="hint" title={hint}>{hint}</span>
 </div>

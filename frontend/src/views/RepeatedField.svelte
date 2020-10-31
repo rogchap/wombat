@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte';
   import InputLabel from "../controls/InputLabel.svelte";
   import CrossButton from "../controls/CrossButton.svelte";
   import MessageField from "./MessageField.svelte";
@@ -22,22 +21,23 @@
     return f
   }
 
-  // onMount(() => {
-    hint = field.kind;
-    if (field.kind === "message" || field.kind === "group") {
-      hint = field.message.full_name;
-    }
+  hint = field.kind;
+  if (field.kind === "message" || field.kind === "group") {
+    hint = field.message.full_name;
+  }
 
-    if (!state[field.name]) {
-      state[field.name] = []
-    }
-
-  // })
+  if (!state[field.name]) {
+    state[field.name] = []
+  }
 
   const onAddButtonClicked = () => {
     state[field.name] = [...state[field.name], null]
   }
 
+  const onRemove = idx => {
+    state[field.name].splice(idx,1);
+    state[field.name] = state[field.name];
+  }
 
 </script>
 
@@ -65,12 +65,12 @@
 
 <div class="msg-label">
   <InputLabel label={field.name} hint={"repeated "+hint} block />
-  <CrossButton color="var(--green-color)" style="margin-left:var(--padding)" add on:click={onAddButtonClicked} />
+  <CrossButton color="var(--green-color)" add on:click={onAddButtonClicked} />
 </div>
 
 <div class="fields">
   <div class="msg-border" />
   {#each state[field.name] as _, i}
-    <MessageField field={field} state={state[field.name]} idx={i} />
+    <MessageField on:remove={() => onRemove(i)} field={field} state={state[field.name]} idx={i} />
   {/each}
 </div>
