@@ -27,6 +27,7 @@
   "dependencies": {
     "@wailsapp/runtime": "^1.0.10",
     "sirv-cli": "^1.0.0",
+    "svelte-prismjs": "^1.0.1",
     "svelte-select": "^3.12.0",
     "svelte-simple-modal": "^0.6.0"
   }
