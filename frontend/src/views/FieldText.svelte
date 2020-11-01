@@ -13,7 +13,7 @@
   const resetState = () => {
     val = idx >= 0 ? idx : field.name;
     if (!state[val]) {
-      state[val] = "";
+      state[val] = null;
     }
   }
 

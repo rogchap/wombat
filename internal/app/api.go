@@ -9,11 +9,17 @@ import (
 	"sort"
 	"strings"
 
+	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/lib/logger"
+	"google.golang.org/grpc/stats"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 const defaultWorkspaceKey = "wksp_default"
@@ -100,7 +106,7 @@ func (a *api) Connect(data interface{}) error {
 	}
 
 	a.client = &client{}
-	if err := a.client.connect(opts); err != nil {
+	if err := a.client.connect(opts, a); err != nil {
 		return fmt.Errorf("app: failed to connect to server: %v", err)
 	}
 
@@ -114,6 +120,29 @@ func (a *api) Connect(data interface{}) error {
 	go a.setWorkspaceOptions(opts)
 
 	return nil
+}
+
+func (a *api) Send(method string, rawJSON []byte) error {
+	md, err := a.getMethodDesc(method)
+	if err != nil {
+		return err
+	}
+
+	req := dynamicpb.NewMessage(md.Input())
+	if err := protojson.Unmarshal(rawJSON, req); err != nil {
+		return err
+	}
+
+	resp := dynamicpb.NewMessage(md.Output())
+
+	if md.IsStreamingClient() || md.IsStreamingServer() {
+		//TODO(rogchao) manage streaming requests
+		return nil
+	}
+
+	a.runtime.Events.Emit(eventRPCStarted)
+
+	return a.client.invoke(context.TODO(), method, req, resp)
 }
 
 func (a *api) loadProtoFiles(opts options) {
@@ -205,17 +234,26 @@ func (a *api) monitorStateChanges(ctx context.Context) {
 	}
 }
 
-// SelectMethod is called when the user selects a new method by the given name
-func (a *api) SelectMethod(fullname string) error {
+func (a *api) getMethodDesc(fullname string) (protoreflect.MethodDescriptor, error) {
 	name := strings.Replace(fullname[1:], "/", ".", 1)
 	desc, err := a.protofiles.FindDescriptorByName(protoreflect.FullName(name))
 	if err != nil {
-		return fmt.Errorf("app: failed to find descriptor: %v", err)
+		return nil, fmt.Errorf("app: failed to find descriptor: %v", err)
 	}
 
 	methodDesc, ok := desc.(protoreflect.MethodDescriptor)
 	if !ok {
-		return fmt.Errorf("app: descriptor was not a method: %T", desc)
+		return nil, fmt.Errorf("app: descriptor was not a method: %T", desc)
+	}
+
+	return methodDesc, nil
+}
+
+// SelectMethod is called when the user selects a new method by the given name
+func (a *api) SelectMethod(fullname string) error {
+	methodDesc, err := a.getMethodDesc(fullname)
+	if err != nil {
+		return err
 	}
 
 	in := messageViewFromDesc(methodDesc.Input())
@@ -279,4 +317,61 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 		fields = append(fields, fdesc)
 	}
 	return fields
+}
+
+// TagConn implements the stats.Handler interface
+func (*api) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {
+	// noop
+	return ctx
+}
+
+// HandleConn implements the stats.Handler interface
+func (*api) HandleConn(context.Context, stats.ConnStats) {
+	// noop
+}
+
+// TagRPC implements the stats.Handler interface
+func (*api) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) context.Context {
+	// noop
+	return ctx
+}
+
+// HandleRPC implements the stats.Handler interface
+func (a *api) HandleRPC(ctx context.Context, stat stats.RPCStats) {
+	if internal := ctx.Value(ctxInternalKey{}); internal != nil {
+		return
+	}
+
+	switch s := stat.(type) {
+	case *stats.InPayload:
+		txt, err := formatPayload(s.Payload)
+		if err != nil {
+			a.logger.Errorf("failed to marshal in payload to proto text: %v", err)
+			return
+		}
+		a.runtime.Events.Emit(eventInPayloadReceived, txt)
+	}
+}
+
+func formatPayload(payload interface{}) (string, error) {
+	msg, ok := payload.(proto.Message)
+	if !ok {
+		// check to see if we are dealing with a APIv1 message
+		msgV1, ok := payload.(protoV1.Message)
+		if !ok {
+			return "", fmt.Errorf("payload is not a proto message: %T", payload)
+		}
+		msg = protoV1.MessageV2(msgV1)
+	}
+
+	marshaler := prototext.MarshalOptions{
+		Multiline: true,
+		Indent:    "  ",
+	}
+	b, err := marshaler.Marshal(msg)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
 }

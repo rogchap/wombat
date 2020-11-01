@@ -7,39 +7,41 @@
   export let field = {};
   export let state;
 
+  const items = field.oneof.map(x => x.name);
   let selectedValue = undefined;
+
   onMount(() => {
-    if (!state[field.name]) {
-      state[field.name] = {}
-    }
-    const k = Object.keys(state[field.name])
-    if (k.length > 0) {
-      selectedValue = k[0]
+    const k = Object.keys(state)
+    checkSelected:
+    for (let i = 0; i < k.length; i++) {
+      for (let j = 0; j < items.length; j++) {
+        if (k[i] === items[j]) {
+          selectedValue = k[i];
+          break checkSelected;
+        }
+      }
     }
   })
 
   const onSelectChanged = ({ detail: { value }}) => {
-    state[field.name] = {};
+    if (selectedValue) {
+      delete state[selectedValue]
+    }
     selectedValue = value;
   }
   const onSelectClear = () => {
-    state[field.name] = {};
     selectedValue = undefined;
   }
-
 </script>
 
-<style>
-</style>
-
 <InputLabel label={"oneof "+field.name} />
-  <Dropdown
-    items={field.oneof.map(x => x.name)}
-    selectedValue={selectedValue}
-    isClearable 
-    on:clear={onSelectClear}
-    on:select={onSelectChanged} />
+<Dropdown
+  {items}
+  selectedValue={selectedValue}
+  isClearable 
+  on:clear={onSelectClear}
+  on:select={onSelectChanged} />
 {#if selectedValue }
-  <MessageField field={field.oneof.find(x => x.name === selectedValue)} state={state[field.name]} oneof />
+  <MessageField field={field.oneof.find(x => x.name === selectedValue)} {state} oneof />
 {/if}
 

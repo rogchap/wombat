@@ -19,6 +19,7 @@
   });
 
   const onSend = ({ detail: { method } }) => {
+    backend.api.Send(method, JSON.stringify(state))
     console.log(method, state);
   }
 

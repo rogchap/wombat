@@ -4,10 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"net"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/stats"
+	"google.golang.org/protobuf/proto"
 )
 
 type client struct {
@@ -27,13 +30,13 @@ func (t *transportCreds) ClientHandshake(ctx context.Context, addr string, in ne
 	return out, auth, err
 }
 
-func (c *client) connect(o options) error {
+func (c *client) connect(o options, h stats.Handler) error {
 	errc := make(chan error, 1)
 	go func() {
 		opts := []grpc.DialOption{
 			grpc.WithBlock(),
 			grpc.FailOnNonTempDialError(true),
-			// grpc.WithStatsHandler(c),
+			grpc.WithStatsHandler(h),
 		}
 
 		// TODO: wombat user agent
@@ -91,6 +94,14 @@ func (c *client) connect(o options) error {
 		return err
 	}
 	return nil
+}
+
+func (c *client) invoke(ctx context.Context, method string, req, resp proto.Message) error {
+	if c.conn == nil {
+		return errors.New("app: no connection available")
+	}
+
+	return c.conn.Invoke(ctx, method, req, resp)
 }
 
 func (c *client) close() error {
