@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"net"
@@ -76,6 +77,67 @@ func (s *server) ListFeatures(rect *Rectangle, stream RouteGuide_ListFeaturesSer
 		}
 	}
 	return nil
+}
+
+func toRadians(num float64) float64 {
+	return num * math.Pi / float64(180)
+}
+
+// calcDistance calculates the distance between two points using the "haversine" formula.
+// The formula is based on http://mathforum.org/library/drmath/view/51879.html.
+func calcDistance(p1 *Point, p2 *Point) int32 {
+	const CordFactor float64 = 1e7
+	const R = float64(6371000) // earth radius in metres
+	lat1 := toRadians(float64(p1.Latitude) / CordFactor)
+	lat2 := toRadians(float64(p2.Latitude) / CordFactor)
+	lng1 := toRadians(float64(p1.Longitude) / CordFactor)
+	lng2 := toRadians(float64(p2.Longitude) / CordFactor)
+	dlat := lat2 - lat1
+	dlng := lng2 - lng1
+
+	a := math.Sin(dlat/2)*math.Sin(dlat/2) +
+		math.Cos(lat1)*math.Cos(lat2)*
+			math.Sin(dlng/2)*math.Sin(dlng/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	distance := R * c
+	return int32(distance)
+}
+
+// RecordRoute records a route composited of a sequence of points.
+//
+// It gets a stream of points, and responds with statistics about the "trip":
+// number of points,  number of known features visited, total distance traveled, and
+// total time spent.
+func (s *server) RecordRoute(stream RouteGuide_RecordRouteServer) error {
+	var pointCount, featureCount, distance int32
+	var lastPoint *Point
+	startTime := time.Now()
+	for {
+		point, err := stream.Recv()
+		if err == io.EOF {
+			endTime := time.Now()
+			return stream.SendAndClose(&RouteSummary{
+				PointCount:   pointCount,
+				FeatureCount: featureCount,
+				Distance:     distance,
+				ElapsedTime:  int32(endTime.Sub(startTime).Seconds()),
+			})
+		}
+		if err != nil {
+			return err
+		}
+		pointCount++
+		for _, feature := range s.savedFeatures {
+			if proto.Equal(feature.Location, point) {
+				featureCount++
+			}
+		}
+		if lastPoint != nil {
+			distance += calcDistance(lastPoint, point)
+		}
+		lastPoint = point
+	}
 }
 
 // Serve stats serving a gRPC server that is used for testing

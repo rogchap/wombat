@@ -9,11 +9,15 @@
   let resp = "";
   let rpc = {};
   let inflight = false;
+  let client_stream = false;
+  let server_stream = false;
 
-  wails.Events.On("wombat:rpc_started", () => {
+  wails.Events.On("wombat:rpc_started", data => {
     resp = "";
     rpc = {};
     inflight = true;
+    client_stream = data.client_stream;
+    server_stream = data.server_stream;
   })
 
   wails.Events.On("wombat:in_payload_received", data => {
@@ -36,7 +40,7 @@
 </style>
 
 <div class="output-pane">
-  <OutputHeader {rpc} {inflight} />
+  <OutputHeader {rpc} {inflight} {client_stream} {server_stream} />
   <Tabs>
     <TabList>
       <Tab>Response</Tab>

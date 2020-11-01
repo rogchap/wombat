@@ -13,6 +13,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var errNoConn = errors.New("app: no connection available")
+
 type client struct {
 	conn *grpc.ClientConn
 }
@@ -98,7 +100,7 @@ func (c *client) connect(o options, h stats.Handler) error {
 
 func (c *client) invoke(ctx context.Context, method string, req, resp proto.Message) error {
 	if c.conn == nil {
-		return errors.New("app: no connection available")
+		return errNoConn
 	}
 
 	return c.conn.Invoke(ctx, method, req, resp)
@@ -106,7 +108,7 @@ func (c *client) invoke(ctx context.Context, method string, req, resp proto.Mess
 
 func (c *client) invokeServerStream(ctx context.Context, method string, req proto.Message) (grpc.ClientStream, error) {
 	if c.conn == nil {
-		return nil, errors.New("app: no connection available")
+		return nil, errNoConn
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	sd := &grpc.StreamDesc{
@@ -127,6 +129,30 @@ func (c *client) invokeServerStream(ctx context.Context, method string, req prot
 		return nil, err
 	}
 	return s, nil
+}
+
+func (c *client) invokeClientStream(ctx context.Context, method string) (grpc.ClientStream, error) {
+	if c.conn == nil {
+		return nil, errNoConn
+	}
+	sd := &grpc.StreamDesc{
+		StreamName:    method,
+		ClientStreams: true,
+		ServerStreams: false,
+	}
+	return c.conn.NewStream(ctx, sd, method)
+}
+
+func (c *client) invokeBidiStream(ctx context.Context, method string) (grpc.ClientStream, error) {
+	if c.conn == nil {
+		return nil, errNoConn
+	}
+	sd := &grpc.StreamDesc{
+		StreamName:    method,
+		ClientStreams: true,
+		ServerStreams: true,
+	}
+	return c.conn.NewStream(ctx, sd, method)
 }
 
 func (c *client) close() error {

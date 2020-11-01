@@ -33,9 +33,11 @@ type api struct {
 	client           *client
 	store            *store
 	protofiles       *protoregistry.Files
+	streamReq        chan proto.Message
 	cancelMonitoring context.CancelFunc
 	cancelInFlight   context.CancelFunc
 	mu               sync.Mutex
+	inFlight         bool
 }
 
 // WailsInit is the init fuction for the wails runtime
@@ -311,9 +313,6 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 }
 
 func (a *api) Send(method string, rawJSON []byte) error {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
 	md, err := a.getMethodDesc(method)
 	if err != nil {
 		return err
@@ -324,10 +323,25 @@ func (a *api) Send(method string, rawJSON []byte) error {
 		return err
 	}
 
+	if a.inFlight && md.IsStreamingClient() {
+		a.streamReq <- req
+		return nil
+	}
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.inFlight = true
+	defer func() {
+		a.inFlight = false
+	}()
+
 	ctx := context.Background()
 	ctx, a.cancelInFlight = context.WithCancel(ctx)
 
-	a.runtime.Events.Emit(eventRPCStarted)
+	a.runtime.Events.Emit(eventRPCStarted, rpcStart{
+		ClientStream: md.IsStreamingClient(),
+		ServerStream: md.IsStreamingServer(),
+	})
 
 	if md.IsStreamingClient() && md.IsStreamingServer() {
 		//TODO(rogchao) manage bidi requests
@@ -335,7 +349,19 @@ func (a *api) Send(method string, rawJSON []byte) error {
 	}
 
 	if md.IsStreamingClient() {
-		//TODO(rogchao) manage client streaming
+		stream, err := a.client.invokeClientStream(ctx, method)
+		if err != nil {
+			return err
+		}
+		a.streamReq = make(chan proto.Message)
+		a.streamReq <- req
+		for r := range a.streamReq {
+			if err := stream.SendMsg(r); err != nil {
+				close(a.streamReq)
+			}
+		}
+		stream.CloseAndReceive()
+
 		return nil
 	}
 
