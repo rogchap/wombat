@@ -104,6 +104,31 @@ func (c *client) invoke(ctx context.Context, method string, req, resp proto.Mess
 	return c.conn.Invoke(ctx, method, req, resp)
 }
 
+func (c *client) invokeServerStream(ctx context.Context, method string, req proto.Message) (grpc.ClientStream, error) {
+	if c.conn == nil {
+		return nil, errors.New("app: no connection available")
+	}
+	ctx, cancel := context.WithCancel(ctx)
+	sd := &grpc.StreamDesc{
+		StreamName:    method,
+		ClientStreams: false,
+		ServerStreams: true,
+	}
+	s, err := c.conn.NewStream(ctx, sd, method)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.SendMsg(req); err != nil {
+		cancel()
+		return nil, err
+	}
+	if err := s.CloseSend(); err != nil {
+		cancel()
+		return nil, err
+	}
+	return s, nil
+}
+
 func (c *client) close() error {
 	if c == nil || c.conn == nil {
 		return nil

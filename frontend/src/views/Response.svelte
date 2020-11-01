@@ -8,6 +8,10 @@
     height: calc(100% - 106px);
     overflow: scroll;
   }
+  pre {
+    user-select: text;
+    -webkit-user-select: text;
+  }
 </style>
 
 <div class="response">

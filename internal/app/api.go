@@ -8,12 +8,15 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
+	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
 	"google.golang.org/grpc/stats"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
@@ -25,12 +28,14 @@ import (
 const defaultWorkspaceKey = "wksp_default"
 
 type api struct {
-	runtime       *wails.Runtime
-	logger        *logger.CustomLogger
-	client        *client
-	store         *store
-	protofiles    *protoregistry.Files
-	cancelCtxFunc context.CancelFunc
+	runtime          *wails.Runtime
+	logger           *logger.CustomLogger
+	client           *client
+	store            *store
+	protofiles       *protoregistry.Files
+	cancelMonitoring context.CancelFunc
+	cancelInFlight   context.CancelFunc
+	mu               sync.Mutex
 }
 
 // WailsInit is the init fuction for the wails runtime
@@ -47,12 +52,18 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 		return fmt.Errorf("app: failed to create database: %v", err)
 	}
 
-	a.runtime.Events.On("wails:loaded", a.wailsLoaded)
+	ready := "wails:ready"
+	if wails.BuildMode == cmd.BuildModeBridge {
+		fmt.Printf(" = %+v\n", ready)
+		ready = "wails:loaded"
+	}
+
+	a.runtime.Events.On(ready, a.wailsReady)
 
 	return nil
 }
 
-func (a *api) wailsLoaded(data ...interface{}) {
+func (a *api) wailsReady(data ...interface{}) {
 	opts, err := a.GetWorkspaceOptions()
 	if err != nil {
 		a.logger.Errorf("%v", err)
@@ -66,8 +77,11 @@ func (a *api) wailsLoaded(data ...interface{}) {
 // WailsShutdown is the shutdown function that is called when wails shuts down
 func (a *api) WailsShutdown() {
 	a.store.close()
-	if a.cancelCtxFunc != nil {
-		a.cancelCtxFunc()
+	if a.cancelMonitoring != nil {
+		a.cancelMonitoring()
+	}
+	if a.cancelInFlight != nil {
+		a.cancelInFlight()
 	}
 	if a.client != nil {
 		a.client.close()
@@ -101,8 +115,8 @@ func (a *api) Connect(data interface{}) error {
 		}
 	}
 
-	if a.cancelCtxFunc != nil {
-		a.cancelCtxFunc()
+	if a.cancelMonitoring != nil {
+		a.cancelMonitoring()
 	}
 
 	a.client = &client{}
@@ -113,36 +127,13 @@ func (a *api) Connect(data interface{}) error {
 	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
 
 	ctx := context.Background()
-	ctx, a.cancelCtxFunc = context.WithCancel(ctx)
+	ctx, a.cancelMonitoring = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
 
 	go a.loadProtoFiles(opts)
 	go a.setWorkspaceOptions(opts)
 
 	return nil
-}
-
-func (a *api) Send(method string, rawJSON []byte) error {
-	md, err := a.getMethodDesc(method)
-	if err != nil {
-		return err
-	}
-
-	req := dynamicpb.NewMessage(md.Input())
-	if err := protojson.Unmarshal(rawJSON, req); err != nil {
-		return err
-	}
-
-	resp := dynamicpb.NewMessage(md.Output())
-
-	if md.IsStreamingClient() || md.IsStreamingServer() {
-		//TODO(rogchao) manage streaming requests
-		return nil
-	}
-
-	a.runtime.Events.Emit(eventRPCStarted)
-
-	return a.client.invoke(context.TODO(), method, req, resp)
 }
 
 func (a *api) loadProtoFiles(opts options) {
@@ -319,6 +310,55 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 	return fields
 }
 
+func (a *api) Send(method string, rawJSON []byte) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	md, err := a.getMethodDesc(method)
+	if err != nil {
+		return err
+	}
+
+	req := dynamicpb.NewMessage(md.Input())
+	if err := protojson.Unmarshal(rawJSON, req); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	ctx, a.cancelInFlight = context.WithCancel(ctx)
+
+	a.runtime.Events.Emit(eventRPCStarted)
+
+	if md.IsStreamingClient() && md.IsStreamingServer() {
+		//TODO(rogchao) manage bidi requests
+		return nil
+	}
+
+	if md.IsStreamingClient() {
+		//TODO(rogchao) manage client streaming
+		return nil
+	}
+
+	if md.IsStreamingServer() {
+		stream, err := a.client.invokeServerStream(ctx, method, req)
+		if err != nil {
+			return err
+		}
+		for {
+			resp := dynamicpb.NewMessage(md.Output())
+			if err := stream.RecvMsg(resp); err != nil {
+				break
+			}
+		}
+
+		return nil
+	}
+
+	resp := dynamicpb.NewMessage(md.Output())
+	a.client.invoke(ctx, method, req, resp)
+	return nil
+}
+
 // TagConn implements the stats.Handler interface
 func (*api) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {
 	// noop
@@ -350,6 +390,14 @@ func (a *api) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 			return
 		}
 		a.runtime.Events.Emit(eventInPayloadReceived, txt)
+	case *stats.End:
+		stus := status.Convert(s.Error)
+		var end rpcEnd
+		end.StatusCode = int32(stus.Code())
+		end.Status = stus.Code().String()
+		end.Duration = s.EndTime.Sub(s.BeginTime).String()
+		a.runtime.Events.Emit(eventRPCEnded, end)
+
 	}
 }
 
@@ -374,4 +422,11 @@ func formatPayload(payload interface{}) (string, error) {
 	}
 
 	return string(b), nil
+}
+
+// Cancel will attempt to cancel the current inflight request
+func (a *api) Cancel() {
+	if a.cancelInFlight != nil {
+		a.cancelInFlight()
+	}
 }

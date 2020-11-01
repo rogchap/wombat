@@ -39,3 +39,9 @@ type messageDesc struct {
 	FullName string      `json:"full_name"`
 	Fields   []fieldDesc `json:"fields"`
 }
+
+type rpcEnd struct {
+	Status     string `json:"status"`
+	StatusCode int32  `json:"status_code"`
+	Duration   string `json:"duration"`
+}

@@ -6,5 +6,6 @@ const (
 	eventServicesSelectChanged = "wombat:services_select_changed"
 	eventMethodInputChanged    = "wombat:method_input_changed"
 	eventRPCStarted            = "wombat:rpc_started"
+	eventRPCEnded              = "wombat:rpc_ended"
 	eventInPayloadReceived     = "wombat:in_payload_received"
 )

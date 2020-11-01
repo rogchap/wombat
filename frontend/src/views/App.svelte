@@ -72,6 +72,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
+    -webkit-user-select: none;
     background-color: var(--bg-color);
     color: var(--text-color);
   }

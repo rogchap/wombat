@@ -7,14 +7,24 @@
   import Response from "./Response.svelte";
 
   let resp = "";
+  let rpc = {};
+  let inflight = false;
 
   wails.Events.On("wombat:rpc_started", () => {
-    // resp = "";
+    resp = "";
+    rpc = {};
+    inflight = true;
   })
 
   wails.Events.On("wombat:in_payload_received", data => {
     resp += data;
   })
+
+   wails.Events.On("wombat:rpc_ended", data => {
+     rpc = data;
+     inflight = false;
+   })
+
 
 </script>
 
@@ -26,7 +36,7 @@
 </style>
 
 <div class="output-pane">
-  <OutputHeader />
+  <OutputHeader {rpc} {inflight} />
   <Tabs>
     <TabList>
       <Tab>Response</Tab>
