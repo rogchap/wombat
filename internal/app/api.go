@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -38,6 +39,10 @@ type api struct {
 	cancelInFlight   context.CancelFunc
 	mu               sync.Mutex
 	inFlight         bool
+}
+
+type statsHandler struct {
+	*api
 }
 
 // WailsInit is the init fuction for the wails runtime
@@ -122,7 +127,7 @@ func (a *api) Connect(data interface{}) error {
 	}
 
 	a.client = &client{}
-	if err := a.client.connect(opts, a); err != nil {
+	if err := a.client.connect(opts, statsHandler{a}); err != nil {
 		return fmt.Errorf("app: failed to connect to server: %v", err)
 	}
 
@@ -344,7 +349,30 @@ func (a *api) Send(method string, rawJSON []byte) error {
 	})
 
 	if md.IsStreamingClient() && md.IsStreamingServer() {
-		//TODO(rogchao) manage bidi requests
+		stream, err := a.client.invokeBidiStream(ctx, method)
+		if err != nil {
+			return err
+		}
+
+		a.streamReq = make(chan proto.Message)
+		go func() {
+			for r := range a.streamReq {
+				if err := stream.SendMsg(r); err != nil {
+					close(a.streamReq)
+					a.streamReq = nil
+				}
+			}
+			stream.CloseSend()
+		}()
+		a.streamReq <- req
+
+		for {
+			resp := dynamicpb.NewMessage(md.Output())
+			if err := stream.RecvMsg(resp); err != nil {
+				break
+			}
+		}
+
 		return nil
 	}
 
@@ -353,14 +381,22 @@ func (a *api) Send(method string, rawJSON []byte) error {
 		if err != nil {
 			return err
 		}
-		a.streamReq = make(chan proto.Message)
+		a.streamReq = make(chan proto.Message, 1)
 		a.streamReq <- req
 		for r := range a.streamReq {
 			if err := stream.SendMsg(r); err != nil {
 				close(a.streamReq)
+				a.streamReq = nil
 			}
 		}
-		stream.CloseAndReceive()
+		stream.CloseSend()
+		resp := dynamicpb.NewMessage(md.Output())
+		if err := stream.RecvMsg(resp); err != nil {
+			return err
+		}
+		if err := stream.RecvMsg(nil); err != io.EOF {
+			return err
+		}
 
 		return nil
 	}
@@ -386,24 +422,24 @@ func (a *api) Send(method string, rawJSON []byte) error {
 }
 
 // TagConn implements the stats.Handler interface
-func (*api) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {
+func (statsHandler) TagConn(ctx context.Context, _ *stats.ConnTagInfo) context.Context {
 	// noop
 	return ctx
 }
 
 // HandleConn implements the stats.Handler interface
-func (*api) HandleConn(context.Context, stats.ConnStats) {
+func (statsHandler) HandleConn(context.Context, stats.ConnStats) {
 	// noop
 }
 
 // TagRPC implements the stats.Handler interface
-func (*api) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) context.Context {
+func (statsHandler) TagRPC(ctx context.Context, _ *stats.RPCTagInfo) context.Context {
 	// noop
 	return ctx
 }
 
 // HandleRPC implements the stats.Handler interface
-func (a *api) HandleRPC(ctx context.Context, stat stats.RPCStats) {
+func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	if internal := ctx.Value(ctxInternalKey{}); internal != nil {
 		return
 	}
@@ -418,6 +454,17 @@ func (a *api) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 		a.runtime.Events.Emit(eventInPayloadReceived, txt)
 	case *stats.End:
 		stus := status.Convert(s.Error)
+
+		if stus != nil {
+			txt, err := formatPayload(stus.Proto())
+			if err != nil {
+				a.logger.Errorf("failed to marshal status error to proto text: %v", err)
+			}
+			if txt != "" {
+				a.runtime.Events.Emit(eventInPayloadReceived, txt)
+			}
+		}
+
 		var end rpcEnd
 		end.StatusCode = int32(stus.Code())
 		end.Status = stus.Code().String()
@@ -448,6 +495,14 @@ func formatPayload(payload interface{}) (string, error) {
 	}
 
 	return string(b), nil
+}
+
+// CloseSend will stop streaming client messages
+func (a *api) CloseSend() {
+	if a.streamReq != nil {
+		close(a.streamReq)
+		a.streamReq = nil
+	}
 }
 
 // Cancel will attempt to cancel the current inflight request

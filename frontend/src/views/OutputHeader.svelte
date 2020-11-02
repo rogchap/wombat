@@ -8,7 +8,7 @@
   export let server_stream = false;
 
   const onCancelClicked = () => backend.api.Cancel()
-  const onCloseClicked = () => console.log("TODO")
+  const onCloseClicked = () => backend.api.CloseSend()
 </script>
 <style>
   .output-header {
