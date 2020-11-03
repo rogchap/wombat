@@ -110,12 +110,13 @@ func (c *client) invokeServerStream(ctx context.Context, method string, req prot
 	if c.conn == nil {
 		return nil, errNoConn
 	}
-	ctx, cancel := context.WithCancel(ctx)
 	sd := &grpc.StreamDesc{
 		StreamName:    method,
 		ClientStreams: false,
 		ServerStreams: true,
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	_ = cancel // avoid go vet error
 	s, err := c.conn.NewStream(ctx, sd, method)
 	if err != nil {
 		return nil, err

@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -27,7 +26,10 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-const defaultWorkspaceKey = "wksp_default"
+const (
+	defaultWorkspaceKey      = "wksp_default"
+	reflectMetadataKeyPrefix = "rmd_"
+)
 
 type api struct {
 	runtime          *wails.Runtime
@@ -40,10 +42,19 @@ type api struct {
 	cancelInFlight   context.CancelFunc
 	mu               sync.Mutex
 	inFlight         bool
+	appData          string
 }
 
 type statsHandler struct {
 	*api
+}
+
+type storeLogger struct {
+	*logger.CustomLogger
+}
+
+func (s storeLogger) Warningf(message string, args ...interface{}) {
+	s.Warnf(message, args...)
 }
 
 // WailsInit is the init fuction for the wails runtime
@@ -51,18 +62,20 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 	a.runtime = runtime
 	a.logger = runtime.Log.New("API")
 
-	// TODO get app data file path per os
-	dbPath := filepath.Join(".", ".data")
-
 	var err error
-	a.store, err = newStore(dbPath)
+
+	a.appData, err = appDataLocation("Wombat")
+	if err != nil {
+		return fmt.Errorf("app: error getting app data location: %v\n", err)
+	}
+
+	a.store, err = newStore(a.appData, storeLogger{runtime.Log.New("DB")})
 	if err != nil {
 		return fmt.Errorf("app: failed to create database: %v", err)
 	}
 
 	ready := "wails:ready"
 	if wails.BuildMode == cmd.BuildModeBridge {
-		fmt.Printf(" = %+v\n", ready)
 		ready = "wails:loaded"
 	}
 
@@ -77,7 +90,13 @@ func (a *api) wailsReady(data ...interface{}) {
 		a.logger.Errorf("%v", err)
 		return
 	}
-	if err := a.Connect(opts); err != nil {
+	hds, err := a.GetReflectMetadata(opts.Addr)
+	if err != nil {
+		a.logger.Errorf("%v", err)
+		return
+	}
+
+	if err := a.Connect(opts, hds, false); err != nil {
 		a.logger.Errorf("%v", err)
 	}
 }
@@ -110,8 +129,21 @@ func (a *api) GetWorkspaceOptions() (*options, error) {
 	return opts, err
 }
 
+// GetReflectMetadata gets the reflection metadata from the store by addr
+func (a *api) GetReflectMetadata(addr string) (headers, error) {
+	val, err := a.store.get([]byte(reflectMetadataKeyPrefix + hash(addr)))
+	if err != nil {
+		return nil, err
+	}
+	var hds headers
+	dec := gob.NewDecoder(bytes.NewBuffer(val))
+	err = dec.Decode(&hds)
+
+	return hds, err
+}
+
 // Connect will attempt to connect a grpc server and parse any proto files
-func (a *api) Connect(data interface{}) error {
+func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 	var opts options
 	if err := mapstructure.Decode(data, &opts); err != nil {
 		return err
@@ -138,21 +170,39 @@ func (a *api) Connect(data interface{}) error {
 	ctx, a.cancelMonitoring = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
 
-	go a.loadProtoFiles(opts)
-	go a.setWorkspaceOptions(opts)
+	var hds headers
+	if err := mapstructure.Decode(rawHeaders, &hds); err != nil {
+		a.logger.Errorf("unable to decode reflection metadata headers: %v", err)
+	}
+	go a.loadProtoFiles(opts, hds)
+
+	if save {
+		go a.setWorkspaceOptions(opts)
+		go a.setReflectMetadata(opts.Addr, hds)
+	}
 
 	return nil
 }
 
-func (a *api) loadProtoFiles(opts options) {
+func (a *api) loadProtoFiles(opts options, reflectHeaders headers) {
 	a.runtime.Events.Emit(eventServicesSelectChanged)
 
 	var err error
 	if opts.Reflect {
 		if a.client == nil {
 			a.logger.Error("unable to load proto files via reflection: client is <nil>")
+			return
 		}
-		if a.protofiles, err = protoFilesFromReflectionAPI(a.client.conn, nil); err != nil {
+		ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(nil))
+		for _, h := range reflectHeaders {
+			if h.Key == "" {
+				continue
+			}
+			ctx = metadata.AppendToOutgoingContext(ctx, h.Key, h.Val)
+		}
+
+		ctx = context.WithValue(ctx, ctxInternalKey{}, struct{}{})
+		if a.protofiles, err = protoFilesFromReflectionAPI(ctx, a.client.conn); err != nil {
 			//TODO Emit error to frontend
 			a.logger.Errorf("error getting proto files from reflection API: %v", err)
 		}
@@ -210,6 +260,20 @@ func (a *api) setWorkspaceOptions(opts options) {
 	enc := gob.NewEncoder(&val)
 	enc.Encode(opts)
 	a.store.set([]byte(defaultWorkspaceKey), val.Bytes())
+}
+
+func (a *api) setReflectMetadata(addr string, hds headers) {
+	var toSet headers
+	for _, h := range hds {
+		if h.Key == "" {
+			continue
+		}
+		toSet = append(toSet, h)
+	}
+	var val bytes.Buffer
+	enc := gob.NewEncoder(&val)
+	enc.Encode(toSet)
+	a.store.set([]byte(reflectMetadataKeyPrefix+hash(addr)), val.Bytes())
 }
 
 func (a *api) monitorStateChanges(ctx context.Context) {

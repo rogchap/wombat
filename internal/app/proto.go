@@ -8,7 +8,6 @@ import (
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/reflect/protoregistry"
@@ -17,14 +16,12 @@ import (
 
 type ctxInternalKey struct{}
 
-func protoFilesFromReflectionAPI(conn *grpc.ClientConn, md metadata.MD) (*protoregistry.Files, error) {
+func protoFilesFromReflectionAPI(ctx context.Context, conn *grpc.ClientConn) (*protoregistry.Files, error) {
 	if conn == nil {
 		return nil, errors.New("app: no connection to a grpc server available")
 	}
 
 	stub := rpb.NewServerReflectionClient(conn)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
-	ctx = context.WithValue(ctx, ctxInternalKey{}, struct{}{})
 	client := grpcreflect.NewClient(ctx, stub)
 	defer client.Reset()
 

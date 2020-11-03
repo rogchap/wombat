@@ -22,7 +22,7 @@ func Run() int {
 	css := mewn.String("./frontend/public/build/bundle.css")
 	js := mewn.String("./frontend/public/build/bundle.js")
 
-	app := wails.CreateApp(&wails.AppConfig{
+	cfg := &wails.AppConfig{
 		Width:     1200,
 		Height:    820,
 		Resizable: true,
@@ -30,7 +30,8 @@ func Run() int {
 		JS:        js,
 		CSS:       css,
 		Colour:    "#2e3440",
-	})
+	}
+	app := wails.CreateApp(cfg)
 
 	app.Bind(&api{})
 

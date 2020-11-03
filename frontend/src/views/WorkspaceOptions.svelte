@@ -7,17 +7,21 @@
   import Button from "../controls/Button.svelte";
   import WorkspaceOptionsBasic from "./WorkspaceOptionsBasic.svelte";
   import WorkspaceOptionsTls from "./WorkspaceOptionsTls.svelte";
+  import WorkspaceOptionsMetadata from "./WorkspaceOptionsMetadata.svelte";
 
   const { close } = getContext('modal');
 
   let options = {}
+  let reflectmd = [];
   onMount(async () => {
-    backend.api.GetWorkspaceOptions().
-      then(o => options = o).
-      catch(e => {})
+    options = await backend.api.GetWorkspaceOptions();
+    const mds = await backend.api.GetReflectMetadata(options.addr);
+    if (mds) {
+      reflectmd = mds;
+    }
   })
 
-  const onConnectClicked = () => backend.api.Connect(options).
+  const onConnectClicked = () => backend.api.Connect(options, reflectmd, true).
   then(close).
   catch(err => {
     // TODO handle errors
@@ -28,7 +32,7 @@
 <style>
   .workspace-options {
     width: calc(var(--padding) + 800px);
-    height: 650px;
+    height: 598px;
     display: flex;
     flex-flow: column;
   }
@@ -39,6 +43,9 @@
     font-size: calc(var(--font-size) + 4px);
     font-weight: 600;
     border-bottom: var(--border);
+  }
+  .spacer {
+    flex-grow: 1;
   }
   footer {
     display: flex;
@@ -59,17 +66,18 @@
     </TabList>
 
     <TabPanel>
-      <WorkspaceOptionsBasic options={options} />
+      <WorkspaceOptionsBasic bind:options />
     </TabPanel>
 
     <TabPanel>
-      <WorkspaceOptionsTls options={options} />
+      <WorkspaceOptionsTls bind:options />
     </TabPanel>
 
     <TabPanel>
-      <h2>Metadata panel</h2>
+      <WorkspaceOptionsMetadata bind:metadata={reflectmd} />
     </TabPanel>
   </Tabs>
+  <div class="spacer" />
   <footer>
     <Button
       text="Connect"

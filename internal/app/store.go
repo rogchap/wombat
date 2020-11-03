@@ -6,14 +6,16 @@ import (
 	badger "github.com/dgraph-io/badger/v2"
 )
 
+type dblogger = badger.Logger
+
 type store struct {
 	db *badger.DB
 }
 
-func newStore(path string) (*store, error) {
+func newStore(path string, l dblogger) (*store, error) {
 	dbPath := filepath.Join(path, "db")
 	opts := badger.DefaultOptions(dbPath)
-	// opts = opts.WithLogger(&dbLogger{logger})
+	opts = opts.WithLogger(l)
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
