@@ -1,10 +1,11 @@
 <script>
   import InputLabel from "./InputLabel.svelte";
 
-  export let label;
+  export let label = undefined;
   export let hint = "";
   export let placeholder = "";
   export let width = "400px";
+  export let style = "";
   export let value = "";
   export let labelColor = undefined;
   export let removeable = false;
@@ -28,13 +29,13 @@
     background-color: var(--accent-color2);
   }
   input::placeholder {
-    color: var(--border-color);
+    color: var(--text-color3);
   }
 </style>
 
-<div class="text-field" style="width:{width};">
+<div class="text-field" style="width:{width};{style}">
   {#if label}
     <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
-  <input type="text" placeholder={placeholder} bind:value />
+  <input on:focus type="text" placeholder={placeholder} bind:value />
 </div>

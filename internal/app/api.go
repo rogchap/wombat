@@ -16,6 +16,7 @@ import (
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -317,7 +318,7 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 	return fields
 }
 
-func (a *api) Send(method string, rawJSON []byte) error {
+func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) error {
 	md, err := a.getMethodDesc(method)
 	if err != nil {
 		return err
@@ -340,7 +341,19 @@ func (a *api) Send(method string, rawJSON []byte) error {
 		a.inFlight = false
 	}()
 
-	ctx := context.Background()
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(nil))
+
+	var hs headers
+	if err := mapstructure.Decode(rawHeaders, &hs); err != nil {
+		return err
+	}
+	for _, h := range hs {
+		if h.Key == "" {
+			continue
+		}
+		ctx = metadata.AppendToOutgoingContext(ctx, h.Key, h.Val)
+	}
+
 	ctx, a.cancelInFlight = context.WithCancel(ctx)
 
 	a.runtime.Events.Emit(eventRPCStarted, rpcStart{

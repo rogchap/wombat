@@ -30,6 +30,9 @@
     selectedValue = value;
   }
   const onSelectClear = () => {
+    if (selectedValue) {
+      delete state[selectedValue]
+    }
     selectedValue = undefined;
   }
 </script>

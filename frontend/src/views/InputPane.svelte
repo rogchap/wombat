@@ -5,13 +5,15 @@
   import TabPanel from "../controls/TabPanel.svelte";
   import MethodSelect from "./MethodSelect.svelte";
   import MethodInput from "./MethodInput.svelte";
+  import RequestMetadata from "./RequestMetadata.svelte";
 
   let methodInput = {
     full_name: "",
     fields: []
   };
-
   let state = {}
+  let metadata = []
+  
   wails.Events.On("wombat:method_input_changed", data => {
     methodInput = data;
     //TODO(rogchap) load state from disk, or local cache by method url
@@ -19,8 +21,8 @@
   });
 
   const onSend = ({ detail: { method } }) => {
-    backend.api.Send(method, JSON.stringify(state))
-    console.log(method, state);
+    backend.api.Send(method, JSON.stringify(state), metadata)
+    console.log(method, state, metadata);
   }
 
 </script>
@@ -45,7 +47,7 @@
     </TabPanel>
 
     <TabPanel>
-      <h2>Metadata panel</h2>
+      <RequestMetadata bind:metadata />
     </TabPanel>
   </Tabs>
 </div>

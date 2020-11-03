@@ -40,6 +40,13 @@ type messageDesc struct {
 	Fields   []fieldDesc `json:"fields"`
 }
 
+type header struct {
+	Key string `json:"key"`
+	Val string `json:"val"`
+}
+
+type headers []header
+
 type rpcStart struct {
 	ClientStream bool `json:"client_stream"`
 	ServerStream bool `json:"server_stream"`
