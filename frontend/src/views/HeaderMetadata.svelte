@@ -6,6 +6,7 @@
   .header-metadata {
     user-select: text;
     -webkit-user-select: text;
+    cursor: text;
   }
   .header-metadata span::selection {
     background-color: var(--accent-color2);

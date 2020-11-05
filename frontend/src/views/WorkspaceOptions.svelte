@@ -11,8 +11,9 @@
 
   const { close } = getContext('modal');
 
-  let options = {}
+  let options = undefined;
   let reflectmd = [];
+
   onMount(async () => {
     options = await backend.api.GetWorkspaceOptions();
     const mds = await backend.api.GetReflectMetadata(options.addr);
@@ -21,18 +22,17 @@
     }
   })
 
-  const onConnectClicked = () => backend.api.Connect(options, reflectmd, true).
-  then(close).
-  catch(err => {
-    // TODO handle errors
-  });
+  const onConnectClicked = async () => {
+    await backend.api.Connect(options, reflectmd, true);
+    close();
+  }
 
 </script>
 
 <style>
   .workspace-options {
     width: calc(var(--padding) + 800px);
-    height: 598px;
+    height: 604px;
     display: flex;
     flex-flow: column;
   }
@@ -53,6 +53,7 @@
     padding-top: var(--padding);
     border-top: var(--border);
     margin-top: calc(-1 * var(--padding));
+    height: 52px;
   }
 </style>
 

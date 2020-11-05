@@ -11,7 +11,10 @@
     user-select: text;
     -webkit-user-select: text;
     color: var(--accent-color2);
+    word-break: break-word;
+    cursor: text;
   }
+  
   .response :global(code::selection, span::selection) {
     background-color: var(--accent-color2);
     color: var(--text-color);

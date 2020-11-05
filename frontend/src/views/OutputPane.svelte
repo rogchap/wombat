@@ -33,6 +33,9 @@
    wails.Events.On("wombat:rpc_ended", data => {
      rpc = data;
      inflight = false;
+     if (!resp || resp === "") {
+       resp = "<nil>"
+     }
    })
 
 

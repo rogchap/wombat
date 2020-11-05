@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -117,6 +120,10 @@ func (a *api) WailsShutdown() {
 	}
 }
 
+func (a *api) emitError(title, msg string) {
+	a.runtime.Events.Emit(eventError, errorMsg{title, msg})
+}
+
 // GetWorkspaceOptions gets the workspace options from the store
 func (a *api) GetWorkspaceOptions() (*options, error) {
 	val, err := a.store.get([]byte(defaultWorkspaceKey))
@@ -163,8 +170,46 @@ func (a *api) GetRawMessageState(method string) (string, error) {
 	return string(val), err
 }
 
+//FindProtoFiles opens a directory dialog to search for proto files
+func (a *api) FindProtoFiles() ([]string, error) {
+	dir := a.SelectDirectory()
+
+	var files []string
+
+	// TODO(rogchap): we need to add a circuit breaker to not walk the whole file system
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == ".proto" {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	if len(files) == 0 {
+		return nil, errors.New("app: no *.proto files found")
+	}
+
+	return files, nil
+}
+
+//SelectDirectory opens a directory dialog and returns the path of the selected directory
+func (a *api) SelectDirectory() string {
+	if wails.BuildMode == cmd.BuildModeBridge {
+		f, _ := filepath.Abs(filepath.Join(".", "internal", "server"))
+		return f
+	}
+	return a.runtime.Dialog.SelectDirectory()
+}
+
 // Connect will attempt to connect a grpc server and parse any proto files
-func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
+func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Connection error"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
+
 	var opts options
 	if err := mapstructure.Decode(data, &opts); err != nil {
 		return err
@@ -172,7 +217,7 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 
 	if a.client != nil {
 		if err := a.client.close(); err != nil {
-			return fmt.Errorf("app: failed to close previous connection: %v", err)
+			return fmt.Errorf("failed to close previous connection: %v", err)
 		}
 	}
 
@@ -182,7 +227,7 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 
 	a.client = &client{}
 	if err := a.client.connect(opts, statsHandler{a}); err != nil {
-		return fmt.Errorf("app: failed to connect to server: %v", err)
+		return fmt.Errorf("failed to connect to server: %v", err)
 	}
 
 	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
@@ -205,14 +250,21 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 	return nil
 }
 
-func (a *api) loadProtoFiles(opts options, reflectHeaders headers) {
+func (a *api) loadProtoFiles(opts options, reflectHeaders headers) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Failed to load RPC schema"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
+
 	a.runtime.Events.Emit(eventServicesSelectChanged)
 
 	var err error
 	if opts.Reflect {
 		if a.client == nil {
-			a.logger.Error("unable to load proto files via reflection: client is <nil>")
-			return
+			return errors.New("unable to load proto files via reflection: client is <nil>")
 		}
 		ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(nil))
 		for _, h := range reflectHeaders {
@@ -225,15 +277,17 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers) {
 
 		ctx = context.WithValue(ctx, ctxInternalKey{}, struct{}{})
 		if a.protofiles, err = protoFilesFromReflectionAPI(ctx, a.client.conn); err != nil {
-			//TODO Emit error to frontend
-			a.logger.Errorf("error getting proto files from reflection API: %v", err)
+			return fmt.Errorf("error getting proto files from reflection API: %v", err)
 		}
 	}
-	if !opts.Reflect {
-		// TODO: load protos from disk
+	if !opts.Reflect && len(opts.Protos.Files) > 0 {
+		if a.protofiles, err = protoFilesFromDisk(opts.Protos.Roots, opts.Protos.Files); err != nil {
+			return fmt.Errorf("error parsing proto files from disk: %v", err)
+		}
 	}
 
 	a.emitServicesSelect()
+	return nil
 }
 
 func (a *api) emitServicesSelect() {

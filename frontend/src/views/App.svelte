@@ -1,7 +1,8 @@
 <script>
-  import ModalContext from 'svelte-simple-modal';
-  import Header from './Header.svelte';
-  import Content from './Content.svelte';
+  import ModalContext from "svelte-simple-modal";
+  import Header from "./Header.svelte";
+  import Content from "./Content.svelte";
+  import Errors from "./Errors.svelte";
 
   const modalSettings = {
     key: 'modal',
@@ -75,6 +76,7 @@
     -webkit-user-select: none;
     background-color: var(--bg-color);
     color: var(--text-color);
+    cursor: default;
   }
 
   .app {
@@ -85,6 +87,7 @@
 </style>
 
 <main class="app">
+  <Errors />
   <ModalContext {...modalSettings} >
     <Header />
     <Content />

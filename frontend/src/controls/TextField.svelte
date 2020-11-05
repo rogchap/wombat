@@ -37,5 +37,5 @@
   {#if label}
     <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
-  <input on:focus autocomplete="off" type="text" placeholder={placeholder} bind:value />
+  <input on:focus autocapitalize="off" autocorrect="off" autocomplete="off" type="text" placeholder={placeholder} bind:value />
 </div>
