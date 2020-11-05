@@ -40,6 +40,11 @@ type messageDesc struct {
 	Fields   []fieldDesc `json:"fields"`
 }
 
+type methodInput struct {
+	FullName string       `json:"full_name"`
+	Message  *messageDesc `json:"message"`
+}
+
 type header struct {
 	Key string `json:"key"`
 	Val string `json:"val"`

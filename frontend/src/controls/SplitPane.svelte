@@ -60,6 +60,7 @@
 		float: left;
 		width: 100%;
 		height: 100%;
+    overflow: hidden;
 	}
 	.mousecatcher {
 		position: absolute;
@@ -102,7 +103,7 @@
 		top: 8px;
 		left: 0;
 		width: 100%;
-		height: 1px;
+		height: 4px;
 	}
 	.left, .right, .divider {
 		display: block;

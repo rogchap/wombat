@@ -11,14 +11,26 @@
     full_name: "",
     fields: []
   };
-  let state = {}
-  let metadata = []
+  let state = {};
+  let metadata = [];
   
-  wails.Events.On("wombat:method_input_changed", data => {
-    methodInput = data;
-    //TODO(rogchap) load state from disk, or local cache by method url
+  wails.Events.On("wombat:method_input_changed", async data => {
+    methodInput = data.message;
+
     state = {}
+    const rawState = await backend.api.GetRawMessageState(data.full_name);
+    if (rawState) {
+      state = JSON.parse(rawState);
+    }
   });
+
+  wails.Events.On("wombat:client_connected", async (addr) => {
+    metadata = [];
+    const m = await backend.api.GetMetadata(addr);
+    if (m) {
+      metadata = m;
+    }
+  })
 
   const onSend = ({ detail: { method } }) => {
     backend.api.Send(method, JSON.stringify(state), metadata)

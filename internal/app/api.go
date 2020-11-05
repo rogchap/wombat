@@ -28,7 +28,9 @@ import (
 
 const (
 	defaultWorkspaceKey      = "wksp_default"
+	metadataKeyPrefix        = "md_"
 	reflectMetadataKeyPrefix = "rmd_"
+	messageKeyPrefix         = "msg_"
 )
 
 type api struct {
@@ -142,6 +144,25 @@ func (a *api) GetReflectMetadata(addr string) (headers, error) {
 	return hds, err
 }
 
+// GetMetadata gets the metadata from the store by addr
+func (a *api) GetMetadata(addr string) (headers, error) {
+	val, err := a.store.get([]byte(metadataKeyPrefix + hash(addr)))
+	if err != nil {
+		return nil, err
+	}
+	var hds headers
+	dec := gob.NewDecoder(bytes.NewBuffer(val))
+	err = dec.Decode(&hds)
+
+	return hds, err
+}
+
+// GetRawMessageState gets the message state by method full name
+func (a *api) GetRawMessageState(method string) (string, error) {
+	val, err := a.store.get([]byte(messageKeyPrefix + hash(a.client.conn.Target(), method)))
+	return string(val), err
+}
+
 // Connect will attempt to connect a grpc server and parse any proto files
 func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 	var opts options
@@ -178,7 +199,7 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) error {
 
 	if save {
 		go a.setWorkspaceOptions(opts)
-		go a.setReflectMetadata(opts.Addr, hds)
+		go a.setMetadata(reflectMetadataKeyPrefix+hash(opts.Addr), hds)
 	}
 
 	return nil
@@ -199,6 +220,7 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers) {
 				continue
 			}
 			ctx = metadata.AppendToOutgoingContext(ctx, h.Key, h.Val)
+			fmt.Printf("h.Val = %+v\n", h.Val)
 		}
 
 		ctx = context.WithValue(ctx, ctxInternalKey{}, struct{}{})
@@ -262,7 +284,7 @@ func (a *api) setWorkspaceOptions(opts options) {
 	a.store.set([]byte(defaultWorkspaceKey), val.Bytes())
 }
 
-func (a *api) setReflectMetadata(addr string, hds headers) {
+func (a *api) setMetadata(key string, hds headers) {
 	var toSet headers
 	for _, h := range hds {
 		if h.Key == "" {
@@ -273,7 +295,11 @@ func (a *api) setReflectMetadata(addr string, hds headers) {
 	var val bytes.Buffer
 	enc := gob.NewEncoder(&val)
 	enc.Encode(toSet)
-	a.store.set([]byte(reflectMetadataKeyPrefix+hash(addr)), val.Bytes())
+	a.store.set([]byte(key), val.Bytes())
+}
+
+func (a *api) setMessage(method string, rawJSON []byte) {
+	a.store.set([]byte(messageKeyPrefix+hash(a.client.conn.Target(), method)), rawJSON)
 }
 
 func (a *api) monitorStateChanges(ctx context.Context) {
@@ -320,7 +346,11 @@ func (a *api) SelectMethod(fullname string) error {
 	}
 
 	in := messageViewFromDesc(methodDesc.Input())
-	a.runtime.Events.Emit(eventMethodInputChanged, in)
+	m := methodInput{
+		FullName: fullname,
+		Message:  in,
+	}
+	a.runtime.Events.Emit(eventMethodInputChanged, m)
 
 	return nil
 }
@@ -393,6 +423,8 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) error 
 		return err
 	}
 
+	go a.setMessage(method, rawJSON)
+
 	if a.inFlight && md.IsStreamingClient() {
 		a.streamReq <- req
 		return nil
@@ -411,6 +443,8 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) error 
 	if err := mapstructure.Decode(rawHeaders, &hs); err != nil {
 		return err
 	}
+	go a.setMetadata(metadataKeyPrefix+hash(a.client.conn.Target()), hs)
+
 	for _, h := range hs {
 		if h.Key == "" {
 			continue
@@ -522,6 +556,10 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	}
 
 	switch s := stat.(type) {
+	case *stats.OutHeader:
+		fmt.Printf("s.Header = %#v\n", s.Header)
+	case *stats.InHeader:
+		a.runtime.Events.Emit(eventInHeaderReceived, s.Header)
 	case *stats.InPayload:
 		txt, err := formatPayload(s.Payload)
 		if err != nil {
@@ -547,7 +585,7 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 		end.Status = stus.Code().String()
 		end.Duration = s.EndTime.Sub(s.BeginTime).String()
 		a.runtime.Events.Emit(eventRPCEnded, end)
-
+		a.runtime.Events.Emit(eventInTrailerReceived, s.Trailer)
 	}
 }
 
