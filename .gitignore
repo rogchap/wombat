@@ -1,5 +1,9 @@
+# old v1 
 vendor
 deploy
 moc*
 rcc*
+
+# new v2
+build
 .data
