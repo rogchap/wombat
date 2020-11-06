@@ -7,15 +7,17 @@
         <key>CFBundleGetInfoString</key>
         <string>Created by Roger Chapman (rogchap)</string>
         <key>CFBundleIconFile</key>
-        <string>Wombat.icns</string>
+        <string>iconfile</string>
         <key>CFBundleIdentifier</key>
         <string>com.rogchap.wombat</string>
         <key>CFBundleName</key>
         <string>Wombat</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
+        <key>CFBundleVersion</key>
+        <string>0.2.0</string>
         <key>CFBundleShortVersionString</key>
-        <string>0.1.0-beta</string>
+        <string>0.2.0</string>
         <key>LSMinimumSystemVersion</key>
         <string>10.11</string>
         <key>NSPrincipalClass</key>
