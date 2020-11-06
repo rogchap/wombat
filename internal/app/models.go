@@ -1,5 +1,7 @@
 package app
 
+import "google.golang.org/grpc/stats"
+
 type protos struct {
 	Files []string `json:"files"`
 	Roots []string `json:"roots"`
@@ -72,4 +74,39 @@ type rpcEnd struct {
 type errorMsg struct {
 	Title   string `json:"title"`
 	Message string `json:"msg"`
+}
+
+type rpcStatOutHeader struct {
+	*stats.OutHeader
+	Header string
+}
+
+type rpcStatOutPayload struct {
+	*stats.OutPayload
+	Data string
+}
+
+type rpcStatOutTrailer struct {
+	*stats.OutTrailer
+	Trailer string
+}
+
+type rpcStatInHeader struct {
+	*stats.InHeader
+	Header string
+}
+
+type rpcStatInPayload struct {
+	*stats.InPayload
+	Data string
+}
+
+type rpcStatInTrailer struct {
+	*stats.InTrailer
+	Trailer string
+}
+
+type rpcStatEnd struct {
+	*stats.End
+	Error string
 }

@@ -171,10 +171,16 @@ func (a *api) GetRawMessageState(method string) (string, error) {
 }
 
 //FindProtoFiles opens a directory dialog to search for proto files
-func (a *api) FindProtoFiles() ([]string, error) {
-	dir := a.SelectDirectory()
+func (a *api) FindProtoFiles() (files []string, rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Not found"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
 
-	var files []string
+	dir := a.SelectDirectory()
 
 	// TODO(rogchap): we need to add a circuit breaker to not walk the whole file system
 	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -185,7 +191,7 @@ func (a *api) FindProtoFiles() ([]string, error) {
 	})
 
 	if len(files) == 0 {
-		return nil, errors.New("app: no *.proto files found")
+		return nil, errors.New("no *.proto files found")
 	}
 
 	return files, nil
@@ -393,7 +399,15 @@ func (a *api) getMethodDesc(fullname string) (protoreflect.MethodDescriptor, err
 }
 
 // SelectMethod is called when the user selects a new method by the given name
-func (a *api) SelectMethod(fullname string) error {
+func (a *api) SelectMethod(fullname string) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Failed to select method"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
+
 	methodDesc, err := a.getMethodDesc(fullname)
 	if err != nil {
 		return err
@@ -466,7 +480,15 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 	return fields
 }
 
-func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) error {
+func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Unable to send request"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
+
 	md, err := a.getMethodDesc(method)
 	if err != nil {
 		return err
@@ -610,9 +632,19 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 	}
 
 	switch s := stat.(type) {
+	case *stats.Begin:
+		a.runtime.Events.Emit(eventStatBegin, s)
 	case *stats.OutHeader:
-		fmt.Printf("s.Header = %#v\n", s.Header)
+		a.runtime.Events.Emit(eventStatOutHeader, rpcStatOutHeader{s, fmt.Sprintf("%+v", s.Header)})
+	case *stats.OutPayload:
+		if p, err := formatPayload(s.Payload); err == nil {
+			s.Payload = p
+		}
+		a.runtime.Events.Emit(eventStatOutPayload, rpcStatOutPayload{s, fmt.Sprintf("%+v", s.Data)})
+	case *stats.OutTrailer:
+		a.runtime.Events.Emit(eventStatOutTrailer, rpcStatOutTrailer{s, fmt.Sprintf("%+v", s.Trailer)})
 	case *stats.InHeader:
+		a.runtime.Events.Emit(eventStatInHeader, rpcStatInHeader{s, fmt.Sprintf("%+v", s.Header)})
 		a.runtime.Events.Emit(eventInHeaderReceived, s.Header)
 	case *stats.InPayload:
 		txt, err := formatPayload(s.Payload)
@@ -620,26 +652,33 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 			a.logger.Errorf("failed to marshal in payload to proto text: %v", err)
 			return
 		}
+		s.Payload = txt
+		a.runtime.Events.Emit(eventStatInPayload, rpcStatInPayload{s, fmt.Sprintf("%+v", s.Data)})
 		a.runtime.Events.Emit(eventInPayloadReceived, txt)
+	case *stats.InTrailer:
+		a.runtime.Events.Emit(eventStatInTrailer, rpcStatInTrailer{s, fmt.Sprintf("%+v", s.Trailer)})
+		a.runtime.Events.Emit(eventInTrailerReceived, s.Trailer)
 	case *stats.End:
-		stus := status.Convert(s.Error)
 
+		errProtoStr := ""
+		stus := status.Convert(s.Error)
 		if stus != nil {
-			txt, err := formatPayload(stus.Proto())
+			var err error
+			errProtoStr, err = formatPayload(stus.Proto())
 			if err != nil {
 				a.logger.Errorf("failed to marshal status error to proto text: %v", err)
 			}
-			if txt != "" {
-				a.runtime.Events.Emit(eventInPayloadReceived, txt)
+			if errProtoStr != "" {
+				a.runtime.Events.Emit(eventInPayloadReceived, errProtoStr)
 			}
 		}
+		a.runtime.Events.Emit(eventStatEnd, rpcStatEnd{s, errProtoStr})
 
 		var end rpcEnd
 		end.StatusCode = int32(stus.Code())
 		end.Status = stus.Code().String()
 		end.Duration = s.EndTime.Sub(s.BeginTime).String()
 		a.runtime.Events.Emit(eventRPCEnded, end)
-		a.runtime.Events.Emit(eventInTrailerReceived, s.Trailer)
 	}
 }
 
