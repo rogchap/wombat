@@ -1,15 +1,19 @@
 package app
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 )
 
 func appDataLocation(name string) (string, error) {
-	p := fmt.Sprintf("~/Library/Application Support/%s", name)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	p := filepath.Join(homeDir, "Library", "Application Support", name)
 	if wails.BuildMode == cmd.BuildModeBridge {
 		p = ".data"
 	}

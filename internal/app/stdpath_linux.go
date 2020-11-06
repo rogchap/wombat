@@ -1,12 +1,16 @@
 package app
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func appDataLocation(name string) (string, error) {
-	p := fmt.Sprintf("~/.local/share/%s", name)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	p := filepath.Join(homeDir, ".local", "share", name)
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		if err := os.MkdirAll(p, 0700); err != nil {
 			return "", err
