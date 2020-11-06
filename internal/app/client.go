@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"net"
 
 	"google.golang.org/grpc"
@@ -39,9 +40,8 @@ func (c *client) connect(o options, h stats.Handler) error {
 			grpc.WithBlock(),
 			grpc.FailOnNonTempDialError(true),
 			grpc.WithStatsHandler(h),
+			grpc.WithUserAgent(fmt.Sprintf("%s/%s", appname, semver)),
 		}
-
-		// TODO: wombat user agent
 
 		if !o.Plaintext {
 			var tlsCfg tls.Config
@@ -69,7 +69,6 @@ func (c *client) connect(o options, h stats.Handler) error {
 				errc,
 			}
 			opts = append(opts, grpc.WithTransportCredentials(creds))
-			// TODO: tls
 		}
 
 		if o.Plaintext {

@@ -2,6 +2,11 @@ package app
 
 import "google.golang.org/grpc/stats"
 
+type initData struct {
+	Version   string `json:"version"`
+	BuildMode string `json:"build_mode"`
+}
+
 type protos struct {
 	Files []string `json:"files"`
 	Roots []string `json:"roots"`

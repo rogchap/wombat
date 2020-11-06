@@ -1,11 +1,11 @@
 {
  "name": "Wombat",
- "description": "Enter your project description",
+ "description": "Cross platform gRPC client",
  "author": {
   "name": "Roger Chapman",
   "email": "rogchap@gmail.com"
  },
- "version": "0.1.0",
+ "version": "0.2.0",
  "binaryname": "wombat",
  "frontend": {
   "dir": "frontend",

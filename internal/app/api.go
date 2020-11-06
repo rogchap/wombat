@@ -69,11 +69,6 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 
 	var err error
 
-	a.appData, err = appDataLocation("Wombat")
-	if err != nil {
-		return fmt.Errorf("app: error getting app data location: %v\n", err)
-	}
-
 	a.store, err = newStore(a.appData, storeLogger{runtime.Log.New("DB")})
 	if err != nil {
 		return fmt.Errorf("app: failed to create database: %v", err)
@@ -90,6 +85,8 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 }
 
 func (a *api) wailsReady(data ...interface{}) {
+	a.runtime.Events.Emit(eventInit, initData{semver, wails.BuildMode})
+
 	opts, err := a.GetWorkspaceOptions()
 	if err != nil {
 		a.logger.Errorf("%v", err)
