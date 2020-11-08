@@ -13,6 +13,7 @@
   };
   let state = {};
   let metadata = [];
+  let mapItems = {};
   
   wails.Events.On("wombat:method_input_changed", async data => {
     methodInput = data.message;
@@ -34,7 +35,7 @@
 
   const onSend = ({ detail: { method } }) => {
     backend.api.Send(method, JSON.stringify(state), metadata)
-    console.log(method, state, metadata);
+    // console.log(method, state, metadata);
   }
 
 </script>
@@ -55,7 +56,7 @@
     </TabList>
 
     <TabPanel>
-      <MethodInput {methodInput} {state} />
+      <MethodInput {methodInput} {state} {mapItems} />
     </TabPanel>
 
     <TabPanel>

@@ -43,12 +43,15 @@ type fieldDesc struct {
 	FullName string       `json:"full_name"`
 	Kind     string       `json:"kind"`
 	Repeated bool         `json:"repeated"`
+	MapKey   *fieldDesc   `json:"map_key"`
+	MapValue *fieldDesc   `json:"map_value"`
 	Oneof    []fieldDesc  `json:"oneof"`
 	Enum     []string     `json:"enum"`
 	Message  *messageDesc `json:"message"`
 }
 
 type messageDesc struct {
+	Name     string      `json:"name"`
 	FullName string      `json:"full_name"`
 	Fields   []fieldDesc `json:"fields"`
 }

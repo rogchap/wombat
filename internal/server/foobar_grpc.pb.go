@@ -17,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FoobarClient interface {
+	AFoo(ctx context.Context, in *AFooRequest, opts ...grpc.CallOption) (*AFooResponse, error)
 	Baz(ctx context.Context, in *BazRequest, opts ...grpc.CallOption) (*BazResponse, error)
 	Bar(ctx context.Context, in *BarRequest, opts ...grpc.CallOption) (*BarResponse, error)
 	Foo(ctx context.Context, in *FooRequest, opts ...grpc.CallOption) (*FooResponse, error)
@@ -28,6 +29,15 @@ type foobarClient struct {
 
 func NewFoobarClient(cc grpc.ClientConnInterface) FoobarClient {
 	return &foobarClient{cc}
+}
+
+func (c *foobarClient) AFoo(ctx context.Context, in *AFooRequest, opts ...grpc.CallOption) (*AFooResponse, error) {
+	out := new(AFooResponse)
+	err := c.cc.Invoke(ctx, "/wombat.v1.Foobar/AFoo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *foobarClient) Baz(ctx context.Context, in *BazRequest, opts ...grpc.CallOption) (*BazResponse, error) {
@@ -61,6 +71,7 @@ func (c *foobarClient) Foo(ctx context.Context, in *FooRequest, opts ...grpc.Cal
 // All implementations must embed UnimplementedFoobarServer
 // for forward compatibility
 type FoobarServer interface {
+	AFoo(context.Context, *AFooRequest) (*AFooResponse, error)
 	Baz(context.Context, *BazRequest) (*BazResponse, error)
 	Bar(context.Context, *BarRequest) (*BarResponse, error)
 	Foo(context.Context, *FooRequest) (*FooResponse, error)
@@ -71,6 +82,9 @@ type FoobarServer interface {
 type UnimplementedFoobarServer struct {
 }
 
+func (UnimplementedFoobarServer) AFoo(context.Context, *AFooRequest) (*AFooResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AFoo not implemented")
+}
 func (UnimplementedFoobarServer) Baz(context.Context, *BazRequest) (*BazResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Baz not implemented")
 }
@@ -91,6 +105,24 @@ type UnsafeFoobarServer interface {
 
 func RegisterFoobarServer(s grpc.ServiceRegistrar, srv FoobarServer) {
 	s.RegisterService(&_Foobar_serviceDesc, srv)
+}
+
+func _Foobar_AFoo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AFooRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FoobarServer).AFoo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wombat.v1.Foobar/AFoo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FoobarServer).AFoo(ctx, req.(*AFooRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Foobar_Baz_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -151,6 +183,10 @@ var _Foobar_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "wombat.v1.Foobar",
 	HandlerType: (*FoobarServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AFoo",
+			Handler:    _Foobar_AFoo_Handler,
+		},
 		{
 			MethodName: "Baz",
 			Handler:    _Foobar_Baz_Handler,

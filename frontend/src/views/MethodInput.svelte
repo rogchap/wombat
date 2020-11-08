@@ -7,6 +7,7 @@
   };
 
   export let state;
+  export let mapItems;
 </script>
 
 <style>
@@ -29,7 +30,7 @@
   <h2>{methodInput.full_name}</h2>
   <div class="fields">
     {#each methodInput.fields as field}
-      <MessageField {field} {state} />
+      <MessageField {field} {state} {mapItems} />
     {/each}
   </div>
 </div>

@@ -14,6 +14,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -146,6 +147,12 @@ func Serve() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "server: failed to create listener: %v", err)
 	}
+
+	e, _ := protojson.Marshal(&FooRequest{
+		TypeStringMap:  map[string]string{"key": "val", "key2": "val2"},
+		TypeComplexMap: map[string]*Bar{"ckey": &Bar{}, "ckey2": &Bar{Id: "valid2"}},
+	})
+	fmt.Printf("string(e) = %+v\n", string(e))
 
 	s := newServer()
 	gs := grpc.NewServer()

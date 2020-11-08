@@ -6,7 +6,7 @@ let app;
 
 Wails.Init(() => {
     Wails.Events.Once("wombat:init", ({build_mode}) => {
-        if (build_mode !== "bridge") window.addEventListener('contextmenu', e => e.preventDefault());
+        if (build_mode === "prod") window.addEventListener('contextmenu', e => e.preventDefault());
     });
 
     app = new App({

@@ -4,6 +4,7 @@ package wombat.v1;
 option go_package = ".;server";
 
 service Foobar {
+    rpc AFoo(AFooRequest) returns (AFooResponse) {}
     rpc Baz(BazRequest) returns (BazResponse) {}
     rpc Bar(BarRequest) returns (BarResponse) {}
     rpc Foo(FooRequest) returns (FooResponse) {}
@@ -45,6 +46,8 @@ message FooRequest {
     sfixed64 type_sfixed64 = 15;
     sint32 type_sint32 = 16;
     sint64 type_sint64 = 17;
+    map<string, string> type_string_map = 18;
+    map<string, Bar> type_complex_map = 19;
 }
 
 message FooResponse {}
@@ -69,3 +72,13 @@ message BazRequest {
 }
 
 message BazResponse {}
+
+message AFooRequest {
+    map<string, string> map_string_string = 1;
+    map<int32, bytes> map_int32_bytes = 2;
+    map<string, Baz> map_string_enum = 3;
+    map<string, bool> map_string_bool = 4;
+    map<int32, BazRequest> map_int32_message = 5;
+}
+
+message AFooResponse {}

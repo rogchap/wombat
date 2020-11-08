@@ -422,6 +422,7 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 
 func messageViewFromDesc(md protoreflect.MessageDescriptor) *messageDesc {
 	var rtn messageDesc
+	rtn.Name = string(md.Name())
 	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
@@ -430,20 +431,43 @@ func messageViewFromDesc(md protoreflect.MessageDescriptor) *messageDesc {
 	return &rtn
 }
 
+func setFieldDescBasics(fdesc *fieldDesc, fd protoreflect.FieldDescriptor) {
+	fdesc.Name = string(fd.Name())
+	fdesc.Kind = fd.Kind().String()
+	fdesc.FullName = string(fd.FullName())
+	fdesc.Repeated = fd.IsList()
+
+	if emd := fd.Enum(); emd != nil {
+		evals := emd.Values()
+		for i := 0; i < evals.Len(); i++ {
+			eval := evals.Get(i)
+			fdesc.Enum = append(fdesc.Enum, string(eval.Name()))
+		}
+	}
+}
+
 func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []fieldDesc {
 	var fields []fieldDesc
 
 	seenOneof := make(map[protoreflect.Name]struct{})
 	for i := 0; i < fds.Len(); i++ {
 		fd := fds.Get(i)
-		var fdesc fieldDesc
-		fdesc.Name = string(fd.Name())
-		fdesc.Kind = fd.Kind().String()
-		fdesc.FullName = string(fd.FullName())
+		fdesc := fieldDesc{}
+		setFieldDescBasics(&fdesc, fd)
 
-		// TODO(rogchap): check for IsList() instead and then also use IsMap()
-		// to render maps differently rather than treating them as repeated messages
-		fdesc.Repeated = fd.Cardinality() == protoreflect.Repeated
+		if fd.IsMap() {
+			fdesc.Kind = "map"
+			fdesc.MapKey = &fieldDesc{}
+			setFieldDescBasics(fdesc.MapKey, fd.MapKey())
+
+			fdesc.MapValue = &fieldDesc{}
+			mapVal := fd.MapValue()
+			setFieldDescBasics(fdesc.MapValue, mapVal)
+			if fmd := mapVal.Message(); fmd != nil {
+				fdesc.MapValue.Message = messageViewFromDesc(fmd)
+			}
+			goto appendField
+		}
 
 		if !isOneof {
 			if oneof := fd.ContainingOneof(); oneof != nil {
@@ -456,14 +480,6 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 
 				seenOneof[oneof.Name()] = struct{}{}
 				goto appendField
-			}
-		}
-
-		if emd := fd.Enum(); emd != nil {
-			evals := emd.Values()
-			for i := 0; i < evals.Len(); i++ {
-				eval := evals.Get(i)
-				fdesc.Enum = append(fdesc.Enum, string(eval.Name()))
 			}
 		}
 
@@ -491,6 +507,7 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 		return err
 	}
 
+	fmt.Printf("string(rawJSON = %+v\n", string(rawJSON))
 	req := dynamicpb.NewMessage(md.Input())
 	if err := protojson.Unmarshal(rawJSON, req); err != nil {
 		return err

@@ -1,17 +1,25 @@
 <script>
+  import { onMount, beforeUpdate } from 'svelte';
   import Checkbox from "../controls/Checkbox.svelte";
 
   export let field;
   export let state;
+  export let key;
   export let idx;
 
-  const val = idx >= 0 ? idx : field.name;
+  let val;
 
-  if (state[val] === null) {
-    state[val] = false;
+  const resetState = () => {
+    val = key !== undefined ? key : idx >= 0 ? idx : field.name;
+    if (!state[val]) {
+      state[val] = false;
+    }
   }
 
-  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  onMount(resetState)
+  beforeUpdate(resetState)
+
+  const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
   const removeable = idx >= 0;
 </script>
 

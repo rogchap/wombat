@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, beforeUpdate } from 'svelte';
   import MessageField from "./MessageField.svelte";
   import InputLabel from "../controls/InputLabel.svelte";
   import Checkbox from "../controls/Checkbox.svelte";
@@ -7,18 +7,23 @@
   export let name = "";
   export let message = {};
   export let state;
+  export let key;
   export let idx;
   export let oneof = false;
 
-  const val = idx >= 0 ? idx : name;
-  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
   const removeable = idx >= 0;
 
-  onMount(() => {
+  let val;
+  const resetState = () => {
+    val = key !== undefined ? key : idx >= 0 ? idx : name;
     if (!state[val] && (oneof || idx >= 0)) {
       state[val] = {}
     }
-  })
+  }
+  onMount(resetState)
+  beforeUpdate(resetState)
+
 
   const onEnabledChanged = ({ detail: checked}) => {
     state[val] = checked ? {} : null

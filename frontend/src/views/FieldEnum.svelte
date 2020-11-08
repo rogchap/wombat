@@ -1,20 +1,25 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, beforeUpdate } from 'svelte';
   import Dropdown from "../controls/Dropdown.svelte";
 
   export let field;
   export let state;
+  export let key;
   export let idx;
 
-  const val = idx >= 0 ? idx : field.name;
+  let val;
 
-  onMount(() => {
+  const resetState = () => {
+    val = key !== undefined ? key : idx >= 0 ? idx : field.name;
     if (!state[val]) {
       state[val] = field.enum[0];
     }
-  })
+  }
+  
+  onMount(resetState)
+  beforeUpdate(resetState)
 
-  const labelColor = idx >= 0 ? "var(--accent-color2)" : undefined;
+  const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
   const removeable = idx >= 0;
 
   const onSelectChanged = ({ detail: { value }}) => {
