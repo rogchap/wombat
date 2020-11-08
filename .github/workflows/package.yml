@@ -1,12 +1,14 @@
 # TODO(rogchap): Change to be just release tags
 on: push
 
+env:
+  wombat-version: 0.2.0-dev # TODO(rogchap) Read this directly from the tag
+
 jobs:
   package:
     strategy:
       matrix:
-        wombat-version: 0.2.0-dev # TODO(rogchap) Read this directly from the tag
-        go-version: 1.15.x
+        go-version: [1.15.x]
         platform: [macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -23,7 +25,7 @@ jobs:
       run: |
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
-        wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ matrix.wombat-version }}"
+        wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ env.wombat-version }}"
     - name: Create darwin disk igage
       if: matrix.platform == 'macos-latest'
       run: |
@@ -33,5 +35,5 @@ jobs:
     - name: Upload darwin artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Wombat_${{ matrix-wombat-version }}_Darwin_x86_64.dmg
+        name: Wombat_${{ env.wombat-version }}_Darwin_x86_64.dmg
         path: Wombat.dmg
