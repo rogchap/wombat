@@ -23,6 +23,7 @@
 - Input generation for nested messages
 - Input generation for enums, including nested
 - Input generation for repeated fields
+- Input generation for oneof and map fields
 - Support for adding RPC metadata
 - Execute unary requests
 - Execute server streaming requests
@@ -41,13 +42,12 @@
 ### Features still working on:
 
 - [ ] Windows build
-- [ ] Support for `oneof` fields
 - [ ] Multiple Workspaces
 - [ ] Multiple Request's within a Workspace
 
 ## Download
 
-Visit the [Releases](releases) page for the latest downloads. 
+Visit the [Releases](https://github.com/rogchap/wombat/releases) page for the latest downloads. 
 
 ## Install
 
