@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.15.x]
-        platform: [macos-latest, ubuntu-latest]
+        platform: [macos-10.15, ubuntu-16.04]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
@@ -22,7 +22,7 @@ jobs:
       run: go get -u github.com/wailsapp/wails/cmd/wails@v1.9.1
 
     - name: Build for darwin
-      if: matrix.platform == 'macos-latest'
+      if: matrix.platform == 'macos-10.15'
       run: |
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
@@ -30,34 +30,34 @@ jobs:
         /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString string ${{ env.wombat-version }}" info.plist
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ env.wombat-version }}"
     - name: Create darwin disk igage
-      if: matrix.platform == 'macos-latest'
+      if: matrix.platform == 'macos-10.15'
       run: |
         brew install create-dmg
         rm build/wombat
         create-dmg --volname "Wombat" --volicon "assets/darwin/dmg_icon.icns" --background "assets/darwin/dmg_bg.png" --window-size 512 360 --icon-size 100 --icon "Wombat.app" 100 185  --hide-extension "Wombat.app" --app-drop-link 388 185 "Wombat_${{ env.wombat-version }}_Darwin_x86_64.dmg" "build"
     - name: Upload darwin disk image
-      if: matrix.platform == 'macos-latest'
+      if: matrix.platform == 'macos-10.15'
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ env.wombat-version }}_Darwin_x86_64.dmg
         path: Wombat_${{ env.wombat-version }}_Darwin_x86_64.dmg
 
     - name: Build for linux
-      if: matrix.platform == 'ubuntu-latest'
+      if: matrix.platform == 'ubuntu-16.04'
       run: |
         sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
         wails build -f -ldflags "-X wombat/internal/app.semver=${{ env.wombat-version }}"
-        tar -zcvf Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz build/wombat
+        tar -C build -zcvf Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz wombat
     - name: Upload linux tar.gz
-      if: matrix.platform == 'ubuntu-latest'
+      if: matrix.platform == 'ubuntu-16.04'
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz
         path: Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz
     - name: Create linux app image
-      if: matrix.platform == 'ubuntu-latest'
+      if: matrix.platform == 'ubuntu-16.04'
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
@@ -65,7 +65,7 @@ jobs:
         ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output appimage 
         mv Wombat*.AppImage Wombat_${{ env.wombat-version }}_Linux_x86_64.AppImage
     - name: Upload linux app image
-      if: matrix.platform == 'ubuntu-latest'
+      if: matrix.platform == 'ubuntu-16.04'
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ env.wombat-version }}_Linux_x86_64.AppImage
