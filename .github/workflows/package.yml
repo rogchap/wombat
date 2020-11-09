@@ -54,9 +54,8 @@ jobs:
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
-        ls ./build
+        mogrify -resize 512x512 appicon.png
         ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output Wombat_${{ env.wombat-version }}_Linux_x86_64.AppImage
-        ls 
     - name: Upload linux app image
       if: matrix.platform == 'ubuntu-latest'
       uses: actions/upload-artifact@v2
