@@ -19,7 +19,7 @@ jobs:
     - name: Chechout
       uses: actions/checkout@v2
     - name: Install Wails
-      run: go get -u github.com/wailsapp/wails/cmd/wails@1.9.1
+      run: go get -u github.com/wailsapp/wails/cmd/wails@v1.9.1
     - name: Package for darwin
       if: matrix.platform == 'macos-latest'
       run: |
