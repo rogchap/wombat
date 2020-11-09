@@ -39,12 +39,6 @@
 - Reflection API to determine RPC schema
 - Error messages on failed gRPC connections
 
-### Features still working on:
-
-- [ ] Windows build
-- [ ] Multiple Workspaces
-- [ ] Multiple Request's within a Workspace
-
 ## Download
 
 Visit the [Releases](https://github.com/rogchap/wombat/releases) page for the latest downloads. 
@@ -53,14 +47,24 @@ Visit the [Releases](https://github.com/rogchap/wombat/releases) page for the la
 
 ### MacOS
 
+Open `Wombat*_Darwin_86_64.dmg`, drag `Wombat.app` to the `Applications` folder and run from `Applications`.
+
 If you get this error message: `"Wombat.app" can't be opened because the identity of the developer cannot be
 confirmed.`, Install by **Right Click/Option Click** -> **Open** -> **Open**. You'll only need to do this on first
 install.
 
 ### Linux
 
-If you are using the `AppImage`, just download and set the file as executable:
+Unarchive `Wombat*_Linux_86_64.tar.gz` and run.
+
+If you are using the `AppImage`, download and set the file as executable:
 
 ```
-$ chmod +x Wombat.AppImage
+$ chmod +x Wombat*_Linux_86_64.AppImage
 ```
+
+Alernatively you can install [appimagelauncher](https://github.com/TheAssassin/AppImageLauncher) via your package manager to install automatically.
+
+### Windows
+
+Unarchive `Wombat*_Windows_86_64.zip` and run.
