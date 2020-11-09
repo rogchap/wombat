@@ -49,6 +49,13 @@ jobs:
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
         wails build -f -ldflags "-X wombat/internal/app.semver=${{ env.wombat-version }}"
+        tar -zcvf Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz build/wombat
+    - name: Upload linux tar.gz
+      if: matrix.platform == 'ubuntu-latest'
+      uses: actions/upload-artifact@v2
+      with:
+        name: Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz
+        path: Wombat_${{ env.wombat-version }}_Linux_x86_64.tar.gz
     - name: Create linux app image
       if: matrix.platform == 'ubuntu-latest'
       run: |
