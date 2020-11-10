@@ -12,7 +12,7 @@ jobs:
         # platform: [macos-10.15, ubuntu-16.04, windows-2019]
     runs-on: ${{ matrix.platform }}
     steps:
-    - name: Get version tag
+    - name: Get version tag (unix)
       if: matrix.platform != 'windows-2019'
       id: version
       run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
@@ -20,7 +20,7 @@ jobs:
       if: matrix.platform == 'windows-2019'
       id: versionw
       run: |
-        $tag = $env.GITHUB_REF -replace "refs/tags/", ""
+        $tag = $env:GITHUB_REF -replace "refs/tags/", ""
         echo "::set-output name=tag::$(echo $tag)"
     - name: Print version
       run: |
