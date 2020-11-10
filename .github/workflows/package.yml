@@ -13,13 +13,20 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Get version tag
+      if: matrix.platform != 'windows-2019'
       id: version
-      run: 'echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"'
+      run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+    - name: Get version tag (windows)
+      if: matrix.platform == 'windows-2019'
+      id: versionw
+      run: |
+        $tag = $env.GITHUB_REF -replace "refs/tags/", ""
+        echo "::set-output name=tag::$(echo $tag)"
     - name: Print version
       run: |
-        echo "tag ${{ steps.version.outputs.tag }}"
-        echo "ref ${GITHUB_REF}"
-        echo "ref ${GITHUB_REF/refs\/tags\//}"
+        echo "tag ${{ steps.versionw.outputs.tag }}"
+        echo "ref $env.GITHUB_REF"
+        echo "ref $env:GITHUB_REF"
 
   #   - name: Install Go
   #     uses: actions/setup-go@v2
