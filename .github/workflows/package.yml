@@ -1,7 +1,7 @@
-on: push
-  # push: 
-    # tags:
-    # - v*
+on:
+  push:
+    tags:
+    - v*
 
 jobs:
   package:
@@ -16,7 +16,7 @@ jobs:
       id: version
       run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
     - name: Print version
-      run: echo "tag: ${{ steps.version.outputs.tag }}"
+      run: echo "tag ${{ steps.version.outputs.tag }}"
   #   - name: Install Go
   #     uses: actions/setup-go@v2
   #     with:
