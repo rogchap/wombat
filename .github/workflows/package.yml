@@ -129,16 +129,11 @@ jobs:
         tag_name: ${{ steps.version.outputs.tag }}
         release_name: ${{ steps.version.outputs.tag }}
         body: Full changelog ⇒ [${{ steps.version.outputs.tag }}](${{ steps.changelog.outputs.url }})
-        # TODO Change to false once validated
         draft: true
         prerelease: false
 
     - name: Download all release pacakges
       uses: actions/download-artifact@v2
-
-      #TODO Remove once validated
-    - name: Display structure of downloaded files
-      run: ls -R
 
     - name: Attach darwin disk image
       uses: actions/upload-release-asset@v1
