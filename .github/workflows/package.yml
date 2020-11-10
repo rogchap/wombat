@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: package
     steps:
-      name: Get changelog url
+    - name: Get changelog url
       id: changelog
       run: echo "::set-output name=url::https://github.com/rogchap/wombat/blob/master/CHANGELOG.md#${{ env.wombat-version }}---$(date +'%Y-%m-%d')" | sed -e 's/\.//g'
     - name: Create release
