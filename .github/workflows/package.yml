@@ -14,9 +14,13 @@ jobs:
     steps:
     - name: Get version tag
       id: version
-      run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+      run: 'echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"'
     - name: Print version
-      run: echo "tag ${{ steps.version.outputs.tag }}"
+      run: |
+        echo "tag ${{ steps.version.outputs.tag }}"
+        echo "ref ${GITHUB_REF}"
+        echo "ref ${GITHUB_REF/refs\/tags\//}"
+
   #   - name: Install Go
   #     uses: actions/setup-go@v2
   #     with:
