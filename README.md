@@ -5,8 +5,9 @@
 
 <p align="center">
 <a href="https://github.com/rogchap/wombat/releases"><img src="https://img.shields.io/github/v/release/rogchap/wombat?include_prereleases&style=flat-square" alt="Github release"></a>
-<img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/rogchap/wombat?style=flat-square">
+<img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/rogchap/wombat?style=flat-square" />
 <a href="https://goreportcard.com/badge/github.com/rogchap/wombat"><img alt="Go report card" src="https://goreportcard.com/badge/github.com/rogchap/wombat?style=flat-square"/></a>
+<a href="https://github.com/grpc-ecosystem/awesome-grpc"><img alt="Awesome gRPC" src="https://raw.githubusercontent.com/sindresorhus/awesome/main/media/badge-flat.svg" /></a>
 </p>
 
 <p>
