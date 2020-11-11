@@ -8,6 +8,7 @@ service Foobar {
     rpc Baz(BazRequest) returns (BazResponse) {}
     rpc Bar(BarRequest) returns (BarResponse) {}
     rpc Foo(FooRequest) returns (FooResponse) {}
+    rpc Empty(EmptyRequest) returns (EmptyResponse) {}
 }
 
 message Bar {
@@ -82,3 +83,7 @@ message AFooRequest {
 }
 
 message AFooResponse {}
+
+message EmptyRequest {}
+
+message EmptyResponse {}
