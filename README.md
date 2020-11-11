@@ -58,14 +58,6 @@ install.
 
 Unarchive `Wombat*_Linux_86_64.tar.gz` and run.
 
-If you are using the `AppImage`, download and set the file as executable:
-
-```
-$ chmod +x Wombat*_Linux_86_64.AppImage
-```
-
-Alernatively you can install [appimagelauncher](https://github.com/TheAssassin/AppImageLauncher) via your package manager to install automatically.
-
 ### Windows
 
 Unarchive `Wombat*_Windows_86_64.zip` and run.

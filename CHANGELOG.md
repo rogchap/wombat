@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Unresolved issues with linking for AppImage so removing for now
+
 ### Fixed
 - UI unresponsive when request message has zero fields
 
