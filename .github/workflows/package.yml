@@ -32,7 +32,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install Wails
-      run: go get -u github.com/wailsapp/wails/cmd/wails@v1.9.1
+      run: go get github.com/wailsapp/wails/cmd/wails@v1.9.1
 
     # darwin
     - name: Build for darwin
