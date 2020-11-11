@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.2.1] - 2020-11-11
+
 ### Removed
-- Unresolved issues with linking for AppImage so removing for now
+- Linux AppImage package due to linking errors, may be fixed in a future version
 
 ### Fixed
 - UI unresponsive when request message has zero fields
