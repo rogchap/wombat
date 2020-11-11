@@ -118,3 +118,9 @@ type rpcStatEnd struct {
 	*stats.End
 	Error string
 }
+
+type releaseInfo struct {
+	OldVersion string `json:"old_version"`
+	NewVersion string `json:"new_version"`
+	URL        string `json:"url"`
+}
