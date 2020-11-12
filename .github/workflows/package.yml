@@ -40,8 +40,8 @@ jobs:
       run: |
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
-        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion string ${{ steps.version.outputs.tag }}" info.plist
-        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString string ${{ steps.version.outputs.tag }}" info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.tag }}" info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.tag }}" info.plist
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
 
     - name: Create darwin disk image
