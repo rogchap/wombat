@@ -6,6 +6,7 @@
   import FieldOneof from "./FieldOneof.svelte";
   import RepeatedField from "./RepeatedField.svelte";
   import FieldMap from "./FieldMap.svelte";
+  import FieldWellKnown from "./FieldWellKnown.svelte";
 
   export let field = {};
   export let state;
@@ -13,6 +14,18 @@
   export let oneof = false;
   export let idx = -1;
   export let key = undefined;
+
+  const isWellKnown = full_name => {
+    switch(full_name) {
+      case "google.protobuf.Timestamp":
+      case "google.protobuf.Duration":
+        return true;
+
+      default:
+        return false
+    }
+  }
+
 </script>
 
 {#if field.repeated && idx < 0 }
@@ -29,7 +42,15 @@
 
 {:else if field.kind === "group" || field.kind === "message"}
 
-  <FieldMessage on:remove name={field.name} message={field.message} {state} {key} {oneof} {idx} />
+  {#if isWellKnown(field.message.full_name)}
+    
+    <FieldWellKnown name={field.name} message={field.message} {state} {key} {idx} />
+
+  {:else}
+
+    <FieldMessage on:remove name={field.name} message={field.message} {state} {key} {oneof} {idx} />
+
+  {/if}
 
 {:else if field.kind === "enum"}
 
