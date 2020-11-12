@@ -52,6 +52,11 @@
     color: var(--primary-color);
     margin: 0;
   }
+  /* TODO: v2 */
+  :global(.frameless .selectContainer) {
+    border: none !important;
+    background-color: var(--bg-color) !important;
+  }
 </style>
 
 <div class="dropdown" class:frameless title={selectedValue ? selectedValue.label : ''} >

@@ -9,6 +9,10 @@ Wails.Init(() => {
         if (build_mode === "prod") window.addEventListener('contextmenu', e => e.preventDefault());
     });
 
+    // TODO: v2
+    // Hack until we have wails v2 and can use CSS variables again
+    window.isWin = window.navigator.platform.startsWith("Win")
+
     app = new App({
         target: document.body,
     });

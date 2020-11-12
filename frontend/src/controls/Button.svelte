@@ -22,6 +22,8 @@
     padding: var(--padding);
     font-size: var(--font-size);
     outline: none;
+    background-color: var(--bg-color);
+    color: var(--text-color);
   }
   button:active {
     background-color: var(--bg-color2) !important;

@@ -13,13 +13,13 @@
     },
     styleWindow: {
       borderRadius: 0,
-      backgroundColor: "var(--bg-color)",
-      border: "var(--border)",
-      color: "var(--text-color)",
-      width: "max-content",
+      backgroundColor: "#2e3440",
+      border: "1px solid #3b4252",
+      color: "#eceff4",
+      width: "838px",
     },
     styleContent: {
-      padding: "var(--padding)",
+      padding: "12px",
       width: "100%",
     },
     styleCloseButton: {
@@ -58,7 +58,7 @@
     --purple-color: #b48ead;
 
     --padding: 12px;
-    --border: 1px solid var(--border-color);
+    --border: 1px solid #3b4252;
     --font-size: 10pt;
   }
 
@@ -77,6 +77,11 @@
     background-color: var(--bg-color);
     color: var(--text-color);
     cursor: default;
+
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+  :global(::-ms-clear) {
+    display: none;
   }
 
   .app {

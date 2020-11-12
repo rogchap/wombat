@@ -14,7 +14,7 @@
     word-break: break-word;
     cursor: text;
   }
-  
+
   .response :global(code::selection, span::selection) {
     background-color: var(--accent-color2);
     color: var(--text-color);
@@ -33,6 +33,11 @@
   }
 </style>
 
+<!-- TODO: Need to fix syntax highlighting on Windows /-->
 <div class="response">
-  <Prism language="clike">{resp}</Prism>
+  {#if isWin }
+    <pre>{resp}</pre>
+  {:else}
+    <Prism language="clike">{resp}</Prism>
+  {/if}
 </div>
