@@ -1,15 +1,14 @@
-on: push
-  # push:
-  #   tags:
-  #   - v*
+on:
+  push:
+    tags:
+    - v*
 
 jobs:
   package:
     strategy:
       matrix:
         go-version: [1.15.x]
-        platform: [windows-2019]
-        # platform: [macos-10.15, ubuntu-16.04, windows-2019]
+        platform: [macos-10.15, ubuntu-16.04, windows-2019]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Get version tag (unix)
@@ -109,70 +108,70 @@ jobs:
         name: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
         path: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
 
-  # release:
-  #   runs-on: ubuntu-latest
-  #   needs: package
-  #   steps:
-  #   - name: Get version tag
-  #     id: version
-  #     run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
-  #
-  #   - name: Get changelog url
-  #     id: changelog
-  #     run: echo "${{ steps.version.outputs.tag }}---$(date +'%Y-%m-%d')" | sed -e 's/\.//g' | awk '{print "::set-output name=url::https://github.com/rogchap/wombat/blob/master/CHANGELOG.md#" $1}'
-  #
-  #   - name: Create release
-  #     id: create_release
-  #     uses: actions/create-release@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       tag_name: ${{ steps.version.outputs.tag }}
-  #       release_name: ${{ steps.version.outputs.tag }}
-  #       body: Full changelog ⇒ [${{ steps.version.outputs.tag }}](${{ steps.changelog.outputs.url }})
-  #       draft: true
-  #       prerelease: false
-  #
-  #   - name: Download all release pacakges
-  #     uses: actions/download-artifact@v2
-  #
-  #   - name: Attach darwin disk image
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg/Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
-  #       asset_name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
-  #       asset_content_type: application/octet-stream
-  #
-  #   - name: Attach linux tar.gz
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
-  #       asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
-  #       asset_content_type: application/octet-stream
-  #
-  #   # - name: Attach linux app image
-  #   #   uses: actions/upload-release-asset@v1
-  #   #   env:
-  #   #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #   #   with:
-  #   #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #   #     asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-  #   #     asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-  #   #     asset_content_type: application/octet-stream
-  #
-  #   - name: Attach windows zip
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip/Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
-  #       asset_name: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
-  #       asset_content_type: application/octet-stream
-  #
+  release:
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+    - name: Get version tag
+      id: version
+      run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+
+    - name: Get changelog url
+      id: changelog
+      run: echo "${{ steps.version.outputs.tag }}---$(date +'%Y-%m-%d')" | sed -e 's/\.//g' | awk '{print "::set-output name=url::https://github.com/rogchap/wombat/blob/master/CHANGELOG.md#" $1}'
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        release_name: ${{ steps.version.outputs.tag }}
+        body: Full changelog ⇒ [${{ steps.version.outputs.tag }}](${{ steps.changelog.outputs.url }})
+        draft: true
+        prerelease: false
+
+    - name: Download all release pacakges
+      uses: actions/download-artifact@v2
+
+    - name: Attach darwin disk image
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg/Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+        asset_name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+        asset_content_type: application/octet-stream
+
+    - name: Attach linux tar.gz
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+        asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+        asset_content_type: application/octet-stream
+
+    # - name: Attach linux app image
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    #     asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    #     asset_content_type: application/octet-stream
+
+    - name: Attach windows zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip/Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
+        asset_name: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
+        asset_content_type: application/octet-stream
+
