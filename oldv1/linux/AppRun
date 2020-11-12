@@ -1,5 +1,0 @@
-#!/bin/bash
-
-SELF_DIR="$(dirname "$(readlink -f "$0")")"
-
-exec ${SELF_DIR}/wombat
