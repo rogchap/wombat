@@ -20,7 +20,11 @@
     background-color: var(--bg-color2);
   }
   svg {
-    transform: rotate(45deg)
+    transform: rotate(45deg);
+  }
+
+  line {
+    stroke: var(--bg-color3);
   }
 
   .add {
@@ -33,7 +37,7 @@
 </style>
 
 <button on:click {style}>
-  <svg width="16" height="16"  class:add>
+  <svg width="16" height="16" class:add>
     <line x1="1" y1="8" x2="15" y2="8" style="stroke:{color}" />
     <line x1="8" y1="1" x2="8" y2="15" style="stroke:{color}" /> 
   </svg>

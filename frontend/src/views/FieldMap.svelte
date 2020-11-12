@@ -138,7 +138,7 @@
 
 <div class="msg-label">
   <InputLabel label={field.name} hint={"map<"+keyType+", "+valType+">"} block />
-  <CrossButton color="var(--green-color)" add on:click={onAddButtonClicked} />
+  <CrossButton color={isWin ? "#a3be8c" : "var(--green-color)"} add on:click={onAddButtonClicked} />
 </div>
 
 {#if mapItems[field.full_name].length > 0}

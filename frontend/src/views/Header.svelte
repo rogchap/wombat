@@ -65,7 +65,7 @@
   <div class="hitem">
     <Button
       text="Workspace"
-      bgColor="var(--accent-color3)"
+      bgColor={isWin ? "#5e81ac" : "var(--accent-color3)"}
       on:click={openWorkspaceOptions}
     />
   </div>

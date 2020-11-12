@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Windows styling issues
 - WKT google.protobuf.Timestamp parsed correctly using RFC 3339
 - WKT google.protobuf.Duration parsed correctly with `s` suffix (representing seconds)
+
 
 ## [v0.2.1] - 2020-11-11
 
