@@ -3,12 +3,17 @@ syntax = "proto3";
 package wombat.v1;
 option go_package = ".;server";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+
 service Foobar {
     rpc AFoo(AFooRequest) returns (AFooResponse) {}
     rpc Baz(BazRequest) returns (BazResponse) {}
     rpc Bar(BarRequest) returns (BarResponse) {}
     rpc Foo(FooRequest) returns (FooResponse) {}
     rpc Empty(EmptyRequest) returns (EmptyResponse) {}
+    rpc WellKnown(WellKnownRequest) returns (WellKnownResponse) {}
 }
 
 message Bar {
@@ -87,3 +92,10 @@ message AFooResponse {}
 message EmptyRequest {}
 
 message EmptyResponse {}
+
+message WellKnownRequest {
+    google.protobuf.Timestamp timestamp = 1;
+    google.protobuf.Duration duration = 2;
+}
+
+message WellKnownResponse {}

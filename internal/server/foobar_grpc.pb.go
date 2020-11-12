@@ -21,6 +21,8 @@ type FoobarClient interface {
 	Baz(ctx context.Context, in *BazRequest, opts ...grpc.CallOption) (*BazResponse, error)
 	Bar(ctx context.Context, in *BarRequest, opts ...grpc.CallOption) (*BarResponse, error)
 	Foo(ctx context.Context, in *FooRequest, opts ...grpc.CallOption) (*FooResponse, error)
+	Empty(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	WellKnown(ctx context.Context, in *WellKnownRequest, opts ...grpc.CallOption) (*WellKnownResponse, error)
 }
 
 type foobarClient struct {
@@ -67,6 +69,24 @@ func (c *foobarClient) Foo(ctx context.Context, in *FooRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *foobarClient) Empty(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/wombat.v1.Foobar/Empty", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foobarClient) WellKnown(ctx context.Context, in *WellKnownRequest, opts ...grpc.CallOption) (*WellKnownResponse, error) {
+	out := new(WellKnownResponse)
+	err := c.cc.Invoke(ctx, "/wombat.v1.Foobar/WellKnown", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FoobarServer is the server API for Foobar service.
 // All implementations must embed UnimplementedFoobarServer
 // for forward compatibility
@@ -75,6 +95,8 @@ type FoobarServer interface {
 	Baz(context.Context, *BazRequest) (*BazResponse, error)
 	Bar(context.Context, *BarRequest) (*BarResponse, error)
 	Foo(context.Context, *FooRequest) (*FooResponse, error)
+	Empty(context.Context, *EmptyRequest) (*EmptyResponse, error)
+	WellKnown(context.Context, *WellKnownRequest) (*WellKnownResponse, error)
 	mustEmbedUnimplementedFoobarServer()
 }
 
@@ -93,6 +115,12 @@ func (UnimplementedFoobarServer) Bar(context.Context, *BarRequest) (*BarResponse
 }
 func (UnimplementedFoobarServer) Foo(context.Context, *FooRequest) (*FooResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Foo not implemented")
+}
+func (UnimplementedFoobarServer) Empty(context.Context, *EmptyRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Empty not implemented")
+}
+func (UnimplementedFoobarServer) WellKnown(context.Context, *WellKnownRequest) (*WellKnownResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WellKnown not implemented")
 }
 func (UnimplementedFoobarServer) mustEmbedUnimplementedFoobarServer() {}
 
@@ -179,6 +207,42 @@ func _Foobar_Foo_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Foobar_Empty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FoobarServer).Empty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wombat.v1.Foobar/Empty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FoobarServer).Empty(ctx, req.(*EmptyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Foobar_WellKnown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WellKnownRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FoobarServer).WellKnown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wombat.v1.Foobar/WellKnown",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FoobarServer).WellKnown(ctx, req.(*WellKnownRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Foobar_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "wombat.v1.Foobar",
 	HandlerType: (*FoobarServer)(nil),
@@ -198,6 +262,14 @@ var _Foobar_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Foo",
 			Handler:    _Foobar_Foo_Handler,
+		},
+		{
+			MethodName: "Empty",
+			Handler:    _Foobar_Empty_Handler,
+		},
+		{
+			MethodName: "WellKnown",
+			Handler:    _Foobar_WellKnown_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
