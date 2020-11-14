@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
+
 ## [v0.2.2] - 2020-11-12
 
 ### Fixed
