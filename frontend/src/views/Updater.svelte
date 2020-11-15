@@ -29,6 +29,7 @@
     padding: var(--padding);
     background-color: var(--bg-color2);
     border: var(--border);
+    z-index: 10;
   }
 
   .dismiss {
