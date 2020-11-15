@@ -1,7 +1,7 @@
 <script>
   import Button from "../controls/Button.svelte";
 
-  let visible = true;
+  let visible = false;
   let oldVersion = "";
   let newVersion = "";
   let releaseURL = "";
@@ -10,6 +10,7 @@
     oldVersion = old_version;
     newVersion = new_version;
     releaseURL = url;
+    visible = true;
   });
 
   const onCloseClicked = () => visible = false;

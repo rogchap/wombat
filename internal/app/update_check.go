@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -11,6 +12,8 @@ import (
 )
 
 const latestReleaseURL = "https://api.github.com/repos/rogchap/wombat/releases/latest"
+
+var noUpdate = errors.New("no update available")
 
 type releaseResponse struct {
 	TagName string `json:"tag_name"`
@@ -35,6 +38,11 @@ func checkForUpdate() (*releaseInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %v", resp.StatusCode)
+	}
+
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -45,7 +53,7 @@ func checkForUpdate() (*releaseInfo, error) {
 	}
 
 	if versionGreaterThanOrEqual(semver, r.TagName) {
-		return nil, errors.New("no update available")
+		return nil, noUpdate
 	}
 
 	return &releaseInfo{

@@ -108,7 +108,11 @@ func (a *api) wailsReady(data ...interface{}) {
 func (a *api) checkForUpdate() {
 	r, err := checkForUpdate()
 	if err != nil {
-		a.logger.Errorf("failed to check for updates: %v", err)
+		if err == noUpdate {
+			a.logger.Info(err.Error())
+			return
+		}
+		a.logger.Warnf("failed to check for updates: %v", err)
 		return
 	}
 	a.runtime.Events.Emit(eventUpdateAvailable, r)
