@@ -60,12 +60,12 @@
 
 <div class="checkbox" {style}>
   {#if removeable}
-    <CrossButton on:click={onCrossClicked} style="margin-left: calc(var(--padding) * -0.5)" />
+    <CrossButton on:click={onCrossClicked} style="margin-left: -6px;" />
   {/if}
   <label>
     {rhs ? "" : label}
     <input type="checkbox" bind:checked on:change={onChanged} />
-    <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:var(--padding);"><span /></span>
+    <span class="indicator" style="margin-{rhs ? 'right' : 'left'}:12px;"><span /></span>
     {rhs ? label : ""}
   </label>
   </div>

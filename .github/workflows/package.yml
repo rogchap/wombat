@@ -32,7 +32,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install Wails
-      run: go get -u github.com/wailsapp/wails/cmd/wails@v1.9.1
+      run: go get github.com/wailsapp/wails/cmd/wails@v1.9.1
 
     # darwin
     - name: Build for darwin
@@ -40,8 +40,8 @@ jobs:
       run: |
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
-        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion string ${{ steps.version.outputs.tag }}" info.plist
-        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString string ${{ steps.version.outputs.tag }}" info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.tag }}" info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.tag }}" info.plist
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
 
     - name: Create darwin disk image
@@ -75,21 +75,21 @@ jobs:
         name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
         path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
 
-    - name: Create linux app image
-      if: matrix.platform == 'ubuntu-16.04'
-      run: |
-        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-        chmod +x linuxdeploy-x86_64.AppImage
-        mogrify -resize 512x512 appicon.png
-        ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output appimage 
-        mv Wombat*.AppImage Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    # - name: Create linux app image
+    #   if: matrix.platform == 'ubuntu-16.04'
+    #   run: |
+    #     wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+    #     chmod +x linuxdeploy-x86_64.AppImage
+    #     mogrify -resize 512x512 appicon.png
+    #     ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output appimage 
+    #     mv Wombat*.AppImage Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
 
-    - name: Upload linux app image
-      if: matrix.platform == 'ubuntu-16.04'
-      uses: actions/upload-artifact@v2
-      with:
-        name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-        path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    # - name: Upload linux app image
+    #   if: matrix.platform == 'ubuntu-16.04'
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    #     path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
 
     # windows
     - name: Build for windows
@@ -155,15 +155,15 @@ jobs:
         asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
         asset_content_type: application/octet-stream
 
-    - name: Attach linux app image
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-        asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-        asset_content_type: application/octet-stream
+    # - name: Attach linux app image
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    #     asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+    #     asset_content_type: application/octet-stream
 
     - name: Attach windows zip
       uses: actions/upload-release-asset@v1

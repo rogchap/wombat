@@ -29,7 +29,7 @@
 <div class="method-input">
   <h2>{methodInput.full_name}</h2>
   <div class="fields">
-    {#each methodInput.fields as field}
+    {#each methodInput.fields || [] as field}
       <MessageField {field} {state} {mapItems} />
     {/each}
   </div>

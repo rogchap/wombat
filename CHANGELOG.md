@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
+
+## [v0.2.2] - 2020-11-12
+
+### Fixed
+- Windows styling issues
+- WKT google.protobuf.Timestamp parsed correctly using RFC 3339
+- WKT google.protobuf.Duration parsed correctly with `s` suffix (representing seconds)
+
+## [v0.2.1] - 2020-11-11
+
+### Removed
+- Linux AppImage package due to linking errors, may be fixed in a future version
+
+### Fixed
+- UI unresponsive when request message has zero fields
+
 ## [v0.2.0] - 2020-11-10
 
 ### Added

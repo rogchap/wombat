@@ -58,6 +58,7 @@
     <Checkbox style="margin-bottom: 0" checked={!!state[val]} on:check={onEnabledChanged}/>
   {/if}
 </div>
+
 {#if state[val] }
   <div class="fields">
     <div class="msg-border" />

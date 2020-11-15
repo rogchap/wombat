@@ -30,8 +30,8 @@
   <div class="spacer" />
   {#if inflight}
     {#if client_stream}
-      <Button on:click={onCloseClicked} text={server_stream ? "Close Send" : "Close & Receive"} color="var(--primary-color)" />
+      <Button on:click={onCloseClicked} text={server_stream ? "Close Send" : "Close & Receive"} color={isWin ? "#88c0d0" : "var(--primary-color)"} />
     {/if}
-    <Button on:click={onCancelClicked} text="Cancel" color="var(--orange-color)" />
+    <Button on:click={onCancelClicked} text="Cancel" color={isWin ? "#d08770" : "var(--orange-color)"} />
   {/if}
 </div>

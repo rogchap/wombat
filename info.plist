@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>Wombat</string>
+	<string>wombat</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Created by Roger Chapman (rogchap)</string>
 	<key>CFBundleIconFile</key>
