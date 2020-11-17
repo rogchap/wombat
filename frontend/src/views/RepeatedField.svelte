@@ -70,7 +70,7 @@
 
 <div class="fields">
   <div class="msg-border" />
-  {#each state[field.name] as _, i}
+  {#each state[field.name] || [] as _, i}
     <MessageField on:remove={() => onRemove(i)} field={field} state={state[field.name]} idx={i} />
   {/each}
 </div>
