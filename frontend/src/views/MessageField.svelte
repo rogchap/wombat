@@ -19,6 +19,15 @@
     switch(full_name) {
       case "google.protobuf.Timestamp":
       case "google.protobuf.Duration":
+      case "google.protobuf.DoubleValue":
+      case "google.protobuf.FloatValue":
+      case "google.protobuf.Int64Value":
+      case "google.protobuf.UInt64Value":
+      case "google.protobuf.Int32Value":
+      case "google.protobuf.UInt32Value":
+      case "google.protobuf.BoolValue":
+      case "google.protobuf.StringValue":
+      case "google.protobuf.BytesValue":
         return true;
 
       default:

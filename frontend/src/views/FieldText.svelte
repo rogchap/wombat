@@ -31,5 +31,3 @@
 {:else}
   <TextField on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} {placeholder} />
 {/if}
-
-

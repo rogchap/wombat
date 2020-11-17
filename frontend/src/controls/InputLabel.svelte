@@ -29,6 +29,7 @@
   .block {
     justify-content: flex-start;
     margin-bottom: 0;
+    width: max-content;
   }
   .hint {
     color: var(--text-color3);

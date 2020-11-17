@@ -5,6 +5,7 @@ option go_package = ".;server";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
 
 
 service Foobar {
@@ -96,6 +97,18 @@ message EmptyResponse {}
 message WellKnownRequest {
     google.protobuf.Timestamp timestamp = 1;
     google.protobuf.Duration duration = 2;
+
+    google.protobuf.DoubleValue double_value = 3;
+    google.protobuf.FloatValue float_value = 4;
+    google.protobuf.Int64Value int64_value = 5;
+    google.protobuf.UInt64Value uint64_value = 6;
+    google.protobuf.Int32Value int32_value = 7;
+    google.protobuf.UInt32Value uint32_value = 8;
+
+    google.protobuf.BoolValue bool_value = 9;
+    google.protobuf.StringValue string_value = 10;
+    google.protobuf.BytesValue bytes_value = 11;
+
 }
 
 message WellKnownResponse {}
