@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- custom rendering/parsing support for Google Well Known [wrapper] Types
+
 ### Fixed
 - support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
 

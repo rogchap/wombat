@@ -1,5 +1,7 @@
 <script>
   import FieldText from "./FieldText.svelte";
+  import FieldBoolValue from "./FieldBoolValue.svelte";
+  import FieldNilText from "./FieldNilText.svelte";
 
   export let name = "";
   export let message = {};
@@ -13,20 +15,31 @@
   }
 
   let placeholder = "";
-  if (message.full_name === "google.protobuf.Timestamp") {
-    placeholder = "2006-01-02T15:04:05.000Z"
+  if (field.kind === "google.protobuf.Timestamp") {
+    placeholder = "2006-01-02T15:04:05.000Z";
   }
-  if (message.full_name === "google.protobuf.Duration") {
-    placeholder = "0.1s"
+  if (field.kind === "google.protobuf.Duration") {
+    placeholder = "0.1s";
   }
-
-
-  // TODO(rogchap) refactor out for different well known types
-  // this is only giving basic support; custom input fields would
-  // be better: date/time picker for Timestamp for example.
 </script>
 
 <style>
 </style>
 
+{#if field.kind === "google.protobuf.BoolValue"}
+
+  <FieldBoolValue on:remove {field} {state} {key} {idx} /> 
+
+{:else if field.kind === "google.protobuf.StringValue"}
+
+  <FieldNilText on:remove {field} {state} {key} {idx} />
+
+{:else if field.kind === "google.protobuf.BytesValue"}
+
+  <FieldNilText on:remove {field} {state} {key} {idx} multiline />
+
+{:else}
+
 <FieldText on:remove {field} {state} {key} {idx} {placeholder} />
+
+{/if}
