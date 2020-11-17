@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
+- UI unresponsive when rendering empty state for repeated fields
 
 ## [v0.2.2] - 2020-11-12
 
