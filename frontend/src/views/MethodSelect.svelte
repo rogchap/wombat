@@ -55,8 +55,8 @@
 </style>
 
 <div class="method-select">
-  <Dropdown frameless items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
-  <Dropdown frameless items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
+  <Dropdown frameless isSearchable items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
+  <Dropdown frameless isSearchable items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
   <div class="spacer" />
   <Button 
     text="Send"
