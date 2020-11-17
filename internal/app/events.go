@@ -20,4 +20,5 @@ const (
 	eventStatInPayload         = "wombat:stat_in_payload"
 	eventStatInTrailer         = "wombat:stat_in_trailer"
 	eventStatEnd               = "wombat:stat_end"
+	eventUpdateAvailable       = "wombat:update_available"
 )
