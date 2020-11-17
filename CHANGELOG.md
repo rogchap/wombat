@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - custom rendering/parsing support for Google Well Known [wrapper] Types
+- Notification when a new version of Wombat is available to download.
 
 ### Fixed
-- support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
+- Support mac case-sensitive filesystem. Thanks to [@Azuka](https://github.com/Azuka)
 
 ## [v0.2.2] - 2020-11-12
 

@@ -101,6 +101,21 @@ func (a *api) wailsReady(data ...interface{}) {
 	if err := a.Connect(opts, hds, false); err != nil {
 		a.logger.Errorf("%v", err)
 	}
+
+	go a.checkForUpdate()
+}
+
+func (a *api) checkForUpdate() {
+	r, err := checkForUpdate()
+	if err != nil {
+		if err == noUpdate {
+			a.logger.Info(err.Error())
+			return
+		}
+		a.logger.Warnf("failed to check for updates: %v", err)
+		return
+	}
+	a.runtime.Events.Emit(eventUpdateAvailable, r)
 }
 
 // WailsShutdown is the shutdown function that is called when wails shuts down
