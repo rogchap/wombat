@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gofrs/uuid"
 	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
@@ -30,7 +31,9 @@ import (
 )
 
 const (
+	defaultStateKey          = "state_default"
 	defaultWorkspaceKey      = "wksp_default"
+	workspacePrefix          = "wksp_"
 	metadataKeyPrefix        = "md_"
 	reflectMetadataKeyPrefix = "rmd_"
 	messageKeyPrefix         = "msg_"
@@ -48,6 +51,7 @@ type api struct {
 	mu               sync.Mutex
 	inFlight         bool
 	appData          string
+	state            *workspaceState
 }
 
 type statsHandler struct {
@@ -73,6 +77,7 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 	if err != nil {
 		return fmt.Errorf("app: failed to create database: %v", err)
 	}
+	a.state = a.getCurrentState()
 
 	ready := "wails:ready"
 	if wails.BuildMode == cmd.BuildModeBridge {
@@ -136,9 +141,27 @@ func (a *api) emitError(title, msg string) {
 	a.runtime.Events.Emit(eventError, errorMsg{title, msg})
 }
 
+func (a *api) getCurrentState() *workspaceState {
+	rtn := &workspaceState{
+		CurrentID: defaultWorkspaceKey,
+	}
+	val, err := a.store.get([]byte(defaultStateKey))
+	if err != nil && err != errKeyNotFound {
+		a.logger.Errorf("failed to get current state from store: %v", err)
+	}
+	if len(val) == 0 {
+		return rtn
+	}
+	dec := gob.NewDecoder(bytes.NewBuffer(val))
+	if err := dec.Decode(rtn); err != nil {
+		a.logger.Errorf("failed to decode state: %v", err)
+	}
+	return rtn
+}
+
 // GetWorkspaceOptions gets the workspace options from the store
 func (a *api) GetWorkspaceOptions() (*options, error) {
-	val, err := a.store.get([]byte(defaultWorkspaceKey))
+	val, err := a.store.get([]byte(a.state.CurrentID))
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +169,10 @@ func (a *api) GetWorkspaceOptions() (*options, error) {
 	var opts *options
 	dec := gob.NewDecoder(bytes.NewBuffer(val))
 	err = dec.Decode(&opts)
+
+	if opts.ID == "" {
+		opts.ID = defaultWorkspaceKey
+	}
 
 	return opts, err
 }
@@ -174,6 +201,59 @@ func (a *api) GetMetadata(addr string) (headers, error) {
 	err = dec.Decode(&hds)
 
 	return hds, err
+}
+
+// ListWorkspaces returns a list of workspaces as their options
+func (a *api) ListWorkspaces() ([]options, error) {
+	items, err := a.store.list([]byte(workspacePrefix))
+	if err != nil {
+		return nil, err
+	}
+	var opts []options
+	for _, val := range items {
+		opt := options{}
+		dec := gob.NewDecoder(bytes.NewBuffer(val))
+		if err := dec.Decode(&opt); err != nil {
+			return opts, err
+		}
+		if opt.ID == defaultWorkspaceKey {
+			opts = append([]options{opt}, opts...)
+			continue
+		}
+		opts = append(opts, opt)
+	}
+	return opts, nil
+}
+
+// SelectWorkspace changes the current workspace by ID
+func (a *api) SelectWorkspace(id string) (rerr error) {
+	if a.state.CurrentID == id {
+		return nil
+	}
+
+	defer func() {
+		if rerr != nil {
+			a.logger.Errorf(rerr.Error())
+			a.emitError("Workspace Error", rerr.Error())
+
+		}
+	}()
+
+	a.changeWorkspace(id)
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		return err
+	}
+
+	hds, err := a.GetReflectMetadata(opts.Addr)
+	if err != nil {
+		a.logger.Warnf("failed to get reflection metadata: %v", err)
+	}
+
+	if err := a.Connect(opts, hds, false); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetRawMessageState gets the message state by method full name
@@ -260,12 +340,29 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 	}
 	go a.loadProtoFiles(opts, hds)
 
-	if save {
-		go a.setWorkspaceOptions(opts)
-		go a.setMetadata(reflectMetadataKeyPrefix+hash(opts.Addr), hds)
+	if !save {
+		return nil
 	}
 
+	if opts.ID == "" {
+		id := uuid.Must(uuid.NewV4())
+		opts.ID = workspacePrefix + id.String()
+		a.changeWorkspace(opts.ID)
+	}
+
+	go a.setWorkspaceOptions(opts)
+	go a.setMetadata(reflectMetadataKeyPrefix+hash(opts.Addr), hds)
+
 	return nil
+}
+
+func (a *api) changeWorkspace(id string) {
+	a.state.CurrentID = id
+	var val bytes.Buffer
+	enc := gob.NewEncoder(&val)
+	enc.Encode(a.state)
+
+	a.store.set([]byte(defaultStateKey), val.Bytes())
 }
 
 func (a *api) loadProtoFiles(opts options, reflectHeaders headers) (rerr error) {
@@ -350,10 +447,14 @@ func (a *api) emitServicesSelect() {
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
+	if opts.ID == "" {
+		opts.ID = defaultWorkspaceKey
+	}
+
 	var val bytes.Buffer
 	enc := gob.NewEncoder(&val)
 	enc.Encode(opts)
-	a.store.set([]byte(defaultWorkspaceKey), val.Bytes())
+	a.store.set([]byte(opts.ID), val.Bytes())
 }
 
 func (a *api) setMetadata(key string, hds headers) {

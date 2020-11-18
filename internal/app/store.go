@@ -6,6 +6,8 @@ import (
 	badger "github.com/dgraph-io/badger/v2"
 )
 
+var errKeyNotFound = badger.ErrKeyNotFound
+
 type dblogger = badger.Logger
 
 type store struct {
@@ -33,13 +35,32 @@ func (s *store) get(key []byte) (val []byte, rtnErr error) {
 		val, err = data.ValueCopy(val)
 		return err
 	})
-	return
+	return val, rtnErr
 }
 
 func (s *store) set(key, val []byte) error {
 	return s.db.Update(func(txn *badger.Txn) error {
 		return txn.Set(key, val)
 	})
+}
+
+func (s *store) list(prefix []byte) ([][]byte, error) {
+	var items [][]byte
+	err := s.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			val, err := item.ValueCopy([]byte{})
+			if err != nil {
+				return err
+			}
+			items = append(items, val)
+		}
+		return nil
+	})
+
+	return items, err
 }
 
 func (s *store) close() {
