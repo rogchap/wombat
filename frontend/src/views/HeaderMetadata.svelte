@@ -18,7 +18,9 @@
 </style>
 <div class="header-metadata">
   {#each Object.keys(metadata) as k}
-    <span class="key">{k}:&nbsp;</span>
-    <span>{metadata[k].join(", ")}</span>
+    <div>
+      <span class="key">{k}:&nbsp;</span>
+      <span>{metadata[k].join(", ")}</span>
+    </div>
   {/each}
 </div>
