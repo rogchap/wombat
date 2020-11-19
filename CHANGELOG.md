@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Multiple workspaces with quick switching
 - Custom rendering/parsing support for Google Well Known [wrapper] Types
 - Notification when a new version of Wombat is available to download
 - Service and Method select dropdowns are searchable
