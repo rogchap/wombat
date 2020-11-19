@@ -11,6 +11,11 @@
   let status = ""
   wails.Events.On("wombat:client_state_changed", data => status = data.toLowerCase())
 
+  wails.Events.On("wombat:client_connect_started", data => {
+    addr = data;
+    status = "connecting"
+  })
+
   const { open } = getContext('modal');
   const onWorkspaceClicked = () => open(WorkspaceOptions);
   const onNewWorkspaceClicked = () => open(WorkspaceOptions, {createNew: true});

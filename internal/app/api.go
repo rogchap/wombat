@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
@@ -250,15 +251,31 @@ func (a *api) SelectWorkspace(id string) (rerr error) {
 		a.logger.Warnf("failed to get reflection metadata: %v", err)
 	}
 
-	if err := a.Connect(opts, hds, false); err != nil {
-		return err
+	// Ignoring error as Connect will already emit errors to the frontend
+	a.Connect(opts, hds, false)
+
+	return nil
+}
+
+// DeleteWorkspace will remove a workspace from the store and switch to
+// the default workspace, if the deleted workspace is current.
+func (a *api) DeleteWorkspace(id string) error {
+	a.store.del([]byte(id))
+	if a.state.CurrentID == id {
+		a.SelectWorkspace(defaultWorkspaceKey)
 	}
+	// TODO: should we inform the user of deletion?
 	return nil
 }
 
 // GetRawMessageState gets the message state by method full name
 func (a *api) GetRawMessageState(method string) (string, error) {
-	val, err := a.store.get([]byte(messageKeyPrefix + hash(a.client.conn.Target(), method)))
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		return "", fmt.Errorf("failed to get message state, no workspace options: %v", err)
+	}
+
+	val, err := a.store.get([]byte(messageKeyPrefix + hash(opts.Addr, method)))
 	return string(val), err
 }
 
@@ -304,6 +321,7 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 		if rerr != nil {
 			const errTitle = "Connection error"
 			a.logger.Errorf(rerr.Error())
+			a.runtime.Events.Emit(eventClientStateChanged, connectivity.Shutdown.String())
 			a.emitError(errTitle, rerr.Error())
 		}
 	}()
@@ -313,23 +331,21 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 		return err
 	}
 
+	// reset all things
+	a.runtime.Events.Emit(eventClientConnectStarted, opts.Addr)
+	a.runtime.Events.Emit(eventServicesSelectChanged)
+	a.runtime.Events.Emit(eventMethodInputChanged)
+
 	if a.client != nil {
 		if err := a.client.close(); err != nil {
 			return fmt.Errorf("failed to close previous connection: %v", err)
 		}
 	}
+	a.client = &client{}
 
 	if a.cancelMonitoring != nil {
 		a.cancelMonitoring()
 	}
-
-	a.client = &client{}
-	if err := a.client.connect(opts, statsHandler{a}); err != nil {
-		return fmt.Errorf("failed to connect to server: %v", err)
-	}
-
-	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
-
 	ctx := context.Background()
 	ctx, a.cancelMonitoring = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
@@ -338,7 +354,20 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 	if err := mapstructure.Decode(rawHeaders, &hds); err != nil {
 		a.logger.Errorf("unable to decode reflection metadata headers: %v", err)
 	}
-	go a.loadProtoFiles(opts, hds)
+
+	if err := a.client.connect(opts, statsHandler{a}); err != nil {
+		// Still try to parse protos will fail silently if using reflection services
+		// as there is no connection to a valid server.
+		a.cancelMonitoring()
+		a.client = nil
+		go a.loadProtoFiles(opts, hds, true)
+
+		return fmt.Errorf("failed to connect to server: %v", err)
+	}
+
+	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
+
+	go a.loadProtoFiles(opts, hds, false)
 
 	if !save {
 		return nil
@@ -365,16 +394,18 @@ func (a *api) changeWorkspace(id string) {
 	a.store.set([]byte(defaultStateKey), val.Bytes())
 }
 
-func (a *api) loadProtoFiles(opts options, reflectHeaders headers) (rerr error) {
+func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) (rerr error) {
 	defer func() {
 		if rerr != nil {
 			const errTitle = "Failed to load RPC schema"
 			a.logger.Errorf(rerr.Error())
-			a.emitError(errTitle, rerr.Error())
+			if !silent {
+				a.emitError(errTitle, rerr.Error())
+			}
 		}
 	}()
 
-	a.runtime.Events.Emit(eventServicesSelectChanged)
+	a.protofiles = nil
 
 	var err error
 	if opts.Reflect {
@@ -472,7 +503,13 @@ func (a *api) setMetadata(key string, hds headers) {
 }
 
 func (a *api) setMessage(method string, rawJSON []byte) {
-	a.store.set([]byte(messageKeyPrefix+hash(a.client.conn.Target(), method)), rawJSON)
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		a.logger.Errorf("failed to set message, no workspace options: %v", err)
+		return
+	}
+
+	a.store.set([]byte(messageKeyPrefix+hash(opts.Addr, method)), rawJSON)
 }
 
 func (a *api) monitorStateChanges(ctx context.Context) {

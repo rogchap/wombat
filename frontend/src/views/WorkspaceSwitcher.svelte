@@ -6,6 +6,7 @@
   let workspaces = [];
   let current = undefined;
   const loadWorkspacesList = async () => {
+      workspaces = [];
       current = await backend.api.GetWorkspaceOptions()
       workspaces = await backend.api.ListWorkspaces() 
   }
@@ -14,6 +15,11 @@
 
   const onWorkspaceSelected = ({detail: wksp}) => {
     backend.api.SelectWorkspace(wksp.id);
+    visible = false;
+  }
+
+  const onWorkspaceDeleted = ({detail:wksp}) => {
+    backend.api.DeleteWorkspace(wksp.id);
     visible = false;
   }
 
@@ -55,7 +61,7 @@
   <div class="overlay" on:click|self={() => visible = false}>
     <div class="panel">
       <h1>Select Workspace</h1>
-      <WorkspaceList on:select={onWorkspaceSelected} {current} {workspaces} />
+      <WorkspaceList on:select={onWorkspaceSelected} on:delete={onWorkspaceDeleted} {current} {workspaces} />
     </div>
 </div>
 {/if}

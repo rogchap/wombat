@@ -1,15 +1,12 @@
 <script>
-  import { onMount } from "svelte";
   import TextField from "./TextField.svelte";
   import CrossButton from "./CrossButton.svelte";
 
   export let list = [];
 
-  onMount(() => {
-    if (list.length === 0 || (list[list.length-1].key && list[list.length-1].key.length > 0)) {
-      list = [...list, {}]
-    }
-  })
+  $: if (list.length === 0 || (list[list.length-1].key && list[list.length-1].key.length > 0)) {
+    list = [...list, {}]
+  }
 
   const onRemoveClick = idx => {
     if (list.length > 1) {

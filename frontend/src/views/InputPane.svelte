@@ -16,16 +16,23 @@
   let mapItems = {};
   
   wails.Events.On("wombat:method_input_changed", async data => {
-    methodInput = data.message;
-
+    methodInput = {
+      full_name: "",
+      fields: [],
+    }
     state = {}
+
+    if (!data) {
+      return
+    }
+    methodInput = data.message;
     const rawState = await backend.api.GetRawMessageState(data.full_name);
     if (rawState) {
       state = JSON.parse(rawState);
     }
   });
 
-  wails.Events.On("wombat:client_connected", async (addr) => {
+  wails.Events.On("wombat:client_connect_started", async (addr) => {
     metadata = [];
     const m = await backend.api.GetMetadata(addr);
     if (m) {

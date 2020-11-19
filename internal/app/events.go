@@ -3,6 +3,7 @@ package app
 const (
 	eventInit                  = "wombat:init"
 	eventError                 = "wombat:error"
+	eventClientConnectStarted  = "wombat:client_connect_started"
 	eventClientConnected       = "wombat:client_connected"
 	eventClientStateChanged    = "wombat:client_state_changed"
 	eventServicesSelectChanged = "wombat:services_select_changed"

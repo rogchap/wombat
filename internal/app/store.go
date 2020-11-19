@@ -44,6 +44,12 @@ func (s *store) set(key, val []byte) error {
 	})
 }
 
+func (s *store) del(key []byte) error {
+	return s.db.Update(func(txn *badger.Txn) error {
+		return txn.Delete(key)
+	})
+}
+
 func (s *store) list(prefix []byte) ([][]byte, error) {
 	var items [][]byte
 	err := s.db.View(func(txn *badger.Txn) error {
