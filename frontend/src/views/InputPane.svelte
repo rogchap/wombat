@@ -25,6 +25,7 @@
   }
   
   wails.Events.On("wombat:method_input_changed", async data => {
+    reset();
     if (!data) {
       return
     }
