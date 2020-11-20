@@ -15,13 +15,15 @@
   let metadata = [];
   let mapItems = {};
 
-  const reset = () => {
+  const reset = all => {
     methodInput = {
       full_name: "",
       fields: [],
     }
     state = {}
-    metadata = [];
+    if (all) {
+      metadata = [];
+    }
   }
   
   wails.Events.On("wombat:method_input_changed", async data => {
@@ -37,7 +39,7 @@
   });
 
   wails.Events.On("wombat:client_connect_started", async (addr) => {
-    reset()
+    reset(true)
     const m = await backend.api.GetMetadata(addr);
     if (m) {
       metadata = m;
