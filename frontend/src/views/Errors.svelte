@@ -24,7 +24,7 @@
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    background-color: #00000033;
+    background-color: #22222377;
   }
   .error-box {
     border: var(--border);

@@ -11,10 +11,15 @@
 
   const { close } = getContext('modal');
 
+  export let createNew = false;
+
   let options = undefined;
   let reflectmd = [];
 
   onMount(async () => {
+    if (createNew) {
+      return
+    }
     options = await backend.api.GetWorkspaceOptions();
     const mds = await backend.api.GetReflectMetadata(options.addr);
     if (mds) {
@@ -26,6 +31,7 @@
     await backend.api.Connect(options, reflectmd, true);
     close();
   }
+  const onCloseClicked = close;
 
 </script>
 
@@ -80,6 +86,10 @@
   </Tabs>
   <div class="spacer" />
   <footer>
+    <Button
+      text="Close"
+      on:click={onCloseClicked}
+    />
     <Button
       text="Connect"
       bgColor="var(--accent-color3)"

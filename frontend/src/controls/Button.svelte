@@ -1,15 +1,17 @@
 <script>
-  export let text;
+  export let text = "";
   export let color = "var(--text-color)";
   export let bgColor = "var(--bg-color)";
   export let border = false;
+  export let style = "";
 </script>
 
 <button
   on:click 
   class:border
-  style="background-color:{bgColor}; color:{color};">
+  style="background-color:{bgColor}; color:{color}; {style}">
   {text}
+  <slot />
 </button>
 
 <style>

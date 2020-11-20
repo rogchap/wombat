@@ -144,7 +144,7 @@ func (s *server) RecordRoute(stream RouteGuide_RecordRouteServer) error {
 
 // Serve stats serving a gRPC server that is used for testing
 func Serve() {
-	lis, err := net.Listen("tcp", "localhost:5001")
+	lis, err := net.Listen("tcp", ":5001")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "server: failed to create listener: %v", err)
 	}

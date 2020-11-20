@@ -11,7 +11,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bg-color);
+    background-color: transparent;
     border: none;
     padding: 0;
     margin: 0 calc(var(--padding) * 0.5);
@@ -36,7 +36,7 @@
   }
 </style>
 
-<button on:click {style}>
+<button on:click|stopPropagation {style}>
   <svg width="16" height="16" class:add>
     <line x1="1" y1="8" x2="15" y2="8" style="stroke:{color}" />
     <line x1="8" y1="1" x2="8" y2="15" style="stroke:{color}" /> 

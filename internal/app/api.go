@@ -13,11 +13,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gofrs/uuid"
 	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
@@ -30,7 +32,9 @@ import (
 )
 
 const (
+	defaultStateKey          = "state_default"
 	defaultWorkspaceKey      = "wksp_default"
+	workspacePrefix          = "wksp_"
 	metadataKeyPrefix        = "md_"
 	reflectMetadataKeyPrefix = "rmd_"
 	messageKeyPrefix         = "msg_"
@@ -48,6 +52,7 @@ type api struct {
 	mu               sync.Mutex
 	inFlight         bool
 	appData          string
+	state            *workspaceState
 }
 
 type statsHandler struct {
@@ -73,6 +78,7 @@ func (a *api) WailsInit(runtime *wails.Runtime) error {
 	if err != nil {
 		return fmt.Errorf("app: failed to create database: %v", err)
 	}
+	a.state = a.getCurrentState()
 
 	ready := "wails:ready"
 	if wails.BuildMode == cmd.BuildModeBridge {
@@ -136,9 +142,27 @@ func (a *api) emitError(title, msg string) {
 	a.runtime.Events.Emit(eventError, errorMsg{title, msg})
 }
 
+func (a *api) getCurrentState() *workspaceState {
+	rtn := &workspaceState{
+		CurrentID: defaultWorkspaceKey,
+	}
+	val, err := a.store.get([]byte(defaultStateKey))
+	if err != nil && err != errKeyNotFound {
+		a.logger.Errorf("failed to get current state from store: %v", err)
+	}
+	if len(val) == 0 {
+		return rtn
+	}
+	dec := gob.NewDecoder(bytes.NewBuffer(val))
+	if err := dec.Decode(rtn); err != nil {
+		a.logger.Errorf("failed to decode state: %v", err)
+	}
+	return rtn
+}
+
 // GetWorkspaceOptions gets the workspace options from the store
 func (a *api) GetWorkspaceOptions() (*options, error) {
-	val, err := a.store.get([]byte(defaultWorkspaceKey))
+	val, err := a.store.get([]byte(a.state.CurrentID))
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +170,10 @@ func (a *api) GetWorkspaceOptions() (*options, error) {
 	var opts *options
 	dec := gob.NewDecoder(bytes.NewBuffer(val))
 	err = dec.Decode(&opts)
+
+	if opts.ID == "" {
+		opts.ID = defaultWorkspaceKey
+	}
 
 	return opts, err
 }
@@ -176,9 +204,78 @@ func (a *api) GetMetadata(addr string) (headers, error) {
 	return hds, err
 }
 
+// ListWorkspaces returns a list of workspaces as their options
+func (a *api) ListWorkspaces() ([]options, error) {
+	items, err := a.store.list([]byte(workspacePrefix))
+	if err != nil {
+		return nil, err
+	}
+	var opts []options
+	for _, val := range items {
+		opt := options{}
+		dec := gob.NewDecoder(bytes.NewBuffer(val))
+		if err := dec.Decode(&opt); err != nil {
+			return opts, err
+		}
+		if opt.ID == defaultWorkspaceKey {
+			opts = append([]options{opt}, opts...)
+			continue
+		}
+		opts = append(opts, opt)
+	}
+	return opts, nil
+}
+
+// SelectWorkspace changes the current workspace by ID
+func (a *api) SelectWorkspace(id string) (rerr error) {
+	if a.state.CurrentID == id {
+		return nil
+	}
+
+	defer func() {
+		if rerr != nil {
+			a.logger.Errorf(rerr.Error())
+			a.emitError("Workspace Error", rerr.Error())
+
+		}
+	}()
+
+	a.changeWorkspace(id)
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		return err
+	}
+
+	hds, err := a.GetReflectMetadata(opts.Addr)
+	if err != nil {
+		a.logger.Warnf("failed to get reflection metadata: %v", err)
+	}
+
+	// Ignoring error as Connect will already emit errors to the frontend
+	a.Connect(opts, hds, false)
+
+	return nil
+}
+
+// DeleteWorkspace will remove a workspace from the store and switch to
+// the default workspace, if the deleted workspace is current.
+func (a *api) DeleteWorkspace(id string) error {
+	a.store.del([]byte(id))
+	if a.state.CurrentID == id {
+		a.SelectWorkspace(defaultWorkspaceKey)
+	}
+	// TODO: should we inform the user of deletion?
+	return nil
+}
+
 // GetRawMessageState gets the message state by method full name
 func (a *api) GetRawMessageState(method string) (string, error) {
-	val, err := a.store.get([]byte(messageKeyPrefix + hash(a.client.conn.Target(), method)))
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		return "", fmt.Errorf("failed to get message state, no workspace options: %v", err)
+	}
+
+	val, err := a.store.get([]byte(messageKeyPrefix + hash(opts.Addr, method)))
 	return string(val), err
 }
 
@@ -224,6 +321,7 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 		if rerr != nil {
 			const errTitle = "Connection error"
 			a.logger.Errorf(rerr.Error())
+			a.runtime.Events.Emit(eventClientStateChanged, connectivity.Shutdown.String())
 			a.emitError(errTitle, rerr.Error())
 		}
 	}()
@@ -233,23 +331,21 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 		return err
 	}
 
+	// reset all things
+	a.runtime.Events.Emit(eventClientConnectStarted, opts.Addr)
+	a.runtime.Events.Emit(eventServicesSelectChanged)
+	a.runtime.Events.Emit(eventMethodInputChanged)
+
 	if a.client != nil {
 		if err := a.client.close(); err != nil {
 			return fmt.Errorf("failed to close previous connection: %v", err)
 		}
 	}
+	a.client = &client{}
 
 	if a.cancelMonitoring != nil {
 		a.cancelMonitoring()
 	}
-
-	a.client = &client{}
-	if err := a.client.connect(opts, statsHandler{a}); err != nil {
-		return fmt.Errorf("failed to connect to server: %v", err)
-	}
-
-	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
-
 	ctx := context.Background()
 	ctx, a.cancelMonitoring = context.WithCancel(ctx)
 	go a.monitorStateChanges(ctx)
@@ -258,26 +354,59 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 	if err := mapstructure.Decode(rawHeaders, &hds); err != nil {
 		a.logger.Errorf("unable to decode reflection metadata headers: %v", err)
 	}
-	go a.loadProtoFiles(opts, hds)
 
-	if save {
-		go a.setWorkspaceOptions(opts)
-		go a.setMetadata(reflectMetadataKeyPrefix+hash(opts.Addr), hds)
+	if err := a.client.connect(opts, statsHandler{a}); err != nil {
+		// Still try to parse proto definitions. Will fail silently
+		// if using reflection services as there is no connection
+		// to a valid server.
+		a.cancelMonitoring()
+		a.client = nil
+		go a.loadProtoFiles(opts, hds, true)
+
+		return fmt.Errorf("failed to connect to server: %v", err)
 	}
+
+	a.runtime.Events.Emit(eventClientConnected, opts.Addr)
+
+	go a.loadProtoFiles(opts, hds, false)
+
+	if !save {
+		return nil
+	}
+
+	if opts.ID == "" {
+		id := uuid.Must(uuid.NewV4())
+		opts.ID = workspacePrefix + id.String()
+		a.changeWorkspace(opts.ID)
+	}
+
+	go a.setWorkspaceOptions(opts)
+	go a.setMetadata(reflectMetadataKeyPrefix+hash(opts.Addr), hds)
 
 	return nil
 }
 
-func (a *api) loadProtoFiles(opts options, reflectHeaders headers) (rerr error) {
+func (a *api) changeWorkspace(id string) {
+	a.state.CurrentID = id
+	var val bytes.Buffer
+	enc := gob.NewEncoder(&val)
+	enc.Encode(a.state)
+
+	a.store.set([]byte(defaultStateKey), val.Bytes())
+}
+
+func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) (rerr error) {
 	defer func() {
 		if rerr != nil {
 			const errTitle = "Failed to load RPC schema"
 			a.logger.Errorf(rerr.Error())
-			a.emitError(errTitle, rerr.Error())
+			if !silent {
+				a.emitError(errTitle, rerr.Error())
+			}
 		}
 	}()
 
-	a.runtime.Events.Emit(eventServicesSelectChanged)
+	a.protofiles = nil
 
 	var err error
 	if opts.Reflect {
@@ -350,10 +479,14 @@ func (a *api) emitServicesSelect() {
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
+	if opts.ID == "" {
+		opts.ID = defaultWorkspaceKey
+	}
+
 	var val bytes.Buffer
 	enc := gob.NewEncoder(&val)
 	enc.Encode(opts)
-	a.store.set([]byte(defaultWorkspaceKey), val.Bytes())
+	a.store.set([]byte(opts.ID), val.Bytes())
 }
 
 func (a *api) setMetadata(key string, hds headers) {
@@ -371,7 +504,13 @@ func (a *api) setMetadata(key string, hds headers) {
 }
 
 func (a *api) setMessage(method string, rawJSON []byte) {
-	a.store.set([]byte(messageKeyPrefix+hash(a.client.conn.Target(), method)), rawJSON)
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		a.logger.Errorf("failed to set message, no workspace options: %v", err)
+		return
+	}
+
+	a.store.set([]byte(messageKeyPrefix+hash(opts.Addr, method)), rawJSON)
 }
 
 func (a *api) monitorStateChanges(ctx context.Context) {

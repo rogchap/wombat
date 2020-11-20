@@ -7,12 +7,17 @@ type initData struct {
 	BuildMode string `json:"build_mode"`
 }
 
+type workspaceState struct {
+	CurrentID string
+}
+
 type protos struct {
 	Files []string `json:"files"`
 	Roots []string `json:"roots"`
 }
 
 type options struct {
+	ID      string `json:"id"`
 	Addr    string `json:"addr"`
 	Reflect bool   `json:"reflect"`
 	Protos  protos `json:"protos"`
