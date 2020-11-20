@@ -356,8 +356,9 @@ func (a *api) Connect(data, rawHeaders interface{}, save bool) (rerr error) {
 	}
 
 	if err := a.client.connect(opts, statsHandler{a}); err != nil {
-		// Still try to parse protos will fail silently if using reflection services
-		// as there is no connection to a valid server.
+		// Still try to parse proto definitions. Will fail silently
+		// if using reflection services as there is no connection
+		// to a valid server.
 		a.cancelMonitoring()
 		a.client = nil
 		go a.loadProtoFiles(opts, hds, true)

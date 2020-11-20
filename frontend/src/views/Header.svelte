@@ -5,15 +5,15 @@
   import WorkspaceOptions from "./WorkspaceOptions.svelte";
   import WorkspaceSwitcher from "./WorkspaceSwitcher.svelte";
 
-  let addr = ""
+  let addr = "";
   wails.Events.On("wombat:client_connected", data => addr = data);
 
-  let status = ""
-  wails.Events.On("wombat:client_state_changed", data => status = data.toLowerCase())
+  let status = "";
+  wails.Events.On("wombat:client_state_changed", data => status = data.toLowerCase());
 
   wails.Events.On("wombat:client_connect_started", data => {
     addr = data;
-    status = "connecting"
+    status = "connecting";
   })
 
   const { open } = getContext('modal');
@@ -97,7 +97,7 @@
       bgColor={isWin ? "#5e81ac" : "var(--accent-color3)"}
       on:click={onWorkspaceClicked}
     /><Button
-      bgColor={isWin? "#81a1c1" : "var(--accent-color2)"}
+      bgColor={isWin ? "#81a1c1" : "var(--accent-color2)"}
       on:click={onNewWorkspaceClicked}
       style="height:40px;min-width:auto;" >
       <svg width="14" height="14">
