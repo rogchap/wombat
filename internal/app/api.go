@@ -217,7 +217,9 @@ func (a *api) ListWorkspaces() ([]options, error) {
 		if err := dec.Decode(&opt); err != nil {
 			return opts, err
 		}
-		if opt.ID == defaultWorkspaceKey {
+		// opts.ID was added in v0.3.0 so need to double check
+		if opt.ID == defaultWorkspaceKey || opt.ID == "" {
+			opt.ID = defaultWorkspaceKey
 			opts = append([]options{opt}, opts...)
 			continue
 		}
@@ -687,7 +689,12 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 	if err := mapstructure.Decode(rawHeaders, &hs); err != nil {
 		return err
 	}
-	go a.setMetadata(metadataKeyPrefix+hash(a.client.conn.Target()), hs)
+
+	opts, err := a.GetWorkspaceOptions()
+	if err != nil {
+		return err
+	}
+	go a.setMetadata(metadataKeyPrefix+hash(opts.Addr), hs)
 
 	for _, h := range hs {
 		if h.Key == "" {
