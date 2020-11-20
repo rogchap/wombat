@@ -42,6 +42,8 @@
 - Linux build
 - Windows build
 - Reflection API to determine RPC schema
+- Support for Google Will Known Types
+- Create multiple workspaces and workspace switching
 
 ## Download
 

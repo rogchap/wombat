@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0] - 2020-11-20
+
 ### Added
 - Multiple workspaces with quick switching
 - Custom rendering/parsing support for Google Well Known [wrapper] Types
@@ -18,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix layout of metadata for Headers and Trailers
 
 ## [v0.2.2] - 2020-11-12
+
+### Added
+- Brew cask install for mac
+- AUR install for Arch Linux. Thanks to [@etix](https://github.com/etix)
 
 ### Fixed
 - Windows styling issues
