@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.2] - 2020-11-25
+
 ### Fixed
 - Crash on launch due to poor handling of the default workspace for first time user
 
