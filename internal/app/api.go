@@ -162,20 +162,30 @@ func (a *api) getCurrentState() *workspaceState {
 
 // GetWorkspaceOptions gets the workspace options from the store
 func (a *api) GetWorkspaceOptions() (*options, error) {
-	val, err := a.store.get([]byte(a.state.CurrentID))
+	wo := &options{
+		ID: a.state.CurrentID,
+	}
+
+	val, err := a.store.get([]byte(wo.ID))
+	if err != nil && err != errKeyNotFound {
+		return nil, err
+	}
+
+	if len(val) == 0 {
+		return wo, nil
+	}
+
+	dec := gob.NewDecoder(bytes.NewBuffer(val))
+	err = dec.Decode(wo)
 	if err != nil {
 		return nil, err
 	}
 
-	var opts *options
-	dec := gob.NewDecoder(bytes.NewBuffer(val))
-	err = dec.Decode(&opts)
-
-	if opts.ID == "" {
-		opts.ID = defaultWorkspaceKey
+	if wo.ID == "" {
+		wo.ID = defaultWorkspaceKey
 	}
 
-	return opts, err
+	return wo, nil
 }
 
 // GetReflectMetadata gets the reflection metadata from the store by addr
@@ -211,6 +221,7 @@ func (a *api) ListWorkspaces() ([]options, error) {
 		return nil, err
 	}
 	var opts []options
+	hasDefault := false
 	for _, val := range items {
 		opt := options{}
 		dec := gob.NewDecoder(bytes.NewBuffer(val))
@@ -219,11 +230,15 @@ func (a *api) ListWorkspaces() ([]options, error) {
 		}
 		// opts.ID was added in v0.3.0 so need to double check
 		if opt.ID == defaultWorkspaceKey || opt.ID == "" {
+			hasDefault = true
 			opt.ID = defaultWorkspaceKey
 			opts = append([]options{opt}, opts...)
 			continue
 		}
 		opts = append(opts, opt)
+	}
+	if !hasDefault {
+		opts = append([]options{options{ID: defaultWorkspaceKey}}, opts...)
 	}
 	return opts, nil
 }
