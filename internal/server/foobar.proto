@@ -15,6 +15,7 @@ service Foobar {
     rpc Foo(FooRequest) returns (FooResponse) {}
     rpc Empty(EmptyRequest) returns (EmptyResponse) {}
     rpc WellKnown(WellKnownRequest) returns (WellKnownResponse) {}
+    rpc SingleOneof(SingleOneofRequest) returns (SingleOneofResponse) {}
 }
 
 message Bar {
@@ -112,3 +113,11 @@ message WellKnownRequest {
 }
 
 message WellKnownResponse {}
+
+message SingleOneofRequest {
+    oneof foobar {
+        WellKnownResponse baz = 1;
+    }
+}
+
+message SingleOneofResponse {}

@@ -59,7 +59,7 @@
   {/if}
 </div>
 
-{#if state[val] }
+{#if state[val] && message.fields }
   <div class="fields">
     <div class="msg-border" />
     {#each message.fields as field }
