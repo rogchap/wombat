@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
+	_ "google.golang.org/genproto/googleapis/rpc/errdetails" // needed to register message types in init()
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"

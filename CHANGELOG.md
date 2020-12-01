@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Automatic expansion of standard Google error message types in [error details](https://cloud.google.com/apis/design/errors#error_details) by [@optiman](https://github.com/optiman)
+
 ### Fixed
 - Oneof value that has a message with no fields would cause the UI to become unresponsive
 
