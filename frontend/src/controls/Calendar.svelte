@@ -3,6 +3,7 @@
 
   export let month = new Date().getMonth();
   export let year = new Date().getFullYear();
+  export let selected = undefined;
 
   let today = new Date();
   today = new Date(today.getFullYear(), today.getMonth(), today.getDate())
@@ -54,6 +55,12 @@
   .hoverable:hover {
     background-color: var(--bg-color2);
   }
+  .selected {
+    background-color: var(--primary-color);
+  }
+  .selected:hover {
+    background-color: var(--accent-color);
+  }
   .today{
     position: absolute;
     background-color: var(--accent-color2);
@@ -74,6 +81,7 @@
     {#each days as d} 
       <div class="cell"
         class:hoverable={!!d}
+        class:selected={selected && new Date(year, month, d).getTime() === new Date(selected.getFullYear(), selected.getMonth(), selected.getDate()).getTime()}
         on:click={!!d ? () => onDayClicked(d) : () => {}}
       >
         {d || ''}
