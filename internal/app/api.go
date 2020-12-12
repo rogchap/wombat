@@ -55,11 +55,6 @@ type api struct {
 	state            *workspaceState
 }
 
-type cyclicDetector struct {
-	seen  map[protoreflect.FullName]struct{}
-	graph []string
-}
-
 type statsHandler struct {
 	*api
 }
@@ -578,6 +573,7 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 			const errTitle = "Failed to select method"
 			a.logger.Errorf(rerr.Error())
 			a.emitError(errTitle, rerr.Error())
+			a.runtime.Events.Emit(eventMethodInputChanged)
 		}
 	}()
 
@@ -586,7 +582,7 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 		return err
 	}
 
-	in, err := messageViewFromDesc(methodDesc.Input(), nil)
+	in, err := messageViewFromDesc(methodDesc.Input(), &cyclicDetector{})
 	if err != nil {
 		return err
 	}
@@ -601,26 +597,15 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 }
 
 func messageViewFromDesc(md protoreflect.MessageDescriptor, cd *cyclicDetector) (*messageDesc, error) {
-	n := md.Name()
-	fn := md.FullName()
 	//(rogchap) this is a recursive function, therefore we should make sure we
 	// don't get a stack overflow. The protobuf wireformat does not support
 	// cyclic data objects: protocolbuffers/protobuf#5504
-	if cd == nil {
-		cd = &cyclicDetector{
-			seen: make(map[protoreflect.FullName]struct{}),
-		}
+	if err := cd.detect(md); err != nil {
+		return nil, err
 	}
-	if _, cyclic := cd.seen[fn]; cyclic {
-		cd.graph = append(cd.graph, string(n))
-		return nil, fmt.Errorf("unable to parse proto descriptors: cyclic data detected: %s", strings.Join(cd.graph, " → "))
-	}
-	cd.seen[fn] = struct{}{}
-	cd.graph = append(cd.graph, string(n))
-
 	var rtn messageDesc
-	rtn.Name = string(n)
-	rtn.FullName = string(fn)
+	rtn.Name = string(md.Name())
+	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
 	var err error
@@ -652,6 +637,7 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyc
 
 	seenOneof := make(map[protoreflect.Name]struct{})
 	for i := 0; i < fds.Len(); i++ {
+
 		fd := fds.Get(i)
 		fdesc := fieldDesc{}
 		setFieldDescBasics(&fdesc, fd)
@@ -670,6 +656,7 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyc
 				if err != nil {
 					return nil, err
 				}
+				cd.reset()
 			}
 			goto appendField
 		}
@@ -698,6 +685,7 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyc
 			if err != nil {
 				return nil, err
 			}
+			cd.reset()
 		}
 
 	appendField:
