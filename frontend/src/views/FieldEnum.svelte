@@ -6,17 +6,16 @@
   export let key;
   export let idx;
 
-  let val;
+  let val, labelColor, removeable;
 
   $: {
     val = key !== undefined ? key : idx >= 0 ? idx : field.name;
     if (!state[val]) {
       state[val] = field.enum[0];
     }
+    labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
+    removeable = idx >= 0;
   }
-  
-  const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
-  const removeable = idx >= 0;
 
   const onSelectChanged = ({ detail: { value }}) => {
     state[val] = value;

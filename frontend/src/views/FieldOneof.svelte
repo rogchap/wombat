@@ -6,10 +6,11 @@
   export let field = {};
   export let state;
 
-  const items = field.oneof.map(x => x.name);
+  let items;
   let selectedValue = undefined;
 
   $: {
+    items = field.oneof.map(x => x.name);
     const k = Object.keys(state)
     checkSelected:
     for (let i = 0; i < k.length; i++) {

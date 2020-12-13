@@ -19,14 +19,14 @@
     return target;
   }
 
-  hint = field.kind;
-  if (field.kind === "message" || field.kind === "group") {
-    hint = field.message.full_name;
-  }
 
   $: {
     if (!state[field.name]) {
       state[field.name] = []
+    }
+    hint = field.kind;
+    if (field.kind === "message" || field.kind === "group") {
+      hint = field.message.full_name;
     }
   }
 
