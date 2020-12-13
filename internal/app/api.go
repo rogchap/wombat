@@ -19,6 +19,7 @@ import (
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/logger"
+	_ "google.golang.org/genproto/googleapis/rpc/errdetails" // needed to register message types in init()
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/stats"
@@ -49,7 +50,7 @@ type api struct {
 	streamReq        chan proto.Message
 	cancelMonitoring context.CancelFunc
 	cancelInFlight   context.CancelFunc
-	mu               sync.Mutex
+	mu               sync.Mutex // protect in-flight requests
 	inFlight         bool
 	appData          string
 	state            *workspaceState
@@ -238,7 +239,7 @@ func (a *api) ListWorkspaces() ([]options, error) {
 		opts = append(opts, opt)
 	}
 	if !hasDefault {
-		opts = append([]options{options{ID: defaultWorkspaceKey}}, opts...)
+		opts = append([]options{{ID: defaultWorkspaceKey}}, opts...)
 	}
 	return opts, nil
 }
@@ -573,6 +574,7 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 			const errTitle = "Failed to select method"
 			a.logger.Errorf(rerr.Error())
 			a.emitError(errTitle, rerr.Error())
+			a.runtime.Events.Emit(eventMethodInputChanged)
 		}
 	}()
 
@@ -581,7 +583,11 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 		return err
 	}
 
-	in := messageViewFromDesc(methodDesc.Input())
+	in, err := messageViewFromDesc(methodDesc.Input(), &cyclicDetector{})
+	if err != nil {
+		return err
+	}
+
 	m := methodInput{
 		FullName: fullname,
 		Message:  in,
@@ -591,15 +597,25 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 	return nil
 }
 
-func messageViewFromDesc(md protoreflect.MessageDescriptor) *messageDesc {
+func messageViewFromDesc(md protoreflect.MessageDescriptor, cd *cyclicDetector) (*messageDesc, error) {
+	//(rogchap) this is a recursive function, therefore we should make sure we
+	// don't get a stack overflow. The protobuf wireformat does not support
+	// cyclic data objects: protocolbuffers/protobuf#5504
+	if err := cd.detect(md); err != nil {
+		return nil, err
+	}
 	var rtn messageDesc
 	rtn.Name = string(md.Name())
 	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
-	rtn.Fields = fieldViewsFromDesc(fds, false)
+	var err error
+	rtn.Fields, err = fieldViewsFromDesc(fds, false, cd)
+	if err != nil {
+		return nil, err
+	}
 
-	return &rtn
+	return &rtn, nil
 }
 
 func setFieldDescBasics(fdesc *fieldDesc, fd protoreflect.FieldDescriptor) {
@@ -617,11 +633,12 @@ func setFieldDescBasics(fdesc *fieldDesc, fd protoreflect.FieldDescriptor) {
 	}
 }
 
-func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []fieldDesc {
+func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyclicDetector) ([]fieldDesc, error) {
 	var fields []fieldDesc
 
 	seenOneof := make(map[protoreflect.Name]struct{})
 	for i := 0; i < fds.Len(); i++ {
+
 		fd := fds.Get(i)
 		fdesc := fieldDesc{}
 		setFieldDescBasics(&fdesc, fd)
@@ -635,7 +652,12 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 			mapVal := fd.MapValue()
 			setFieldDescBasics(fdesc.MapValue, mapVal)
 			if fmd := mapVal.Message(); fmd != nil {
-				fdesc.MapValue.Message = messageViewFromDesc(fmd)
+				var err error
+				fdesc.MapValue.Message, err = messageViewFromDesc(fmd, cd)
+				if err != nil {
+					return nil, err
+				}
+				cd.reset()
 			}
 			goto appendField
 		}
@@ -647,7 +669,11 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 				}
 				fdesc.Name = string(oneof.Name())
 				fdesc.Kind = "oneof"
-				fdesc.Oneof = fieldViewsFromDesc(oneof.Fields(), true)
+				var err error
+				fdesc.Oneof, err = fieldViewsFromDesc(oneof.Fields(), true, cd)
+				if err != nil {
+					return nil, err
+				}
 
 				seenOneof[oneof.Name()] = struct{}{}
 				goto appendField
@@ -655,13 +681,18 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool) []field
 		}
 
 		if fmd := fd.Message(); fmd != nil {
-			fdesc.Message = messageViewFromDesc(fmd)
+			var err error
+			fdesc.Message, err = messageViewFromDesc(fmd, cd)
+			if err != nil {
+				return nil, err
+			}
+			cd.reset()
 		}
 
 	appendField:
 		fields = append(fields, fdesc)
 	}
-	return fields
+	return fields, nil
 }
 
 func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr error) {
