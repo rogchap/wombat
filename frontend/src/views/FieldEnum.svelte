@@ -1,5 +1,4 @@
 <script>
-  import { onMount, beforeUpdate } from 'svelte';
   import Dropdown from "../controls/Dropdown.svelte";
 
   export let field;
@@ -9,16 +8,13 @@
 
   let val;
 
-  const resetState = () => {
+  $: {
     val = key !== undefined ? key : idx >= 0 ? idx : field.name;
     if (!state[val]) {
       state[val] = field.enum[0];
     }
   }
   
-  onMount(resetState)
-  beforeUpdate(resetState)
-
   const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
   const removeable = idx >= 0;
 

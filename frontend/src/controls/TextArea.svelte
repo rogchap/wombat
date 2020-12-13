@@ -1,6 +1,6 @@
 <script>
   import InputLabel from "./InputLabel.svelte";
-  export let label;
+  export let label = undefined;
   export let hint = "";
   export let value = "";
   export let width = "400px";

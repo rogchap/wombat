@@ -15,10 +15,8 @@
             cloneTarget[key] = clone(target[key]);
         }
         return cloneTarget;
-    } else {
-        return target;
-    }
-    return f
+    } 
+    return target;
   }
 
   hint = field.kind;
@@ -26,9 +24,12 @@
     hint = field.message.full_name;
   }
 
-  if (!state[field.name]) {
-    state[field.name] = []
+  $: {
+    if (!state[field.name]) {
+      state[field.name] = []
+    }
   }
+
 
   const onAddButtonClicked = () => {
     state[field.name] = [...state[field.name], null]

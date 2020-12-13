@@ -1,5 +1,4 @@
 <script>
-  import { onMount, beforeUpdate } from 'svelte';
   import MessageField from "./MessageField.svelte";
   import InputLabel from "../controls/InputLabel.svelte";
   import Checkbox from "../controls/Checkbox.svelte";
@@ -15,15 +14,12 @@
   const removeable = idx >= 0;
 
   let val;
-  const resetState = () => {
+  $: {
     val = key !== undefined ? key : idx >= 0 ? idx : name;
     if (!state[val] && (oneof || idx >= 0)) {
       state[val] = {}
     }
   }
-  onMount(resetState)
-  beforeUpdate(resetState)
-
 
   const onEnabledChanged = ({ detail: checked}) => {
     state[val] = checked ? {} : null
