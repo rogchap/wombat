@@ -15,20 +15,21 @@
             cloneTarget[key] = clone(target[key]);
         }
         return cloneTarget;
-    } else {
-        return target;
+    } 
+    return target;
+  }
+
+
+  $: {
+    if (!state[field.name]) {
+      state[field.name] = []
     }
-    return f
+    hint = field.kind;
+    if (field.kind === "message" || field.kind === "group") {
+      hint = field.message.full_name;
+    }
   }
 
-  hint = field.kind;
-  if (field.kind === "message" || field.kind === "group") {
-    hint = field.message.full_name;
-  }
-
-  if (!state[field.name]) {
-    state[field.name] = []
-  }
 
   const onAddButtonClicked = () => {
     state[field.name] = [...state[field.name], null]
