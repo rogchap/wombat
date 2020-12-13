@@ -1,5 +1,4 @@
 <script>
-  import { onMount, beforeUpdate } from 'svelte';
   import InputLabel from "../controls/InputLabel.svelte";
   import Dropdown from "../controls/Dropdown.svelte";
   import MessageField from "./MessageField.svelte";
@@ -7,10 +6,11 @@
   export let field = {};
   export let state;
 
-  const items = field.oneof.map(x => x.name);
+  let items;
   let selectedValue = undefined;
 
-  const selectValue = () => {
+  $: {
+    items = field.oneof.map(x => x.name);
     const k = Object.keys(state)
     checkSelected:
     for (let i = 0; i < k.length; i++) {
@@ -22,9 +22,6 @@
       }
     }
   }
-
-  onMount(selectValue)
-  beforeUpdate(selectValue)
 
   const onSelectChanged = ({ detail: { value }}) => {
     if (selectedValue) {

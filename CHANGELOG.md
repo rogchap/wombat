@@ -6,12 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.3] - 2020-12-13
+
 ### Added
 - Automatic expansion of standard Google error message types in [error details](https://cloud.google.com/apis/design/errors#error_details) by [@optiman](https://github.com/optiman)
 - Cyclic detection of protobuf messages, which previous resulted in a stack overflow crash
 
 ### Fixed
 - Oneof value that has a message with no fields would cause the UI to become unresponsive
+- State loss between methods causing repeated fields to be reset to empty and the "add" button becoming unresponsive
 
 ## [v0.3.2] - 2020-11-25
 

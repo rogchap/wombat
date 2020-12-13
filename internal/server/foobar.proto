@@ -67,6 +67,7 @@ message BarRequest {
     repeated Baz type_repeated_enum = 4;
     repeated bytes type_repeated_bytes = 5;
     repeated Bar type_repeated_message = 6;
+    repeated uint32 uint32repeated = 7;
 }
 
 message BarResponse {}

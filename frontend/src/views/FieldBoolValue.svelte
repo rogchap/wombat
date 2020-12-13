@@ -1,5 +1,4 @@
 <script>
-  import { onMount, beforeUpdate } from 'svelte';
   import Radio from "../controls/Radio.svelte";
 
   export let field;
@@ -7,24 +6,19 @@
   export let idx;
   export let key;
   
-  let val;
+  let val, labelColor, removeable;
 
-  const resetState = () => {
+  $: {
     val = key !== undefined ? key : idx >= 0 ? idx : field.name;
+    labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
+    removeable = idx >= 0;
   }
-
-  const labelColor = key !== undefined ? "var(--accent-color3)" : idx >= 0 ? "var(--accent-color2)" : undefined;
-  const removeable = idx >= 0;
-
-  onMount(resetState)
-  beforeUpdate(resetState)
 
   const options = [
     {label: "nil", value: undefined},
     {label: "false", value: false},
     {label: "true", value: true},
   ];
-
 </script>
 
 <style>

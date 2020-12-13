@@ -10,14 +10,18 @@
   export let key;
   export let idx;
 
-  let field = {
-    name: name,
-    kind: message.full_name,
-  }
-
+  let field = {};
   let placeholder = "";
-  if (field.kind === "google.protobuf.Duration") {
-    placeholder = "0.1s";
+
+  $: {
+    field = {
+      name: name,
+      kind: message.full_name,
+    }
+
+    if (field.kind === "google.protobuf.Duration") {
+      placeholder = "0.1s";
+    }
   }
 </script>
 

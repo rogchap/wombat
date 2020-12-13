@@ -17,34 +17,35 @@
   // changes we swap in and out the state object and where it should be tracked: map items or
   // the real state object. Luckly JS Objects can be passed by reference so this works.
 
-  beforeUpdate(() => {
-    if (!state[field.name] || !mapItems[field.full_name]) {
-      return
-    }
-    const stateKeys = Object.keys(state[field.name])
-    if (mapItems[field.full_name].length === 0 && stateKeys.length > 0) {
-      stateKeys.forEach(k => {
-        mapItems[field.full_name].push({key: k});
-      })
-      mapItems[field.full_name] = mapItems[field.full_name];
-    }
-  })
-
-  const keyType  = field.map_key.kind;
+  let keyType  = field.map_key.kind;
   let valType = field.map_value.kind;
-  let valMsg = false;
-  if (field.map_value.kind === "message" || field.map_value.kind === "group") {
-    valType = field.map_value.message.name;
-    valMsg = true;
+
+  $: {
+    if (state[field.name] && mapItems[field.full_name]) {
+      const stateKeys = Object.keys(state[field.name])
+      if (mapItems[field.full_name].length === 0 && stateKeys.length > 0) {
+        stateKeys.forEach(k => {
+          mapItems[field.full_name].push({key: k});
+        })
+        mapItems[field.full_name] = mapItems[field.full_name];
+      }
+    }
+
+    keyType  = field.map_key.kind;
+    valType = field.map_value.kind;
+    if (field.map_value.kind === "message" || field.map_value.kind === "group") {
+      valType = field.map_value.message.name;
+    }
+
+    if (!mapItems[field.full_name]) {
+      mapItems[field.full_name] = [];
+    }
+
+    if (!state[field.name]) {
+      state[field.name] = {};
+    }
   }
 
-  if (!mapItems[field.full_name]) {
-    mapItems[field.full_name] = [];
-  }
-
-  if (!state[field.name]) {
-    state[field.name] = {};
-  }
 
   const onAddButtonClicked = () => {
     mapItems[field.full_name] = [...mapItems[field.full_name], {key: "", ref: {}}]; 
