@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Oneof value that has a message with no fields would cause the UI to become unresponsive
-- Oneof with repeated nested messages would loose state, resulting in inability to add repeated values
+- State loss between methods causing repeated fields to be reset to empty and the "add" button becoming unresponsive
 
 ## [v0.3.2] - 2020-11-25
 
