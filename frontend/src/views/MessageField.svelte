@@ -35,6 +35,8 @@
     }
   }
 
+  $: if(!field) field = {};
+
 </script>
 
 {#if field.repeated && idx < 0 }
