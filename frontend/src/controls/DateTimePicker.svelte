@@ -1,17 +1,17 @@
 <script>
   import Calendar from "./Calendar.svelte";
+  import Next from "../icons/next.svelte";
+  import Prev from "../icons/prev.svelte";
+  import Today from "../icons/Today.svelte";
 
-  export let selected = new Date();
+  export let selected = undefined;
 
   const today = new Date();
-  let date = selected ? selected.getDate() : today.getDate();
-  let month = selected ? selected.getMonth() : today.getMonth();
-  let year = selected ? selected.getFullYear() : today.getFullYear();
+  let month, year;
 
   $: {
-    date: selected ? selected.getDate() : today.getDate();
-    month: selected ? selected.getMonth() : today.getMonth();
-    year: selected ? selected.getFullYear() : today.getFullYear();
+    month = selected ? selected.getMonth() : today.getMonth();
+    year = selected ? selected.getFullYear() : today.getFullYear();
   }
 
   const months = [
@@ -58,24 +58,39 @@
   .picker {
     border: var(--border);
     width: min-content;
+    background-color: var(--bg-color);
   }
   .header{
     margin: var(--padding) var(--padding) 0 var(--padding);
     display: flex;
     justify-content: space-between;
+    align-items: center;
+  }
+  button {
+    border: 0;
+    background-color: var(--bg-color);
+    padding: 0;
+    width: 24px;
+    height: 24px;
   }
 </style>
 
 <div class="picker">
   <div class="header">
     <div>
-      <button on:click={onPrevClicked}>p</button>
-      <button on:click={onNextClicked}>n</button>
+      <button on:click={onPrevClicked}>
+        <Prev />
+      </button>
+      <button on:click={onNextClicked}>
+        <Next />
+      </button>
     </div>
     <div>{months[month]} {year}</div>
     <div>
-      <button on:click={onTodayClicked}>t</button>
+      <button on:click={onTodayClicked}>
+        <Today />
+      </button>
     </div>
   </div>
-  <Calendar {year} {month} {selected} />
+  <Calendar on:change {year} {month} {selected} />
 </div>

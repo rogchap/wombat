@@ -26,10 +26,14 @@
   }
 
   let days;
-  $: days = getDates(month, year);
+  let current;
+  $: {
+    days = getDates(month, year);
+    current = selected ? new Date(Date.UTC(selected.getFullYear(), selected.getMonth(), selected.getDate())) : undefined
+  }
 
   const dispatch = createEventDispatcher();
-  const onDayClicked = d => dispatch("change", new Date(year, month, d));
+  const onDayClicked = d => dispatch("change", new Date(Date.UTC(year, month, d)));
 
 </script>
 
@@ -81,7 +85,7 @@
     {#each days as d} 
       <div class="cell"
         class:hoverable={!!d}
-        class:selected={selected && new Date(year, month, d).getTime() === new Date(selected.getFullYear(), selected.getMonth(), selected.getDate()).getTime()}
+        class:selected={current && new Date(year, month, d).getTime() === new Date(current.getFullYear(), current.getMonth(), current.getDate()).getTime()}
         on:click={!!d ? () => onDayClicked(d) : () => {}}
       >
         {d || ''}
