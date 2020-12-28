@@ -1,6 +1,7 @@
 <script>
   import Button from "../controls/Button.svelte";
   import Status from "./Status.svelte";
+  import RequestType from "./RequestType.svelte";
 
   export let rpc = {};
   export let inflight = false;
@@ -23,7 +24,10 @@
 </style>
 
 <div class="output-header">
-  {#if rpc.status }
+  {#if inflight}
+    <RequestType {client_stream} {server_stream} />
+  {/if}
+  {#if !inflight && rpc.status }
     <Status status={rpc.status} code={rpc.status_code} /> 
     <div>{rpc.duration}</div>
   {/if}
