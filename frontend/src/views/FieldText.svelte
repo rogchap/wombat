@@ -25,5 +25,5 @@
 {#if multiline }
   <TextArea on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} />
 {:else}
-  <TextField on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} {placeholder} />
+  <TextField on:focus on:remove {removeable} {labelColor} label={field.name} hint={field.kind} bind:value={state[val]} {placeholder} />
 {/if}
