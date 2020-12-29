@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Request type icons, in-flight indicator and network out/in count
+
 ## [v0.3.3] - 2020-12-13
 
 ### Added

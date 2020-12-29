@@ -30,8 +30,10 @@ type options struct {
 }
 
 type methodSelect struct {
-	FullName string `json:"full_name"`
-	Name     string `json:"name"`
+	FullName     string `json:"full_name"`
+	Name         string `json:"name"`
+	ClientStream bool   `json:"client_stream"`
+	ServerStream bool   `json:"server_stream"`
 }
 
 type methodsSelect []methodSelect

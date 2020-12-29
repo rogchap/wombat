@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import Button from "../controls/Button.svelte";
   import Dropdown from "../controls/Dropdown.svelte";
+  import MethodSelectItem from "./MethodSelectItem.svelte";
 
   let servicesSelect = []
   let serviceOptions = [];
@@ -19,7 +20,13 @@
   let methodSelected;
   const serviceSelectionChanged = ({ detail: { value } }) => {
     methodSelected = undefined;
-    methodOptions = servicesSelect[value].methods.map(m => ({value: m.full_name, label: m.name}))
+    console.log(servicesSelect[value].methods)
+    methodOptions = servicesSelect[value].methods.map(m => ({
+      value: m.full_name, 
+      label: m.name,
+      client_stream: m.client_stream,
+      server_stream: m.server_stream,
+    }))
     if (methodOptions.length > 0) {
       methodSelected = methodOptions[0]
     }
@@ -56,7 +63,7 @@
 
 <div class="method-select">
   <Dropdown frameless isSearchable items={serviceOptions} selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
-  <Dropdown frameless isSearchable items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
+  <Dropdown frameless isSearchable Item={MethodSelectItem} items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
   <div class="spacer" />
   <Button 
     text="Send"

@@ -13,6 +13,7 @@
   export let isSearchable = false;
   export let labelColor = undefined;
   export let removeable = false;
+  export let Item = undefined;
 </script>
 
 <style>
@@ -59,9 +60,9 @@
   }
 </style>
 
-<div class="dropdown" class:frameless title={selectedValue ? selectedValue.label : ''} >
+<div class="dropdown" class:frameless title={selectedValue ? selectedValue.value : ''} >
   {#if label}
     <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
-  <Select on:select on:clear {items} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
+  <Select on:select on:clear {items} {Item} bind:selectedValue {placeholder} {isClearable} {showIndicator} {isSearchable} />
 </div>

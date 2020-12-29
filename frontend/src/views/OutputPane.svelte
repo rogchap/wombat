@@ -16,6 +16,8 @@
   let inflight = false;
   let client_stream = false;
   let server_stream = false;
+  let outCount = 0;
+  let inCount = 0;
 
   wails.Events.On("wombat:rpc_started", data => {
     resp = "";
@@ -26,6 +28,8 @@
     inflight = true;
     client_stream = data.client_stream;
     server_stream = data.server_stream;
+    outCount = 0;
+    inCount = 0;
   })
 
   wails.Events.On("wombat:in_header_received", data => headers = data)
@@ -47,10 +51,10 @@
   }
   wails.Events.On("wombat:stat_begin", data => addStat("begin", data));
   wails.Events.On("wombat:stat_out_header", data => addStat("outHeader", data));
-  wails.Events.On("wombat:stat_out_payload", data => addStat("outPayload", data));
+  wails.Events.On("wombat:stat_out_payload", data => { addStat("outPayload", data); outCount = outCount + 1; });
   wails.Events.On("wombat:stat_out_trailer", data => addStat("outTrailer", data));
   wails.Events.On("wombat:stat_in_header", data => addStat("inHeader", data));
-  wails.Events.On("wombat:stat_in_payload", data => addStat("inPayload", data));
+  wails.Events.On("wombat:stat_in_payload", data => { addStat("inPayload", data); inCount = inCount + 1; });
   wails.Events.On("wombat:stat_in_trailer", data => addStat("inTrailer", data));
   wails.Events.On("wombat:stat_end", data => addStat("end", data));
 
@@ -64,7 +68,7 @@
 </style>
 
 <div class="output-pane">
-  <OutputHeader {rpc} {inflight} {client_stream} {server_stream} />
+  <OutputHeader {rpc} {inflight} {client_stream} {server_stream} {outCount} {inCount} />
   <Tabs>
     <TabList>
       <Tab>Response</Tab>
