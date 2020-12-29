@@ -473,8 +473,10 @@ func (a *api) emitServicesSelect() {
 				md := mds.Get(j)
 				fname := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
 				s.Methods = append(s.Methods, methodSelect{
-					Name:     string(md.Name()),
-					FullName: fname,
+					Name:         string(md.Name()),
+					FullName:     fname,
+					ClientStream: md.IsStreamingClient(),
+					ServerStream: md.IsStreamingServer(),
 				})
 			}
 			sort.SliceStable(s.Methods, func(i, j int) bool {
