@@ -1,11 +1,14 @@
 <script>
   import Button from "../controls/Button.svelte";
   import Status from "./Status.svelte";
+  import RequestType from "./RequestType.svelte";
 
   export let rpc = {};
   export let inflight = false;
   export let client_stream = false;
   export let server_stream = false;
+  export let outCount = 0;
+  export let inCount = 0;
 
   const onCancelClicked = () => backend.api.Cancel()
   const onCloseClicked = () => backend.api.CloseSend()
@@ -23,7 +26,10 @@
 </style>
 
 <div class="output-header">
-  {#if rpc.status }
+  {#if inflight}
+    <RequestType {outCount} {inCount} {client_stream} {server_stream} />
+  {/if}
+  {#if !inflight && rpc.status }
     <Status status={rpc.status} code={rpc.status_code} /> 
     <div>{rpc.duration}</div>
   {/if}
