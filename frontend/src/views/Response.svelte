@@ -1,6 +1,7 @@
 <script>
   import Prism from "svelte-prismjs";
   export let resp = "";
+
 </script>
 
 <style>
@@ -35,9 +36,11 @@
 
 <!-- TODO: Need to fix syntax highlighting on Windows /-->
 <div class="response">
-  {#if isWin }
-    <pre>{resp}</pre>
-  {:else}
-    <Prism language="clike">{resp}</Prism>
+  {#if resp}
+    {#if isWin }
+      <pre>{resp}</pre>
+    {:else}
+      <Prism language="clike">{resp}</Prism>
+    {/if}
   {/if}
 </div>

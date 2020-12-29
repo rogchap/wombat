@@ -709,7 +709,6 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 		return err
 	}
 
-	fmt.Printf("string(rawJSON = %+v\n", string(rawJSON))
 	req := dynamicpb.NewMessage(md.Input())
 	if err := protojson.Unmarshal(rawJSON, req); err != nil {
 		return err
@@ -723,9 +722,9 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 	}
 
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	a.inFlight = true
 	defer func() {
+		a.mu.Unlock()
 		a.inFlight = false
 	}()
 
@@ -791,10 +790,23 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 		}
 		a.streamReq = make(chan proto.Message, 1)
 		a.streamReq <- req
-		for r := range a.streamReq {
-			if err := stream.SendMsg(r); err != nil {
-				close(a.streamReq)
-				a.streamReq = nil
+		done := ctx.Done()
+
+	wait:
+		for {
+			select {
+			case <-done:
+				a.CloseSend()
+				return nil
+			case r := <-a.streamReq:
+				if r == nil {
+					break wait
+				}
+				if err := stream.SendMsg(r); err != nil {
+					close(a.streamReq)
+					a.streamReq = nil
+					break wait
+				}
 			}
 		}
 		stream.CloseSend()
