@@ -20,7 +20,6 @@
   let methodSelected;
   const serviceSelectionChanged = ({ detail: { value } }) => {
     methodSelected = undefined;
-    console.log(servicesSelect[value].methods)
     methodOptions = servicesSelect[value].methods.map(m => ({
       value: m.full_name, 
       label: m.name,
