@@ -1,64 +1,58 @@
 <script>
   import { onMount } from "svelte";
-  import * as ace from "ace-builds/src-noconflict/ace";
-  import "ace-builds/src-noconflict/theme-nord_dark";
-  import "ace-builds/src-noconflict/mode-javascript";
-  export let resp = "";
 
-  let ResContainer;
-  let editor;
+  export let model;
+
+  let Response;
 
   onMount(() => {
-    editor = ace.edit(ResContainer, {
-      mode: "ace/mode/javascript",
-      theme: "ace/theme/nord_dark",
+    monaco.editor.create(Response, {
+      model: model,
       readOnly: true,
-      highlightActiveLine: false,
-      behavioursEnabled: false,
-      showPrintMargin: false,
-      showGutter: false,
-      highlightGutterLine: false,
-      useWorker: false,
-      wrap: true,
-      fontFamily: "monospace",
-      fontSize: "10pt",
-    }); 
-    editor.renderer.$cursorLayer.element.style.display = "none";
+      minimap: { enabled: false },
+      wordWrap: "on",
+      theme: "nord-dark",
+      links: false,
+      matchBrackets: "never",
+      renderIndentGuides: false,
+      renderLineHighlight: "none",
+      renderValidationDecorations: "off",
+      scrollBeyondLastLine: false,
+      selectionHighlight: false,
+      automaticLayout: true,
+      hideCursorInOverviewRuler: true,
+      overviewRulerBorder: false,
+      lineNumbers: "off",
+      padding: {
+        top: 12,
+        bottom: 12,
+      },
+      scrollbar: {
+        useShadows: false,
+      },
+    });
   });
 
-  $: {
-    if (editor) {
-      editor.session.setValue(resp);
-    }
-  }
+
+
 
 </script>
 
 <style>
   .response {
-    padding: var(--padding);
-    height: calc(100% - 106px);
+    height: calc(100% - 82px);
   }
 
-  .response :global(.ace_editor .ace_marker-layer .ace_bracket) {
-    display: none;
+  .response :global(.monaco-editor .cursors-layer > .cursor) {
+    display: none !important;
   }
 
-  .response :global(.ace_identifier) {
-    color: var(--accent-color2);
-  }
-
-  .response :global(.ace_punctuation, .ace_paren) {
-    color: var(--primary-color);
-  }
-  .response :global(.boolean) {
-    color: var(--accent-color);
-  }
   .container {
     height: 100%;
   }
+
 </style>
 
 <div class="response">
-  <div bind:this={ResContainer} class="container">{resp}</div>
+  <div bind:this={Response} class="container" />
 </div>

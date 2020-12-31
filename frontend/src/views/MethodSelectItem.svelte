@@ -8,6 +8,12 @@
   export let isHover = false;
   export let item = undefined;
 
+  // not used
+  export let isFirst; isFirst;
+  export let filterText; filterText;
+  export let getOptionLabel; getOptionLabel;
+
+
   let reqType;
   let itemClasses = '';
   let Icon;
@@ -66,6 +72,7 @@
     align-items: center;
     justify-content: center;
     margin-right: 12px;
+    margin-left: -6px;
   }
   .icon-wrapper :global(.icon) {
     fill: var(--accent-color3);
