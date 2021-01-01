@@ -1,46 +1,58 @@
 <script>
-  import Prism from "svelte-prismjs";
-  export let resp = "";
+  import { onMount } from "svelte";
+
+  export let model;
+
+  let Response;
+
+  onMount(() => {
+    monaco.editor.create(Response, {
+      model: model,
+      readOnly: true,
+      minimap: { enabled: false },
+      wordWrap: "on",
+      theme: "nord-dark",
+      links: false,
+      matchBrackets: "never",
+      renderIndentGuides: false,
+      renderLineHighlight: "none",
+      renderValidationDecorations: "off",
+      scrollBeyondLastLine: false,
+      selectionHighlight: false,
+      automaticLayout: true,
+      hideCursorInOverviewRuler: true,
+      overviewRulerBorder: false,
+      lineNumbers: "off",
+      padding: {
+        top: 12,
+        bottom: 12,
+      },
+      scrollbar: {
+        useShadows: false,
+      },
+    });
+  });
+
+
+
 
 </script>
 
 <style>
   .response {
-    padding: var(--padding);
-    height: calc(100% - 106px);
-    overflow: scroll;
-    user-select: text;
-    -webkit-user-select: text;
-    color: var(--accent-color2);
-    word-break: break-word;
-    cursor: text;
+    height: calc(100% - 82px);
   }
 
-  .response :global(code::selection, span::selection) {
-    background-color: var(--accent-color2);
-    color: var(--text-color);
+  .response :global(.monaco-editor .cursors-layer > .cursor) {
+    display: none !important;
   }
-  .response :global(.punctuation) {
-    color: var(--primary-color);
+
+  .container {
+    height: 100%;
   }
-  .response :global(.string) {
-    color: var(--green-color);
-  }
-  .response :global(.number) {
-    color: var(--purple-color);
-  }
-  .response :global(.boolean) {
-    color: var(--accent-color);
-  }
+
 </style>
 
-<!-- TODO: Need to fix syntax highlighting on Windows /-->
 <div class="response">
-  {#if resp}
-    {#if isWin }
-      <pre>{resp}</pre>
-    {:else}
-      <Prism language="clike">{resp}</Prism>
-    {/if}
-  {/if}
+  <div bind:this={Response} class="container" />
 </div>

@@ -34,6 +34,7 @@ func Run() int {
 		go server.Serve()
 	}
 
+	extra := mewn.String("./frontend/public/build/extra.css")
 	css := mewn.String("./frontend/public/build/bundle.css")
 	js := mewn.String("./frontend/public/build/bundle.js")
 
@@ -43,7 +44,7 @@ func Run() int {
 		Resizable: true,
 		Title:     appname,
 		JS:        js,
-		CSS:       css,
+		CSS:       extra + css,
 		Colour:    "#2e3440",
 	}
 

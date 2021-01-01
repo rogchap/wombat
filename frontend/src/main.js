@@ -1,6 +1,6 @@
+import "./monaco";
 import * as Wails from '@wailsapp/runtime';
 import App from './views/App.svelte';
-
 
 let app;
 

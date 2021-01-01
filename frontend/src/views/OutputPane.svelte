@@ -8,7 +8,6 @@
   import HeadersTrailers from "./HeadersTrailers.svelte";
   import Statistics from "./Statistics.svelte";
 
-  let resp = "";
   let headers = {};
   let trailers = {};
   let rpc = {};
@@ -18,9 +17,11 @@
   let server_stream = false;
   let outCount = 0;
   let inCount = 0;
+  let hasPayload = false;
+
+  const respModel = monaco.editor.createModel("", "javascript");
 
   wails.Events.On("wombat:rpc_started", data => {
-    resp = "";
     headers = {};
     trailers = {};
     rpc = {};
@@ -30,18 +31,35 @@
     server_stream = data.server_stream;
     outCount = 0;
     inCount = 0;
+
+    respModel.setValue("");
+    hasPayload = false;
+
   })
 
   wails.Events.On("wombat:in_header_received", data => headers = data)
   wails.Events.On("wombat:in_trailer_received", data => trailers = data)
 
-  wails.Events.On("wombat:in_payload_received", data => resp += data)
+  wails.Events.On("wombat:in_payload_received", data => {
+    hasPayload = true;
+    const lineCount = respModel.getLineCount();
+    const lastLineLength = respModel.getLineMaxColumn(lineCount);
+
+    const range = new monaco.Range(
+      lineCount,
+      lastLineLength,
+      lineCount,
+      lastLineLength
+    ); 
+
+    respModel.pushEditOperations(null, [{forceMoveMarkers: true, range, text: data }]);
+  })
 
   wails.Events.On("wombat:rpc_ended", data => {
     rpc = data;
     inflight = false;
-    if (!resp || resp === "") {
-      resp = "<nil>"
+    if (!hasPayload) {
+      respModel.setValue("<nil>");
     }
   })
 
@@ -77,7 +95,7 @@
     </TabList>
 
     <TabPanel>
-      <Response {resp} />
+      <Response model={respModel} />
     </TabPanel>
 
     <TabPanel>

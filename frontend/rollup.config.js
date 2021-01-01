@@ -6,6 +6,7 @@ import { terser } from 'rollup-plugin-terser';
 import image from '@rollup/plugin-image';
 import babel from 'rollup-plugin-babel';
 import polyfill from 'rollup-plugin-polyfill';
+import rollupPluginCssOnly from 'rollup-plugin-css-only';
 import postcss from 'postcss';
 import cssvariables from 'postcss-css-variables';
 
@@ -38,7 +39,8 @@ export default {
         sourcemap: true,
         format: 'iife',
         name: 'app',
-        file: 'public/build/bundle.js'
+        file: 'public/build/bundle.js',
+        inlineDynamicImports: true,
     },
     context: 'null',
     moduleContext: 'null',
@@ -137,6 +139,10 @@ export default {
             dedupe: ['svelte', 'svelte/transition', 'svelte/internal']
         }),
         commonjs(),
+
+        rollupPluginCssOnly({
+            output: 'extra.css'
+        }),
 
         // In dev mode, call `npm run start` once
         // the bundle has been generated
