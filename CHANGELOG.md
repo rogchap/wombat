@@ -10,8 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Date picker for `google.protobuf.Timestamp` fields
 - Request type icons, in-flight indicator and network out/in count
 
+### Changed
+- Response output control re-architecture to enable future features
+
 ### Fixed
 - A canceled client stream blocks further requests
+- Output syntax highlighting on Windows
 
 ## [v0.3.3] - 2020-12-13
 
