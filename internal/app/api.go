@@ -876,6 +876,7 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 			s.Payload = p
 		}
 		a.runtime.Events.Emit(eventStatOutPayload, rpcStatOutPayload{s, fmt.Sprintf("%+v", s.Data)})
+		a.runtime.Events.Emit(eventOutPayloadReceived, s.Payload)
 	case *stats.OutTrailer:
 		a.runtime.Events.Emit(eventStatOutTrailer, rpcStatOutTrailer{s, fmt.Sprintf("%+v", s.Trailer)})
 	case *stats.InHeader:
@@ -904,7 +905,7 @@ func (a statsHandler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
 				a.logger.Errorf("failed to marshal status error to proto text: %v", err)
 			}
 			if errProtoStr != "" {
-				a.runtime.Events.Emit(eventInPayloadReceived, errProtoStr)
+				a.runtime.Events.Emit(eventErrorReceived, errProtoStr)
 			}
 		}
 		a.runtime.Events.Emit(eventStatEnd, rpcStatEnd{s, errProtoStr})

@@ -9,13 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Date picker for `google.protobuf.Timestamp` fields
 - Request type icons, in-flight indicator and network out/in count
+- Request payloads added to main output to better represent streaming requests
+- Output gutter decorations and headers to clearly show separate out/in payloads
 
 ### Changed
-- Response output control re-architecture to enable future features
+- Output control re-architecture to enable future features
+- Response tab renamed to "Payload" to reflect both in and out payloads
 
 ### Fixed
 - A canceled client stream blocks further requests
 - Output syntax highlighting on Windows
+- Oneof data is sent as empty in some scenarios
 
 ## [v0.3.3] - 2020-12-13
 

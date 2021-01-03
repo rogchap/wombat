@@ -33,34 +33,59 @@
     inCount = 0;
 
     respModel.setValue("");
-    hasPayload = false;
-
   })
+
+  const append = (payload = "", type = "") => {
+    let isEmpty = false;
+    if(payload === "") {
+      isEmpty = true;
+      payload = "<empty>\n";
+    }
+
+    const eof = respModel.getLineCount();
+    const range = new monaco.Range(eof, 0, eof, 0);
+    respModel.pushEditOperations(null, [{forceMoveMarkers: true, range, text: "\n"+payload }]);
+
+    const newEof = respModel.getLineCount();
+    const payloadStart = new monaco.Range(eof+1, 0, eof+1, 0)
+    const payloadEnd = new monaco.Range(newEof-1, 0, newEof-1, 0)
+
+    const decors = [
+      { range, options: { isWholeLine: true, afterContentClassName: "decor-header "+type }},
+      { range: payloadStart, options: { isWholeLine: true, linesDecorationsClassName: "decor-lines "+type }},
+      { range: payloadEnd, options: { isWholeLine: true, linesDecorationsClassName: "decor-lines "+type }},
+    ];
+
+    if (isEmpty) {
+      decors.push({ range: payloadStart, options: { isWholeLine: true, inlineClassName: "decor-empty" }});
+    }
+
+    if (newEof - eof > 3) {
+      const payloadMiddle = new monaco.Range(eof+2, 0, newEof-2, 0)
+      decors.push({ range: payloadMiddle, options: { isWholeLine: true, linesDecorationsClassName: "decor-lines-block "+type }});
+    }
+
+    respModel.deltaDecorations([], decors);
+  }
 
   wails.Events.On("wombat:in_header_received", data => headers = data)
   wails.Events.On("wombat:in_trailer_received", data => trailers = data)
 
+  wails.Events.On("wombat:out_payload_received", data => {
+    append(data, "out-payload");
+  })
+
   wails.Events.On("wombat:in_payload_received", data => {
-    hasPayload = true;
-    const lineCount = respModel.getLineCount();
-    const lastLineLength = respModel.getLineMaxColumn(lineCount);
+    append(data, "in-payload");
+  })
 
-    const range = new monaco.Range(
-      lineCount,
-      lastLineLength,
-      lineCount,
-      lastLineLength
-    ); 
-
-    respModel.pushEditOperations(null, [{forceMoveMarkers: true, range, text: data }]);
+  wails.Events.On("wombat:error_received", data => {
+    append(data, "error");
   })
 
   wails.Events.On("wombat:rpc_ended", data => {
     rpc = data;
     inflight = false;
-    if (!hasPayload) {
-      respModel.setValue("<nil>");
-    }
   })
 
   const addStat = (type, data) => {
@@ -89,7 +114,7 @@
   <OutputHeader {rpc} {inflight} {client_stream} {server_stream} {outCount} {inCount} />
   <Tabs>
     <TabList>
-      <Tab>Response</Tab>
+      <Tab>Payload</Tab>
       <Tab>Headers/Trailers</Tab>
       <Tab>Statistics</Tab>
     </TabList>

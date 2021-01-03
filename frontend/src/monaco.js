@@ -1,5 +1,6 @@
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
 import "monaco-editor/esm/vs/editor/editor.api";
+import "./monaco.css";
 
 monaco.editor.defineTheme("nord-dark", {
     base: "vs-dark",
@@ -10,6 +11,7 @@ monaco.editor.defineTheme("nord-dark", {
         { token: "number", foreground: "#b48ead" },
         { token: "keyword", foreground: "#8fbcbb" },
         { token: "delimiter", foreground: "#88c0d0" },
+        { token: "type.identifier", foreground: "#b48ead" }, // enum
     ],
     colors: {
         "foreground": "#eceff4",
