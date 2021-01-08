@@ -58,7 +58,7 @@ Visit the [Releases](https://github.com/rogchap/wombat/releases) page for the la
 Or via [Homebrew](https://brew.sh/)
 
 ```bash
-$ brew cask install wombat
+$ brew install --cask wombat
 ```
 
 If you get this error message: `"Wombat.app" can't be opened because the identity of the developer cannot be
