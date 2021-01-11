@@ -24,14 +24,19 @@
   }
 
   const onSelectChanged = ({ detail: { value }}) => {
+    if (value === selectedValue) {
+      return
+    }
     if (selectedValue) {
       delete state[selectedValue]
+      state = state;
     }
     selectedValue = value;
   }
   const onSelectClear = () => {
     if (selectedValue) {
       delete state[selectedValue]
+      state = state;
     }
     selectedValue = undefined;
   }

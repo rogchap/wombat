@@ -1,0 +1,52 @@
+.decor-header {
+    font-size: 6pt;
+    color: var(--text-color3);
+    opacity: 0.6;
+}
+
+.decor-empty {
+    color: var(--text-color2) !important;
+    font-style: italic;
+}
+
+.decor-header.in-payload::before {
+    content: "\00a0────────── in payload ──────────";
+}
+
+.decor-header.out-payload::before {
+    content: "\00a0────────── out payload ─────────";
+}
+
+.decor-lines {
+    margin-left: 10px;
+    font-size: var(--font-size);
+}
+
+.decor-lines.in-payload::before {
+    color: var(--green-color);
+    content: "«";
+}
+
+.decor-lines.out-payload::before {
+    color: var(--yellow-color);
+    content: "»";
+}
+
+.decor-lines.error, .decor-lines-block.error {
+    margin-left: 12px;
+    width: 3px !important;
+    background-color: var(--red-color);
+}
+
+.decor-lines-block {
+    margin-left: 12px;
+    width: 3px !important;
+}
+
+.decor-lines-block.in-payload {
+    background-color: var(--green-color);
+}
+
+.decor-lines-block.out-payload {
+    background-color: var(--yellow-color);
+}

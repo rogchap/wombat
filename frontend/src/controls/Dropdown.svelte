@@ -14,6 +14,7 @@
   export let labelColor = undefined;
   export let removeable = false;
   export let Item = undefined;
+  export let titleProp = "value";
 </script>
 
 <style>
@@ -60,7 +61,7 @@
   }
 </style>
 
-<div class="dropdown" class:frameless title={selectedValue ? selectedValue.value : ''} >
+<div class="dropdown" class:frameless title={selectedValue ? selectedValue[titleProp] : ''} >
   {#if label}
     <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
