@@ -712,7 +712,7 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 	}
 
 	req := dynamicpb.NewMessage(md.Input())
-	if err := protojson.Unmarshal(rawJSON, req); err != nil {
+	if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(rawJSON, req); err != nil {
 		return err
 	}
 

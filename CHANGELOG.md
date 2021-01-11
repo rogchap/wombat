@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A canceled client stream blocks further requests
 - Output syntax highlighting on Windows
 - Oneof data is sent as empty in some scenarios
+- State miss match with descriptor causes `unknown field` error
 
 ## [v0.3.3] - 2020-12-13
 
