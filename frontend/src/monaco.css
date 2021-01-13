@@ -10,11 +10,11 @@
 }
 
 .decor-header.in-payload::before {
-    content: "\00a0────────── in payload ──────────";
+    content: "\00a0\2014\2014\2014\2014\2014\2014\2014\2014\2014\2014\00a0in payload\00a0\2014\2014\2014\2014\2014\2014\2014\2014\2014\2014\2014";
 }
 
 .decor-header.out-payload::before {
-    content: "\00a0────────── out payload ─────────";
+    content: "\00a0\2014\2014\2014\2014\2014\2014\2014\2014\2014\2014\00a0out payload\00a0\2014\2014\2014\2014\2014\2014\2014\2014\2014\2014";
 }
 
 .decor-lines {
@@ -24,12 +24,12 @@
 
 .decor-lines.in-payload::before {
     color: var(--green-color);
-    content: "«";
+    content: "\00ab";
 }
 
 .decor-lines.out-payload::before {
     color: var(--yellow-color);
-    content: "»";
+    content: "\00bb";
 }
 
 .decor-lines.error, .decor-lines-block.error {
