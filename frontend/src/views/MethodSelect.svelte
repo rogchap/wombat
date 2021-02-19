@@ -1,9 +1,8 @@
 <script>
-  import { createEventDispatcher, getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import Button from "../controls/Button.svelte";
   import Dropdown from "../controls/Dropdown.svelte";
   import MethodSelectItem from "./MethodSelectItem.svelte";
-  import CodeEditPanel from "./CodeEditPanel.svelte";
 
   let servicesSelect = []
   let serviceOptions = [];
@@ -41,8 +40,9 @@
     dispatch("send", { method: methodSelected.value })
   }
 
-  const { open } = getContext('modal');
-  const onEdit = () => open(CodeEditPanel)
+  const onEdit = () => {
+    dispatch("edit", { method: methodSelected.value })
+  }
 
   const reset = () => {
     serviceOptions = [];
