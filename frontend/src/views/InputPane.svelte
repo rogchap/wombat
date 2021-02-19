@@ -1,4 +1,6 @@
 <script>
+	import { setContext } from 'svelte';
+
   import Tab from "../controls/Tab.svelte";
   import Tabs from "../controls/Tabs.svelte";
   import TabList from "../controls/TabList.svelte";
@@ -50,6 +52,21 @@
     backend.api.Send(method, JSON.stringify(state), metadata)
     // console.log(method, state, metadata);
   }
+
+  setContext(InputData, {
+    getData: () => ({
+      state,
+      metadata
+    }),
+
+    setState: (value) => {
+      state = value
+    },
+
+    setMetaData: (value) => {
+      metadata = value
+    }
+  })
 
 </script>
 
