@@ -5,11 +5,13 @@
 
   let EditorContainer;
 
-  export let model;
+  export let commands;
+  export let onClose;
 
   onMount(() => {
+    const model = monaco.editor.createModel(commands.grpcurl, "shell");
     monaco.editor.create(EditorContainer, {
-      model: model,
+      model,
       minimap: { enabled: false },
       wordWrap: 'on',
       theme: 'nord-dark',
@@ -33,11 +35,14 @@
   const onImportClicked = () => {};
 
   const { close } = getContext('modal');
-  const onCloseClicked = close;
+  const onCloseClicked = () => {
+    close();
+    onClose();
+  }
 </script>
 
 <div class="code-edit-panel">
-  <h1>Editor</h1>
+  <h1>Edit as GRPCURL</h1>
   <div bind:this={EditorContainer} class="editor-container" />
   <div class="spacer" />
   <footer>
