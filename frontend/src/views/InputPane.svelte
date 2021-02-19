@@ -1,5 +1,5 @@
 <script>
-	import { setContext } from 'svelte';
+	import { getContext } from 'svelte';
 
   import Tab from "../controls/Tab.svelte";
   import Tabs from "../controls/Tabs.svelte";
@@ -8,6 +8,7 @@
   import MethodSelect from "./MethodSelect.svelte";
   import MethodInput from "./MethodInput.svelte";
   import RequestMetadata from "./RequestMetadata.svelte";
+  import CodeEditPanel from "./CodeEditPanel.svelte";
 
   let methodInput = {
     full_name: "",
@@ -53,20 +54,11 @@
     // console.log(method, state, metadata);
   }
 
-  setContext(InputData, {
-    getData: () => ({
-      state,
-      metadata
-    }),
-
-    setState: (value) => {
-      state = value
-    },
-
-    setMetaData: (value) => {
-      metadata = value
-    }
-  })
+  const { open } = getContext('modal')
+  const onEdit = async ({ detail: { method } }) => {
+    const commands = await backend.api.ExportCommands(method, JSON.stringify(state), metadata)
+    open(CodeEditPanel, { commands, onClose: () => {} })
+  }
 
 </script>
 
@@ -78,7 +70,7 @@
 </style>
 
 <div class="input-pane">
-  <MethodSelect on:send={onSend} />
+  <MethodSelect on:send={onSend} on:edit={onEdit}/>
   <Tabs>
     <TabList>
       <Tab>Request</Tab>
