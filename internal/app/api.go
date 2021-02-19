@@ -955,3 +955,11 @@ func (a *api) Cancel() {
 		a.cancelInFlight()
 	}
 }
+
+// 输入一些方法名和参数然后我给你一系列的 command，这一次只用 grpcurl，以后可能有多种风格的 command
+func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface{}) *commands {
+	return &commands{
+		Grpcurl: `grpcurl -d '{"id": 1234, "tags": ["foo","bar"]}' \
+		grpc.server.com:443 my.custom.server.Service/Method`,
+	}
+}
