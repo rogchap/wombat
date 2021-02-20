@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	protoV1 "github.com/golang/protobuf/proto"
+	"github.com/google/shlex"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
@@ -451,11 +453,11 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) 
 		}
 	}
 
-	a.emitServicesSelect()
+	a.emitServicesSelect("")
 	return nil
 }
 
-func (a *api) emitServicesSelect() {
+func (a *api) emitServicesSelect(method string) {
 	if a.protofiles == nil {
 		return
 	}
@@ -495,7 +497,7 @@ func (a *api) emitServicesSelect() {
 		return ss[i].FullName < ss[j].FullName
 	})
 
-	a.runtime.Events.Emit(eventServicesSelectChanged, ss)
+	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method)
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
@@ -570,7 +572,7 @@ func (a *api) getMethodDesc(fullname string) (protoreflect.MethodDescriptor, err
 }
 
 // SelectMethod is called when the user selects a new method by the given name
-func (a *api) SelectMethod(fullname string) (rerr error) {
+func (a *api) SelectMethod(fullname string, initState string) (rerr error) {
 	defer func() {
 		if rerr != nil {
 			const errTitle = "Failed to select method"
@@ -594,7 +596,7 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 		FullName: fullname,
 		Message:  in,
 	}
-	a.runtime.Events.Emit(eventMethodInputChanged, m)
+	a.runtime.Events.Emit(eventMethodInputChanged, m, initState)
 
 	return nil
 }
@@ -956,10 +958,78 @@ func (a *api) Cancel() {
 	}
 }
 
-// 输入一些方法名和参数然后我给你一系列的 command，这一次只用 grpcurl，以后可能有多种风格的 command
+// Export commands for call
 func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface{}) *commands {
+	var sb strings.Builder
+	sb.WriteString("grpcurl ")
+	sb.WriteString("-d '")
+	sb.Write(rawJSON)
+	sb.WriteString("' \\\n")
+
+	var hs headers
+	if err := mapstructure.Decode(rawHeaders, &hs); err != nil {
+		return nil
+	}
+	for _, h := range hs {
+		if len(h.Key) == 0 {
+			continue
+		}
+		sb.WriteString("    -H '")
+		sb.WriteString(h.Key)
+		sb.WriteString(":")
+		sb.WriteString(h.Val)
+		sb.WriteString("' \\\n")
+	}
+
+	option, _ := a.GetWorkspaceOptions()
+	if option.Plaintext {
+		sb.WriteString("    -plaintext \\\n")
+	}
+	if option.Insecure {
+		sb.WriteString("    -insecure \\\n")
+	}
+	sb.WriteString("    ")
+	sb.WriteString(option.Addr)
+	sb.WriteString(" ")
+	sb.WriteString(method[1:])
+
 	return &commands{
-		Grpcurl: `grpcurl -d '{"id": 1234, "tags": ["foo","bar"]}' \
-		grpc.server.com:443 my.custom.server.Service/Method`,
+		Grpcurl: sb.String(),
+	}
+}
+
+type multiString []string
+
+func (s *multiString) String() string {
+	return strings.Join(*s, ",")
+}
+
+func (s *multiString) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
+
+func (a *api) ImportCommand(kind string, command string) {
+	switch strings.ToLower(kind) {
+	case "grpcurl":
+		args, _ := shlex.Split(command)
+		flags := flag.NewFlagSet("grpcurl", flag.ContinueOnError)
+		data := flags.String("d", "", "")
+		var header multiString
+
+		flags.Var(&header, "H", "")
+		flags.Var(&header, "rpc-header", "")
+
+		flags.Parse(args[1:])
+
+		var method string
+		for _, arg := range flags.Args() {
+			if strings.ContainsRune(arg, '/') {
+				method = "/" + arg
+			}
+		}
+		
+		a.emitServicesSelect(method)
+		a.SelectMethod(method, *data)
 	}
 }
