@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/protobuf v1.4.3
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-version v1.2.1
 	github.com/jhump/protoreflect v1.7.0
@@ -17,7 +18,7 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/wailsapp/wails v1.9.1
+	github.com/wailsapp/wails v1.11.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/net v0.0.0-20201022231255-08b38378de70 // indirect
 	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect

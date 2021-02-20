@@ -7,18 +7,23 @@
   let servicesSelect = []
   let serviceOptions = [];
   let serviceSelected;
-  wails.Events.On("wombat:services_select_changed", (data = []) => {
+  wails.Events.On("wombat:services_select_changed", (data = [], methodFullName) => {
     reset()
     servicesSelect = data;
     serviceOptions = data.map((s, i) => ({value: i, label: s.full_name}))
-    if (serviceOptions.length > 0) {
+    if (methodFullName) {
+      serviceSelected = serviceOptions.find(it => methodFullName.startsWith(`/${it.label}/`))
+      initServiceSelection(serviceOptions.findIndex(serviceSelected))
+      methodSelected = methodOptions.find(it => it.label == methodFullName)
+    } else if (serviceOptions.length > 0) {
       serviceSelected = serviceOptions[0]
     }
   });
 
   let methodOptions = []
   let methodSelected;
-  const serviceSelectionChanged = ({ detail: { value } }) => {
+
+  const initServiceSelection = (value) => {
     methodSelected = undefined;
     methodOptions = servicesSelect[value].methods.map(m => ({
       value: m.full_name, 
@@ -26,13 +31,17 @@
       client_stream: m.client_stream,
       server_stream: m.server_stream,
     }))
+  }
+
+  const serviceSelectionChanged = ({ detail: { value } }) => {
+    initServiceSelection(value)
     if (methodOptions.length > 0) {
       methodSelected = methodOptions[0]
     }
   }
 
   const methodSelectionChanged = ({ detail: { value } }) => {
-    backend.api.SelectMethod(value);
+    backend.api.SelectMethod(value, "");
   }
 
   const dispatch = createEventDispatcher();

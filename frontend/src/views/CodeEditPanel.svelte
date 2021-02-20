@@ -4,13 +4,13 @@
   import Button from '../controls/Button.svelte';
 
   let EditorContainer;
+  let Editor
 
   export let commands;
-  export let onClose;
 
   onMount(() => {
     const model = monaco.editor.createModel(commands.grpcurl, "shell");
-    monaco.editor.create(EditorContainer, {
+    Editor = monaco.editor.create(EditorContainer, {
       model,
       minimap: { enabled: false },
       wordWrap: 'on',
@@ -32,12 +32,14 @@
     });
   });
 
-  const onImportClicked = () => {};
-
   const { close } = getContext('modal');
+  const onImportClicked = async () => {
+    close();
+    await backend.api.ImportCommand("grpcurl", Editor.getValue())
+  };
+
   const onCloseClicked = () => {
     close();
-    onClose();
   }
 </script>
 

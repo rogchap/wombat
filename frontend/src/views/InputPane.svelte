@@ -29,15 +29,19 @@
     }
   }
   
-  wails.Events.On("wombat:method_input_changed", async data => {
+  wails.Events.On("wombat:method_input_changed", async (data, initState) => {
     reset();
     if (!data) {
       return
     }
     methodInput = data.message;
-    const rawState = await backend.api.GetRawMessageState(data.full_name);
-    if (rawState) {
-      state = JSON.parse(rawState);
+    if (initState) {
+      state = JSON.parse(initState);
+    } else {
+      const rawState = await backend.api.GetRawMessageState(data.full_name);
+      if (rawState) {
+        state = JSON.parse(rawState);
+      }
     }
   });
 
@@ -57,7 +61,7 @@
   const { open } = getContext('modal')
   const onEdit = async ({ detail: { method } }) => {
     const commands = await backend.api.ExportCommands(method, JSON.stringify(state), metadata)
-    open(CodeEditPanel, { commands, onClose: () => {} })
+    open(CodeEditPanel, { commands })
   }
 
 </script>
