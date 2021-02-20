@@ -453,11 +453,11 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) 
 		}
 	}
 
-	a.emitServicesSelect("")
+	a.emitServicesSelect("", "")
 	return nil
 }
 
-func (a *api) emitServicesSelect(method string) {
+func (a *api) emitServicesSelect(method string, data string) {
 	if a.protofiles == nil {
 		return
 	}
@@ -497,7 +497,7 @@ func (a *api) emitServicesSelect(method string) {
 		return ss[i].FullName < ss[j].FullName
 	})
 
-	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method)
+	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method, data)
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
@@ -1029,7 +1029,6 @@ func (a *api) ImportCommand(kind string, command string) {
 			}
 		}
 		
-		a.emitServicesSelect(method)
-		a.SelectMethod(method, *data)
+		a.emitServicesSelect(method, *data)
 	}
 }
