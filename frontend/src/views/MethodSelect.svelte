@@ -11,22 +11,6 @@
   let methodSelected;
   let holdon = false;
 
-  wails.Events.On("wombat:services_select_changed", async (data = [], methodFullName, initState) => {
-    reset()
-    servicesSelect = data;
-    serviceOptions = data.map((s, i) => ({value: i, label: s.full_name}))
-    if (methodFullName) {
-      holdon = true;
-      serviceSelected = serviceOptions.find(it => methodFullName.startsWith(`/${it.label}/`))
-      initServiceSelection(serviceOptions.indexOf(serviceSelected))
-      methodSelected = methodOptions.find(it => it.value == methodFullName)
-      await backend.api.SelectMethod(value, initState);
-      holdon = false;
-    } else if (serviceOptions.length > 0) {
-      serviceSelected = serviceOptions[0]
-    }
-  });
-
   const initServiceSelection = (value) => {
     methodSelected = undefined;
     methodOptions = servicesSelect[value].methods.map(m => ({
@@ -36,6 +20,22 @@
       server_stream: m.server_stream,
     }))
   }
+
+  wails.Events.On("wombat:services_select_changed", async (data = [], methodFullName, initState) => {
+    reset()
+    servicesSelect = data;
+    serviceOptions = data.map((s, i) => ({value: i, label: s.full_name}))
+    if (methodFullName) {
+      holdon = true;
+      serviceSelected = serviceOptions.find(it => methodFullName.startsWith(`/${it.label}/`))
+      initServiceSelection(serviceOptions.indexOf(serviceSelected))
+      methodSelected = methodOptions.find(it => it.value == methodFullName)
+      await backend.api.SelectMethod(methodSelected.value, initState);
+      holdon = false;
+    } else if (serviceOptions.length > 0) {
+      serviceSelected = serviceOptions[0]
+    }
+  });
 
   const serviceSelectionChanged = ({ detail: { value } }) => {
     if (holdon) return
@@ -47,6 +47,7 @@
 
   const methodSelectionChanged = ({ detail: { value } }) => {
     if (holdon) return
+    console.log(value)
     backend.api.SelectMethod(value, "");
   }
 
