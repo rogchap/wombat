@@ -21,7 +21,7 @@
     }))
   }
 
-  wails.Events.On("wombat:services_select_changed", async (data = [], methodFullName, initState) => {
+  wails.Events.On("wombat:services_select_changed", async (data = [], methodFullName, initState, metadata) => {
     reset()
     servicesSelect = data;
     serviceOptions = data.map((s, i) => ({value: i, label: s.full_name}))
@@ -30,7 +30,7 @@
       serviceSelected = serviceOptions.find(it => methodFullName.startsWith(`/${it.label}/`))
       initServiceSelection(serviceOptions.indexOf(serviceSelected))
       methodSelected = methodOptions.find(it => it.value == methodFullName)
-      await backend.api.SelectMethod(methodSelected.value, initState);
+      await backend.api.SelectMethod(methodSelected.value, initState, metadata);
       holdon = false;
     } else if (serviceOptions.length > 0) {
       serviceSelected = serviceOptions[0]
@@ -48,7 +48,7 @@
   const methodSelectionChanged = ({ detail: { value } }) => {
     if (holdon) return
     console.log(value)
-    backend.api.SelectMethod(value, "");
+    backend.api.SelectMethod(value, "", []);
   }
 
   const dispatch = createEventDispatcher();

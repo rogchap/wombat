@@ -29,7 +29,7 @@
     }
   }
   
-  wails.Events.On("wombat:method_input_changed", async (data, initState) => {
+  wails.Events.On("wombat:method_input_changed", async (data, initState, m) => {
     reset();
     if (!data) {
       return
@@ -41,6 +41,7 @@
       const rawState = await backend.api.GetRawMessageState(data.full_name);
       if (rawState) {
         state = JSON.parse(rawState);
+        metadata = m
       }
     }
   });

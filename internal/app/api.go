@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	protoV1 "github.com/golang/protobuf/proto"
-	"github.com/google/shlex"
 	"github.com/mitchellh/mapstructure"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
@@ -453,15 +451,15 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) 
 		}
 	}
 
-	a.emitServicesSelect("", "")
-	return nil
+	return a.emitServicesSelect("", "", nil)
 }
 
-func (a *api) emitServicesSelect(method string, data string) {
+func (a *api) emitServicesSelect(method string, data string, metadata headers) error {
 	if a.protofiles == nil {
-		return
+		return nil
 	}
 
+	var targetMd protoreflect.MethodDescriptor
 	var ss servicesSelect
 	a.protofiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		sds := fd.Services()
@@ -474,6 +472,9 @@ func (a *api) emitServicesSelect(method string, data string) {
 			for j := 0; j < mds.Len(); j++ {
 				md := mds.Get(j)
 				fname := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
+				if fname == method {
+					targetMd = md
+				}
 				s.Methods = append(s.Methods, methodSelect{
 					Name:         string(md.Name()),
 					FullName:     fname,
@@ -490,14 +491,18 @@ func (a *api) emitServicesSelect(method string, data string) {
 	})
 
 	if len(ss) == 0 {
-		return
+		return nil
 	}
 
 	sort.SliceStable(ss, func(i, j int) bool {
 		return ss[i].FullName < ss[j].FullName
 	})
 
-	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method, data)
+	if method != "" && targetMd == nil {
+		return fmt.Errorf("Method '%s' not found. ", method)
+	}
+	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method, data, metadata)
+	return nil
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
@@ -572,7 +577,7 @@ func (a *api) getMethodDesc(fullname string) (protoreflect.MethodDescriptor, err
 }
 
 // SelectMethod is called when the user selects a new method by the given name
-func (a *api) SelectMethod(fullname string, initState string) (rerr error) {
+func (a *api) SelectMethod(fullname string, initState string, metadata interface{}) (rerr error) {
 	defer func() {
 		if rerr != nil {
 			const errTitle = "Failed to select method"
@@ -596,8 +601,13 @@ func (a *api) SelectMethod(fullname string, initState string) (rerr error) {
 		FullName: fullname,
 		Message:  in,
 	}
-	a.runtime.Events.Emit(eventMethodInputChanged, m, initState)
 
+	var hs headers
+	if err := mapstructure.Decode(metadata, &hs); err != nil {
+		a.runtime.Events.Emit(eventMethodInputChanged, m, initState)
+	} else {
+		a.runtime.Events.Emit(eventMethodInputChanged, m, initState, hs)
+	}
 	return nil
 }
 
@@ -998,37 +1008,24 @@ func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface
 	}
 }
 
-type multiString []string
+func (a *api) ImportCommand(kind string, command string) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Failed to import command"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
 
-func (s *multiString) String() string {
-	return strings.Join(*s, ",")
-}
-
-func (s *multiString) Set(value string) error {
-	*s = append(*s, value)
-	return nil
-}
-
-func (a *api) ImportCommand(kind string, command string) {
 	switch strings.ToLower(kind) {
 	case "grpcurl":
-		args, _ := shlex.Split(command)
-		flags := flag.NewFlagSet("grpcurl", flag.ContinueOnError)
-		data := flags.String("d", "", "")
-		var header multiString
-
-		flags.Var(&header, "H", "")
-		flags.Var(&header, "rpc-header", "")
-
-		flags.Parse(args[1:])
-
-		var method string
-		for _, arg := range flags.Args() {
-			if strings.ContainsRune(arg, '/') {
-				method = "/" + arg
-			}
+		args, err := ParseGrpcurlCommand(command)
+		if err != nil {
+			return err
 		}
-		
-		a.emitServicesSelect(method, *data)
+
+		return a.emitServicesSelect("/" + args.Method, args.Data, args.Metadata)
 	}
+
+	return nil
 }
