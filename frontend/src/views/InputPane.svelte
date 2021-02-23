@@ -42,7 +42,6 @@
       const rawState = await backend.api.GetRawMessageState(data.full_name);
       if (rawState) {
         state = JSON.parse(rawState);
-        metadata = m
       }
     }
   });
