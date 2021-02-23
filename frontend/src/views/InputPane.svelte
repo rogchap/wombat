@@ -37,6 +37,7 @@
     methodInput = data.message;
     if (initState) {
       state = JSON.parse(initState);
+      metadata = m
     } else {
       const rawState = await backend.api.GetRawMessageState(data.full_name);
       if (rawState) {

@@ -47,7 +47,6 @@
 
   const methodSelectionChanged = ({ detail: { value } }) => {
     if (holdon) return
-    console.log(value)
     backend.api.SelectMethod(value, "", []);
   }
 

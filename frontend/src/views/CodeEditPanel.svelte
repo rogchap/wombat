@@ -37,10 +37,6 @@
     close();
     await backend.api.ImportCommand("grpcurl", Editor.getValue())
   };
-
-  const onCloseClicked = () => {
-    close();
-  }
 </script>
 
 <div class="code-edit-panel">
@@ -48,7 +44,7 @@
   <div bind:this={EditorContainer} class="editor-container" />
   <div class="spacer" />
   <footer>
-    <Button text="Close" on:click={onCloseClicked} />
+    <Button text="Close" on:click={close} />
     <Button
       text="Import"
       bgColor="var(--accent-color3)"
