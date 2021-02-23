@@ -30,7 +30,7 @@
       serviceSelected = serviceOptions.find(it => methodFullName.startsWith(`/${it.label}/`))
       initServiceSelection(serviceOptions.indexOf(serviceSelected))
       methodSelected = methodOptions.find(it => it.value == methodFullName)
-      await backend.api.SelectMethod(methodSelected.value, initState, metadata);
+      await backend.api.SelectMethod(methodSelected.value, initState ?? "{}", metadata ?? []);
       holdon = false;
     } else if (serviceOptions.length > 0) {
       serviceSelected = serviceOptions[0]
