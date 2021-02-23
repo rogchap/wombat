@@ -984,7 +984,7 @@ func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface
 		if len(h.Key) == 0 {
 			continue
 		}
-		sb.WriteString("    -H '")
+		sb.WriteString("    -rpc-header '")
 		sb.WriteString(h.Key)
 		sb.WriteString(":")
 		sb.WriteString(h.Val)
@@ -997,6 +997,15 @@ func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface
 	}
 	if option.Insecure {
 		sb.WriteString("    -insecure \\\n")
+	}
+	if hds, err := a.GetReflectMetadata(option.Addr); err == nil {
+		for _, h := range hds {
+			sb.WriteString("    -reflect-header '")
+			sb.WriteString(h.Key)
+			sb.WriteString(":")
+			sb.WriteString(h.Val)
+			sb.WriteString("' \\\n")
+		}
 	}
 	sb.WriteString("    ")
 	sb.WriteString(option.Addr)
