@@ -499,7 +499,7 @@ func (a *api) emitServicesSelect(method string, data string, metadata headers) e
 	})
 
 	if method != "" && targetMd == nil {
-		return fmt.Errorf("Method '%s' not found. ", method)
+		return fmt.Errorf("method %q not found. ", method)
 	}
 	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method, data, metadata)
 	return nil
@@ -1028,7 +1028,7 @@ func (a *api) ImportCommand(kind string, command string) (rerr error) {
 
 	switch strings.ToLower(kind) {
 	case "grpcurl":
-		args, err := ParseGrpcurlCommand(command)
+		args, err := parseGrpcurlCommand(command)
 		if err != nil {
 			return err
 		}

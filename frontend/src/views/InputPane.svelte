@@ -1,6 +1,4 @@
 <script>
-	import { getContext } from 'svelte';
-
   import Tab from "../controls/Tab.svelte";
   import Tabs from "../controls/Tabs.svelte";
   import TabList from "../controls/TabList.svelte";
@@ -9,6 +7,7 @@
   import MethodInput from "./MethodInput.svelte";
   import RequestMetadata from "./RequestMetadata.svelte";
   import CodeEditPanel from "./CodeEditPanel.svelte";
+  import { getContext } from 'svelte';
 
   let methodInput = {
     full_name: "",
@@ -28,7 +27,7 @@
       metadata = [];
     }
   }
-  
+
   wails.Events.On("wombat:method_input_changed", async (data, initState, m) => {
     reset();
     if (!data) {

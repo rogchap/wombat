@@ -1,8 +1,8 @@
 package app
 
 import (
+	"errors"
 	"flag"
-	"fmt"
 	"strings"
 
 	"github.com/google/shlex"
@@ -10,8 +10,8 @@ import (
 
 type multiString []string
 
-func (s *multiString) String() string {
-	return strings.Join(*s, ",")
+func (s multiString) String() string {
+	return strings.Join(s, ",")
 }
 
 func (s *multiString) Set(value string) error {
@@ -19,16 +19,14 @@ func (s *multiString) Set(value string) error {
 	return nil
 }
 
-// GrpcurlArguments parsed grpcurl command arguments
-type GrpcurlArguments struct {
-	Target string `json:"target"`
-	Method string `json:"method"`
+type grpcurlArguments struct {
+	Target   string  `json:"target"`
+	Method   string  `json:"method"`
 	Metadata headers `json:"metadata"`
-	Data string `json:"data"`
+	Data     string  `json:"data"`
 }
 
-// ParseGrpcurlCommand parse grpcurl command
-func ParseGrpcurlCommand(command string) (*GrpcurlArguments, error) {
+func parseGrpcurlCommand(command string) (*grpcurlArguments, error) {
 	args, _ := shlex.Split(command)
 	for index, arg := range args {
 		if strings.TrimSpace(arg) == "" {
@@ -37,17 +35,17 @@ func ParseGrpcurlCommand(command string) (*GrpcurlArguments, error) {
 	}
 
 	if len(args) == 0 {
-		return nil, fmt.Errorf("Empty grpcurl command. ")
+		return nil, errors.New("empty grpcurl command")
 	}
 
 	if strings.ToLower(args[0]) != "grpcurl" {
-		return nil, fmt.Errorf("Invalid grpcurl command. ")
+		return nil, errors.New("invalid grpcurl command: must start with 'grpcurl'")
 	}
 
 	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
-
+	// ignore flags
 	_ = flags.Bool("help", false, "")
-	_ = flags.Bool("version", false,"")
+	_ = flags.Bool("version", false, "")
 	_ = flags.Bool("plaintext", false, "")
 	_ = flags.Bool("insecure", false, "")
 	_ = flags.String("cacert", "", "")
@@ -56,8 +54,6 @@ func ParseGrpcurlCommand(command string) (*GrpcurlArguments, error) {
 	_ = flags.Bool("expand-headers", false, "")
 	_ = flags.String("authority", "", "")
 	_ = flags.String("user-agent", "", "")
-	data := flags.String("d", "", "")
-	format := flags.String("format", "json", "")
 	_ = flags.Bool("allow-unknown-fields", false, "")
 	_ = flags.Float64("connect-timeout", 0, "")
 	_ = flags.Bool("format-error", false, "")
@@ -72,16 +68,15 @@ func ParseGrpcurlCommand(command string) (*GrpcurlArguments, error) {
 	_ = flags.String("servername", "", "")
 	_ = flags.Bool("use-reflection", false, "")
 
-	if *format != "" && *format != "json" {
-		return nil, fmt.Errorf("Data format must be json. ")
+	var data, format string
+	flags.StringVar(&data,"d", "", "")
+	flags.StringVar(&format, "format", "json", "")
+
+	if format != "" && format != "json" {
+		return nil, errors.New("data format must be json")
 	}
 
-	var protoset      multiString
-	var protoFiles    multiString
-	var importPaths   multiString
-	var addlHeaders   multiString
-	var rpcHeaders    multiString
-	var reflHeaders   multiString
+	var protoset, protoFiles, importPaths, addlHeaders, rpcHeaders, reflHeaders  multiString
 	flags.Var(&addlHeaders, "H", "")
 	flags.Var(&rpcHeaders, "rpc-header", "")
 	flags.Var(&reflHeaders, "reflect-header", "")
@@ -96,27 +91,27 @@ func ParseGrpcurlCommand(command string) (*GrpcurlArguments, error) {
 
 	grpcurlArgs := flags.Args()
 	if len(grpcurlArgs) != 2 {
-		return nil, fmt.Errorf("Invalid grpcurl arguments. ")
+		return nil, errors.New("invalid grpcurl arguments")
 	}
 
 	var metadata headers
 
 	for _, headerValue := range append(addlHeaders, rpcHeaders...) {
 		headerData := strings.Split(headerValue, ":")
-		
+
 		if len(headerData) != 2 {
 			continue
 		}
-		metadata = append(metadata, header {
+		metadata = append(metadata, header{
 			Key: headerData[0],
 			Val: headerData[1],
 		})
 	}
 
-	return &GrpcurlArguments {
-		Target: grpcurlArgs[0],
-		Method: grpcurlArgs[1],
-		Data: *data,
+	return &grpcurlArguments{
+		Target:   grpcurlArgs[0],
+		Method:   grpcurlArgs[1],
+		Data:     data,
 		Metadata: metadata,
 	}, nil
 }
