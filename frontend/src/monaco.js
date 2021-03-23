@@ -1,4 +1,5 @@
 import "monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution";
+import "monaco-editor/esm/vs/basic-languages/shell/shell.contribution";
 import "monaco-editor/esm/vs/editor/editor.api";
 import "./monaco.css";
 

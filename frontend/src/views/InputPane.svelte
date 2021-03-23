@@ -6,6 +6,8 @@
   import MethodSelect from "./MethodSelect.svelte";
   import MethodInput from "./MethodInput.svelte";
   import RequestMetadata from "./RequestMetadata.svelte";
+  import CodeEditPanel from "./CodeEditPanel.svelte";
+  import { getContext } from 'svelte';
 
   let methodInput = {
     full_name: "",
@@ -25,16 +27,21 @@
       metadata = [];
     }
   }
-  
-  wails.Events.On("wombat:method_input_changed", async data => {
+
+  wails.Events.On("wombat:method_input_changed", async (data, initState, m) => {
     reset();
     if (!data) {
       return
     }
     methodInput = data.message;
-    const rawState = await backend.api.GetRawMessageState(data.full_name);
-    if (rawState) {
-      state = JSON.parse(rawState);
+    if (initState) {
+      state = JSON.parse(initState);
+      metadata = m
+    } else {
+      const rawState = await backend.api.GetRawMessageState(data.full_name);
+      if (rawState) {
+        state = JSON.parse(rawState);
+      }
     }
   });
 
@@ -51,6 +58,12 @@
     // console.log(method, state, metadata);
   }
 
+  const { open } = getContext('modal')
+  const onEdit = async ({ detail: { method } }) => {
+    const commands = await backend.api.ExportCommands(method, JSON.stringify(state), metadata)
+    open(CodeEditPanel, { commands })
+  }
+
 </script>
 
 <style>
@@ -61,7 +74,7 @@
 </style>
 
 <div class="input-pane">
-  <MethodSelect on:send={onSend} />
+  <MethodSelect on:send={onSend} on:edit={onEdit}/>
   <Tabs>
     <TabList>
       <Tab>Request</Tab>

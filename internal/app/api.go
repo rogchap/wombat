@@ -451,15 +451,15 @@ func (a *api) loadProtoFiles(opts options, reflectHeaders headers, silent bool) 
 		}
 	}
 
-	a.emitServicesSelect()
-	return nil
+	return a.emitServicesSelect("", "", nil)
 }
 
-func (a *api) emitServicesSelect() {
+func (a *api) emitServicesSelect(method string, data string, metadata headers) error {
 	if a.protofiles == nil {
-		return
+		return nil
 	}
 
+	var targetMd protoreflect.MethodDescriptor
 	var ss servicesSelect
 	a.protofiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		sds := fd.Services()
@@ -472,6 +472,9 @@ func (a *api) emitServicesSelect() {
 			for j := 0; j < mds.Len(); j++ {
 				md := mds.Get(j)
 				fname := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
+				if fname == method {
+					targetMd = md
+				}
 				s.Methods = append(s.Methods, methodSelect{
 					Name:         string(md.Name()),
 					FullName:     fname,
@@ -488,14 +491,18 @@ func (a *api) emitServicesSelect() {
 	})
 
 	if len(ss) == 0 {
-		return
+		return nil
 	}
 
 	sort.SliceStable(ss, func(i, j int) bool {
 		return ss[i].FullName < ss[j].FullName
 	})
 
-	a.runtime.Events.Emit(eventServicesSelectChanged, ss)
+	if method != "" && targetMd == nil {
+		return fmt.Errorf("method %q not found. ", method)
+	}
+	a.runtime.Events.Emit(eventServicesSelectChanged, ss, method, data, metadata)
+	return nil
 }
 
 func (a *api) setWorkspaceOptions(opts options) {
@@ -570,7 +577,7 @@ func (a *api) getMethodDesc(fullname string) (protoreflect.MethodDescriptor, err
 }
 
 // SelectMethod is called when the user selects a new method by the given name
-func (a *api) SelectMethod(fullname string) (rerr error) {
+func (a *api) SelectMethod(fullname string, initState string, metadata interface{}) (rerr error) {
 	defer func() {
 		if rerr != nil {
 			const errTitle = "Failed to select method"
@@ -594,8 +601,13 @@ func (a *api) SelectMethod(fullname string) (rerr error) {
 		FullName: fullname,
 		Message:  in,
 	}
-	a.runtime.Events.Emit(eventMethodInputChanged, m)
 
+	var hs headers
+	if err := mapstructure.Decode(metadata, &hs); err != nil {
+		a.runtime.Events.Emit(eventMethodInputChanged, m, initState)
+	} else {
+		a.runtime.Events.Emit(eventMethodInputChanged, m, initState, hs)
+	}
 	return nil
 }
 
@@ -954,4 +966,75 @@ func (a *api) Cancel() {
 	if a.cancelInFlight != nil {
 		a.cancelInFlight()
 	}
+}
+
+// Export commands for call
+func (a *api) ExportCommands(method string, rawJSON []byte, rawHeaders interface{}) *commands {
+	var sb strings.Builder
+	sb.WriteString("grpcurl ")
+	sb.WriteString("-d '")
+	sb.Write(rawJSON)
+	sb.WriteString("' \\\n")
+
+	var hs headers
+	if err := mapstructure.Decode(rawHeaders, &hs); err != nil {
+		return nil
+	}
+	for _, h := range hs {
+		if len(h.Key) == 0 {
+			continue
+		}
+		sb.WriteString("    -rpc-header '")
+		sb.WriteString(h.Key)
+		sb.WriteString(":")
+		sb.WriteString(h.Val)
+		sb.WriteString("' \\\n")
+	}
+
+	option, _ := a.GetWorkspaceOptions()
+	if option.Plaintext {
+		sb.WriteString("    -plaintext \\\n")
+	}
+	if option.Insecure {
+		sb.WriteString("    -insecure \\\n")
+	}
+	if hds, err := a.GetReflectMetadata(option.Addr); err == nil {
+		for _, h := range hds {
+			sb.WriteString("    -reflect-header '")
+			sb.WriteString(h.Key)
+			sb.WriteString(":")
+			sb.WriteString(h.Val)
+			sb.WriteString("' \\\n")
+		}
+	}
+	sb.WriteString("    ")
+	sb.WriteString(option.Addr)
+	sb.WriteString(" ")
+	sb.WriteString(method[1:])
+
+	return &commands{
+		Grpcurl: sb.String(),
+	}
+}
+
+func (a *api) ImportCommand(kind string, command string) (rerr error) {
+	defer func() {
+		if rerr != nil {
+			const errTitle = "Failed to import command"
+			a.logger.Errorf(rerr.Error())
+			a.emitError(errTitle, rerr.Error())
+		}
+	}()
+
+	switch strings.ToLower(kind) {
+	case "grpcurl":
+		args, err := parseGrpcurlCommand(command)
+		if err != nil {
+			return err
+		}
+
+		return a.emitServicesSelect("/" + args.Method, args.Data, args.Metadata)
+	}
+
+	return nil
 }

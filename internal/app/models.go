@@ -131,3 +131,7 @@ type releaseInfo struct {
 	NewVersion string `json:"new_version"`
 	URL        string `json:"url"`
 }
+
+type commands struct {
+	Grpcurl string `json:"grpcurl"`
+}
