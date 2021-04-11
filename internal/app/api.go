@@ -709,6 +709,19 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyc
 	return fields, nil
 }
 
+func (a *api) RetryConnection() {
+	state := a.client.conn.GetState()
+	if state == connectivity.TransientFailure || state == connectivity.Shutdown {
+		// State is currently disconnected. Do a quick retry in case the server restarted recently.
+		a.client.conn.ResetConnectBackoff()
+		stateChanged := make(chan bool)
+		waitForStateChange := func(data ...interface{}) { stateChanged <- true }
+		a.runtime.Events.On(eventClientStateChanged, waitForStateChange)
+		// Wait for at least one retry to complete before continuing
+		<-stateChanged
+	}
+}
+
 func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr error) {
 	defer func() {
 		if rerr != nil {
@@ -717,6 +730,8 @@ func (a *api) Send(method string, rawJSON []byte, rawHeaders interface{}) (rerr 
 			a.emitError(errTitle, rerr.Error())
 		}
 	}()
+
+	a.RetryConnection()
 
 	md, err := a.getMethodDesc(method)
 	if err != nil {
@@ -1033,7 +1048,7 @@ func (a *api) ImportCommand(kind string, command string) (rerr error) {
 			return err
 		}
 
-		return a.emitServicesSelect("/" + args.Method, args.Data, args.Metadata)
+		return a.emitServicesSelect("/"+args.Method, args.Data, args.Metadata)
 	}
 
 	return nil
