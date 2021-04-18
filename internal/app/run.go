@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails"
 	"github.com/wailsapp/wails/cmd"
 
@@ -22,7 +21,7 @@ var (
 )
 
 // Run is the main function to run the application
-func Run() int {
+func Run(js string, css string) int {
 	appData, err := appDataLocation(appname)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open add data directory: %v\n", err)
@@ -34,17 +33,13 @@ func Run() int {
 		go server.Serve()
 	}
 
-	extra := mewn.String("./frontend/public/build/extra.css")
-	css := mewn.String("./frontend/public/build/bundle.css")
-	js := mewn.String("./frontend/public/build/bundle.js")
-
 	cfg := &wails.AppConfig{
 		Width:     1200,
 		Height:    820,
 		Resizable: true,
 		Title:     appname,
 		JS:        js,
-		CSS:       extra + css,
+		CSS:       css,
 		Colour:    "#2e3440",
 	}
 
