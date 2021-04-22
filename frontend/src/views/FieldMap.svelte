@@ -21,7 +21,11 @@
   let valType = field.map_value.kind;
 
   $: {
-    if (state[field.name] && mapItems[field.full_name]) {
+    if (!mapItems[field.full_name]) {
+      mapItems[field.full_name] = [];
+    }
+
+    if (state[field.name]) {
       const stateKeys = Object.keys(state[field.name])
       if (mapItems[field.full_name].length === 0 && stateKeys.length > 0) {
         stateKeys.forEach(k => {
@@ -37,9 +41,6 @@
       valType = field.map_value.message.name;
     }
 
-    if (!mapItems[field.full_name]) {
-      mapItems[field.full_name] = [];
-    }
 
     if (!state[field.name]) {
       state[field.name] = {};

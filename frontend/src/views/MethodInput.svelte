@@ -1,5 +1,9 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  import Button from "../controls/Button.svelte";
   import MessageField from "./MessageField.svelte";
+
+  let methodSelected;
 
   export let methodInput = {
     full_name: "",
@@ -8,6 +12,10 @@
 
   export let state;
   export let mapItems;
+
+  const dispatch = createEventDispatcher();
+  const onEdit = () => dispatch("edit");
+
 </script>
 
 <style>
@@ -24,6 +32,11 @@
     margin-left: var(--padding);
     flex-flow: column;
   }
+  .edit {
+    position: absolute;
+    bottom: var(--padding);
+    right: var(--padding);
+  }
 </style>
 
 <div class="method-input">
@@ -32,5 +45,14 @@
     {#each methodInput.fields || [] as field}
       <MessageField {field} {state} {mapItems} />
     {/each}
+  </div>
+  <div class="edit">
+    <Button 
+      text="Edit"
+      color={isWin ? "#81a1c1" : "var(--accent-color2)"}
+      bgColor="transparent"
+      style="min-width:auto"
+      on:click={onEdit}
+    />
   </div>
 </div>

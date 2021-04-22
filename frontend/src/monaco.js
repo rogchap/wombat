@@ -19,6 +19,7 @@ monaco.editor.defineTheme("nord-dark", {
         "editor.background": "#2e3440",
         "editor.selectionBackground": "#4c566a",
         "editor.inactiveSelectionBackground": "#434c5e",
+        "editor.lineHighlightBorder": "#2e3440",
         "scrollbarSlider.background": "#3b4252",
         "scrollbarSlider.hoverBackground" : "#434c5e",
         "scrollbarSlider.activeBackground" : "#4c566a",

@@ -52,12 +52,11 @@
 
   const dispatch = createEventDispatcher();
   const onSend = () => {
-    dispatch("send", { method: methodSelected.value })
+    dispatch("send", { method: methodSelected.value });
   }
 
-  const onEdit = () => {
-    dispatch("edit", { method: methodSelected.value })
-  }
+  $: dispatch("selected", { method: methodSelected });
+
 
   const reset = () => {
     serviceOptions = [];
@@ -83,11 +82,6 @@
   <Dropdown frameless isSearchable items={serviceOptions} titleProp="label" selectedValue={serviceSelected} on:select={serviceSelectionChanged} />
   <Dropdown frameless isSearchable Item={MethodSelectItem} items={methodOptions} bind:selectedValue={methodSelected} on:select={methodSelectionChanged} />
   <div class="spacer" />
-  <Button 
-    text="Edit"
-    color={isWin ? "#88c0d0" : "var(--primary-color)"}
-    on:click={onEdit}
-    />
   <Button 
     text="Send"
     color={isWin ? "#88c0d0" : "var(--primary-color)"}
