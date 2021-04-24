@@ -716,7 +716,7 @@ func (a *api) RetryConnection() {
 		a.client.conn.ResetConnectBackoff()
 		stateChanged := make(chan bool)
 		waitForStateChange := func(data ...interface{}) { stateChanged <- true }
-		a.runtime.Events.On(eventClientStateChanged, waitForStateChange)
+		a.runtime.Events.Once(eventClientStateChanged, waitForStateChange)
 		// Wait for at least one retry to complete before continuing
 		<-stateChanged
 	}
