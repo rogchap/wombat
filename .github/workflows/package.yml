@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-    - v*
+      - v*
 
 jobs:
   package:
@@ -11,167 +11,166 @@ jobs:
         platform: [macos-10.15, ubuntu-16.04, windows-2019]
     runs-on: ${{ matrix.platform }}
     steps:
-    - name: Get version tag (unix)
-      if: matrix.platform != 'windows-2019'
-      id: version
-      run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+      - name: Get version tag (unix)
+        if: matrix.platform != 'windows-2019'
+        id: version
+        run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
 
-    - name: Get version tag (windows)
-      if: matrix.platform == 'windows-2019'
-      id: versionw
-      run: |
-        $tag = $env:GITHUB_REF -replace "refs/tags/", ""
-        echo "::set-output name=tag::$(echo $tag)"
+      - name: Get version tag (windows)
+        if: matrix.platform == 'windows-2019'
+        id: versionw
+        run: |
+          $tag = $env:GITHUB_REF -replace "refs/tags/", ""
+          echo "::set-output name=tag::$(echo $tag)"
 
-    - name: Install Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Chechout
-      uses: actions/checkout@v2
+      - name: Chechout
+        uses: actions/checkout@v2
 
-    - name: Install Wails
-      run: go get github.com/wailsapp/wails/cmd/wails@v1.16.2
+      - name: Install Wails
+        run: go get github.com/wailsapp/wails/cmd/wails@v1.16.3
 
-    # darwin
-    - name: Build for darwin
-      if: matrix.platform == 'macos-10.15'
-      run: |
-        mkdir -p ~/.wails
-        cp wails.json ~/.wails/
-        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.tag }}" info.plist
-        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.tag }}" info.plist
-        wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
+      # darwin
+      - name: Build for darwin
+        if: matrix.platform == 'macos-10.15'
+        run: |
+          mkdir -p ~/.wails
+          cp wails.json ~/.wails/
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.tag }}" info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.tag }}" info.plist
+          wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
 
-    - name: Create darwin disk image
-      if: matrix.platform == 'macos-10.15'
-      run: |
-        brew install create-dmg
-        rm build/wombat
-        create-dmg --volname "Wombat" --volicon "assets/darwin/dmg_icon.icns" --background "assets/darwin/dmg_bg.png" --window-size 512 360 --icon-size 100 --icon "Wombat.app" 100 185  --hide-extension "Wombat.app" --app-drop-link 388 185 "Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg" "build"
+      - name: Create darwin disk image
+        if: matrix.platform == 'macos-10.15'
+        run: |
+          brew install create-dmg
+          rm build/wombat
+          create-dmg --volname "Wombat" --volicon "assets/darwin/dmg_icon.icns" --background "assets/darwin/dmg_bg.png" --window-size 512 360 --icon-size 100 --icon "Wombat.app" 100 185  --hide-extension "Wombat.app" --app-drop-link 388 185 "Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg" "build"
 
-    - name: Upload darwin disk image
-      if: matrix.platform == 'macos-10.15'
-      uses: actions/upload-artifact@v2
-      with:
-        name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
-        path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+      - name: Upload darwin disk image
+        if: matrix.platform == 'macos-10.15'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+          path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
 
-    # linux
-    - name: Build for linux
-      if: matrix.platform == 'ubuntu-16.04'
-      run: |
-        sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
-        mkdir -p ~/.wails
-        cp wails.json ~/.wails/
-        wails build -f -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
-        tar -C build -zcvf Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz wombat
+      # linux
+      - name: Build for linux
+        if: matrix.platform == 'ubuntu-16.04'
+        run: |
+          sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+          mkdir -p ~/.wails
+          cp wails.json ~/.wails/
+          wails build -f -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
+          tar -C build -zcvf Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz wombat
 
-    - name: Upload linux tar.gz
-      if: matrix.platform == 'ubuntu-16.04'
-      uses: actions/upload-artifact@v2
-      with:
-        name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
-        path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+      - name: Upload linux tar.gz
+        if: matrix.platform == 'ubuntu-16.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+          path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
 
-    # - name: Create linux app image
-    #   if: matrix.platform == 'ubuntu-16.04'
-    #   run: |
-    #     wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-    #     chmod +x linuxdeploy-x86_64.AppImage
-    #     mogrify -resize 512x512 appicon.png
-    #     ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output appimage 
-    #     mv Wombat*.AppImage Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+      # - name: Create linux app image
+      #   if: matrix.platform == 'ubuntu-16.04'
+      #   run: |
+      #     wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+      #     chmod +x linuxdeploy-x86_64.AppImage
+      #     mogrify -resize 512x512 appicon.png
+      #     ./linuxdeploy*.AppImage --appdir AppDir --executable build/wombat --desktop-file AppImage.desktop --icon-file appicon.png --output appimage
+      #     mv Wombat*.AppImage Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
 
-    # - name: Upload linux app image
-    #   if: matrix.platform == 'ubuntu-16.04'
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-    #     path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+      # - name: Upload linux app image
+      #   if: matrix.platform == 'ubuntu-16.04'
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+      #     path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
 
-    # windows
-    - name: Build for windows
-      if: matrix.platform == 'windows-2019'
-      run: |
-        New-Item -ItemType directory -Path "$HOME\.wails" -Force
-        Copy-Item -Path "$PWD\wails.json" -Destination "$HOME\.wails\wails.json"
-        choco install mingw
-        wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.versionw.outputs.tag }}"
-        Compress-Archive -Path "$PWD\build\wombat.exe" -DestinationPath "$PWD\Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip"
+      # windows
+      - name: Build for windows
+        if: matrix.platform == 'windows-2019'
+        run: |
+          New-Item -ItemType directory -Path "$HOME\.wails" -Force
+          Copy-Item -Path "$PWD\wails.json" -Destination "$HOME\.wails\wails.json"
+          choco install mingw
+          wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.versionw.outputs.tag }}"
+          Compress-Archive -Path "$PWD\build\wombat.exe" -DestinationPath "$PWD\Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip"
 
-    - name: Upload windows zip
-      if: matrix.platform == 'windows-2019'
-      uses: actions/upload-artifact@v2
-      with:
-        name: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
-        path: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
+      - name: Upload windows zip
+        if: matrix.platform == 'windows-2019'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
+          path: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
 
   release:
     runs-on: ubuntu-latest
     needs: package
     steps:
-    - name: Get version tag
-      id: version
-      run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+      - name: Get version tag
+        id: version
+        run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
 
-    - name: Get changelog url
-      id: changelog
-      run: echo "${{ steps.version.outputs.tag }}---$(date +'%Y-%m-%d')" | sed -e 's/\.//g' | awk '{print "::set-output name=url::https://github.com/rogchap/wombat/blob/master/CHANGELOG.md#" $1}'
+      - name: Get changelog url
+        id: changelog
+        run: echo "${{ steps.version.outputs.tag }}---$(date +'%Y-%m-%d')" | sed -e 's/\.//g' | awk '{print "::set-output name=url::https://github.com/rogchap/wombat/blob/master/CHANGELOG.md#" $1}'
 
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version.outputs.tag }}
-        release_name: ${{ steps.version.outputs.tag }}
-        body: Full changelog ⇒ [${{ steps.version.outputs.tag }}](${{ steps.changelog.outputs.url }})
-        draft: true
-        prerelease: false
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: ${{ steps.version.outputs.tag }}
+          body: Full changelog ⇒ [${{ steps.version.outputs.tag }}](${{ steps.changelog.outputs.url }})
+          draft: true
+          prerelease: false
 
-    - name: Download all release pacakges
-      uses: actions/download-artifact@v2
+      - name: Download all release pacakges
+        uses: actions/download-artifact@v2
 
-    - name: Attach darwin disk image
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg/Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
-        asset_name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
-        asset_content_type: application/octet-stream
+      - name: Attach darwin disk image
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg/Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+          asset_name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
+          asset_content_type: application/octet-stream
 
-    - name: Attach linux tar.gz
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
-        asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
-        asset_content_type: application/octet-stream
+      - name: Attach linux tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+          asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
+          asset_content_type: application/octet-stream
 
-    # - name: Attach linux app image
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-    #     asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
-    #     asset_content_type: application/octet-stream
+      # - name: Attach linux app image
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage/Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+      #     asset_name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.AppImage
+      #     asset_content_type: application/octet-stream
 
-    - name: Attach windows zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip/Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
-        asset_name: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
-        asset_content_type: application/octet-stream
-
+      - name: Attach windows zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip/Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
+          asset_name: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
+          asset_content_type: application/octet-stream

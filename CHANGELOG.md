@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support export/import request to/from grpcurl command. Thanks to [@devkanro](https://github.com/devkanro) & [@iou90](https://github.com/iou90)
+
+### Fixed
+- Update dependencies to fix an issue with newer versions of webkit2gtk. Thanks to [@aschey](https://github.com/aschey)
+
 ## [v0.4.0] - 2021-01-13
 
 ### Added

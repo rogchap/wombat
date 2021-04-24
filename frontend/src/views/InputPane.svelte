@@ -7,7 +7,7 @@
   import MethodInput from "./MethodInput.svelte";
   import RequestMetadata from "./RequestMetadata.svelte";
   import CodeEditPanel from "./CodeEditPanel.svelte";
-  import { getContext } from 'svelte';
+  import { getContext, tick } from 'svelte';
 
   let methodInput = {
     full_name: "",
@@ -16,27 +16,31 @@
   let state = {};
   let metadata = [];
   let mapItems = {};
+  let methodSelected = undefined;
 
   const reset = all => {
     methodInput = {
       full_name: "",
       fields: [],
     }
-    state = {}
+    state = {};
+    mapItems = {};
     if (all) {
       metadata = [];
     }
+
+    return tick();
   }
 
   wails.Events.On("wombat:method_input_changed", async (data, initState, m) => {
-    reset();
+    await reset();
     if (!data) {
       return
     }
     methodInput = data.message;
     if (initState) {
       state = JSON.parse(initState);
-      metadata = m
+      metadata = m;
     } else {
       const rawState = await backend.api.GetRawMessageState(data.full_name);
       if (rawState) {
@@ -46,7 +50,7 @@
   });
 
   wails.Events.On("wombat:client_connect_started", async (addr) => {
-    reset(true)
+    await reset(true)
     const m = await backend.api.GetMetadata(addr);
     if (m) {
       metadata = m;
@@ -58,9 +62,12 @@
     // console.log(method, state, metadata);
   }
 
+  const onSelected = ({ detail: { method } }) => methodSelected = method;
+
   const { open } = getContext('modal')
-  const onEdit = async ({ detail: { method } }) => {
-    const commands = await backend.api.ExportCommands(method, JSON.stringify(state), metadata)
+  const onEdit = async () => {
+    if (methodSelected === undefined) return;
+    const commands = await backend.api.ExportCommands(methodSelected.value, JSON.stringify(state), metadata)
     open(CodeEditPanel, { commands })
   }
 
@@ -74,7 +81,7 @@
 </style>
 
 <div class="input-pane">
-  <MethodSelect on:send={onSend} on:edit={onEdit}/>
+  <MethodSelect on:send={onSend} on:selected={onSelected}/>
   <Tabs>
     <TabList>
       <Tab>Request</Tab>
@@ -82,7 +89,7 @@
     </TabList>
 
     <TabPanel>
-      <MethodInput {methodInput} {state} {mapItems} />
+      <MethodInput {methodInput} {state} {mapItems} on:edit={onEdit} />
     </TabPanel>
 
     <TabPanel>
