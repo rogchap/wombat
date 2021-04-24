@@ -22,6 +22,7 @@ jobs:
       run: |
         $tag = $env:GITHUB_REF -replace "refs/tags/", ""
         echo "::set-output name=tag::$(echo $tag)"
+
     - name: Install Go
       uses: actions/setup-go@v2
       with:
@@ -42,12 +43,14 @@ jobs:
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.tag }}" info.plist
         /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.tag }}" info.plist
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
+
     - name: Create darwin disk image
       if: matrix.platform == 'macos-10.15'
       run: |
         brew install create-dmg
         rm build/wombat
         create-dmg --volname "Wombat" --volicon "assets/darwin/dmg_icon.icns" --background "assets/darwin/dmg_bg.png" --window-size 512 360 --icon-size 100 --icon "Wombat.app" 100 185  --hide-extension "Wombat.app" --app-drop-link 388 185 "Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg" "build"
+
     - name: Upload darwin disk image
       if: matrix.platform == 'macos-10.15'
       uses: actions/upload-artifact@v2
@@ -64,6 +67,7 @@ jobs:
         cp wails.json ~/.wails/
         wails build -f -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
         tar -C build -zcvf Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz wombat
+
     - name: Upload linux tar.gz
       if: matrix.platform == 'ubuntu-16.04'
       uses: actions/upload-artifact@v2
@@ -96,6 +100,7 @@ jobs:
         choco install mingw
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.versionw.outputs.tag }}"
         Compress-Archive -Path "$PWD\build\wombat.exe" -DestinationPath "$PWD\Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip"
+
     - name: Upload windows zip
       if: matrix.platform == 'windows-2019'
       uses: actions/upload-artifact@v2
