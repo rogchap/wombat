@@ -174,4 +174,3 @@ jobs:
         asset_path: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip/Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
         asset_name: Wombat_${{ steps.version.outputs.tag }}_Windows_x86_64.zip
         asset_content_type: application/octet-stream
-
