@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support export/import request to/from grpcurl command. Thanks to [@devkanro](https://github.com/devkanro) & [@iou90](https://github.com/iou90)
+- Immediately retry a disconnected grpc connection before attempting to send a request. Thanks to [@aschey](https://github.com/aschey) 
 
 ### Fixed
 - Update dependencies to fix an issue with newer versions of webkit2gtk. Thanks to [@aschey](https://github.com/aschey)
