@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support for connecting to unix sockets. Thanks to [@aschey](https://github.com/aschey)
+
 ## [v0.5.0] - 2021-04-26
 
 ### Added
