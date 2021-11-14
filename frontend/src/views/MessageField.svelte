@@ -28,6 +28,7 @@
       case "google.protobuf.BoolValue":
       case "google.protobuf.StringValue":
       case "google.protobuf.BytesValue":
+      case "google.protobuf.Struct":
         return true;
 
       default:
