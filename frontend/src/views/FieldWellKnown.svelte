@@ -45,7 +45,7 @@
 
 <FieldTimestamp on:remove {field} {state} {key} {idx} />
 
-{:else if field.kind === "google.protobuf.Timestamp"}
+{:else if field.kind === "google.protobuf.Struct"}
 
   <FieldStruct on:remove {field} {state} {key} {idx} />
 
