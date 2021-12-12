@@ -6,6 +6,7 @@ option go_package = ".;server";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
 
 
 service Foobar {
@@ -110,6 +111,7 @@ message WellKnownRequest {
     google.protobuf.BoolValue bool_value = 9;
     google.protobuf.StringValue string_value = 10;
     google.protobuf.BytesValue bytes_value = 11;
+    google.protobuf.Struct struct_value = 12;
 
 }
 

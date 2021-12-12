@@ -3,6 +3,7 @@
   import FieldBoolValue from "./FieldBoolValue.svelte";
   import FieldNilText from "./FieldNilText.svelte";
   import FieldTimestamp from "./FieldTimestamp.svelte";
+  import FieldStruct from "./FieldStruct.svelte";
 
   export let name = "";
   export let message = {};
@@ -43,6 +44,10 @@
 {:else if field.kind === "google.protobuf.Timestamp"}
 
 <FieldTimestamp on:remove {field} {state} {key} {idx} />
+
+{:else if field.kind === "google.protobuf.Struct"}
+
+  <FieldStruct on:remove {field} {state} {key} {idx} />
 
 {:else}
 
