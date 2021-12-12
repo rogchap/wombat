@@ -75,12 +75,6 @@ func (c *client) connect(o options, h stats.Handler) error {
 			opts = append(opts, grpc.WithInsecure())
 		}
 
-		dialer := func(ctx context.Context, addr string) (net.Conn, error) {
-			d := &net.Dialer{}
-			return d.DialContext(ctx, "tcp", addr)
-		}
-		opts = append(opts, grpc.WithContextDialer(dialer))
-
 		var err error
 		c.conn, err = grpc.Dial(o.Addr, opts...)
 		if err != nil {
