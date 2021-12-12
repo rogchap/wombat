@@ -696,6 +696,21 @@ func fieldViewsFromDesc(fds protoreflect.FieldDescriptors, isOneof bool, cd *cyc
 
 		if fmd := fd.Message(); fmd != nil {
 			var err error
+			const structFullName = "google.protobuf.Struct"
+			if fmd.FullName() == structFullName {
+				fdesc.Kind = "message"
+				fdesc.Message = &messageDesc{
+					Name:     string(fmd.Name()),
+					FullName: structFullName,
+					Fields: []fieldDesc{{
+						Name:     "value",
+						FullName: "google.protobuf.Struct.value",
+						Kind:     "string",
+					}},
+				}
+				goto appendField
+			}
+
 			fdesc.Message, err = messageViewFromDesc(fmd, cd)
 			if err != nil {
 				return nil, err

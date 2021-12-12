@@ -1,11 +1,14 @@
 <script>
   import InputLabel from "./InputLabel.svelte";
+  import { createEventDispatcher } from "svelte";
   export let label = undefined;
   export let hint = "";
   export let value = "";
   export let width = "400px";
   export let labelColor = undefined;
   export let removeable = false;
+  const dispatch = createEventDispatcher();
+  const onDataChange = (event) => dispatch("change", event);
 </script>
 
 <style>
@@ -34,5 +37,5 @@
   {#if label}
     <InputLabel on:remove {removeable} {label} {hint} color={labelColor} />
   {/if}
-  <textarea bind:value></textarea>
+  <textarea bind:value on:change={onDataChange} />
 </div>
