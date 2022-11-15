@@ -42,8 +42,12 @@ jobs:
       with:
         go-version: 1.18
 
-    - name: Build
-      run: go build -v ./...
+    - name: Install Wails
+      run: go get github.com/wailsapp/wails/cmd/wails@v1.16.3
 
-    - name: Test
-      run: go test -v ./...
+    - name: Build
+      run: |
+        sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+        mkdir -p ~/.wails
+        cp wails.json ~/.wails/
+        wails build -f -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
