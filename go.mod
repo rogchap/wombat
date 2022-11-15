@@ -15,7 +15,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-version v1.2.1
-	github.com/jhump/protoreflect v1.8.2
+	github.com/jhump/protoreflect v1.14.0
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 // indirect
