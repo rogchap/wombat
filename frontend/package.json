@@ -14,7 +14,7 @@
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-image": "^2.0.5",
     "@rollup/plugin-node-resolve": "^8.0.0",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/webcomponentsjs": "^2.7.0",
     "core-js": "^3.6.5",
     "postcss": "^8.2.10",
     "postcss-css-variables": "^0.17.0",
