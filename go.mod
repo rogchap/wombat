@@ -17,15 +17,12 @@ require (
 	github.com/hashicorp/go-version v1.2.1
 	github.com/jhump/protoreflect v1.8.2
 	github.com/leaanthony/slicer v1.5.0 // indirect
-	github.com/magefile/mage v1.11.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/sirupsen/logrus v1.8.0 // indirect
-	github.com/wailsapp/wails v1.16.8
+	github.com/wailsapp/wails v1.16.9
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d // indirect
-	golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43 // indirect
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20210219173056-d891e3cb3b5b
 	google.golang.org/grpc v1.35.0
