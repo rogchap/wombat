@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-version v1.2.1
 	github.com/jhump/protoreflect v1.14.0
 	github.com/leaanthony/slicer v1.5.0 // indirect
-	github.com/mitchellh/mapstructure v1.4.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/wailsapp/wails v1.16.9
