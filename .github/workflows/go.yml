@@ -50,4 +50,5 @@ jobs:
         sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
+        find ~ -name wails
         wails build -f -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
