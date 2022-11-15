@@ -1,3 +1,5 @@
+name: Packaging
+
 on:
   push:
     tags:
@@ -8,16 +10,16 @@ jobs:
     strategy:
       matrix:
         go-version: [1.16.x]
-        platform: [macos-10.15, ubuntu-18.04, windows-2019]
+        platform: [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Get version tag (unix)
-      if: matrix.platform != 'windows-2019'
+      if: matrix.platform != windows-latest
       id: version
       run: echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
 
     - name: Get version tag (windows)
-      if: matrix.platform == 'windows-2019'
+      if: matrix.platform == windows-latest
       id: versionw
       run: |
         $tag = $env:GITHUB_REF -replace "refs/tags/", ""
@@ -36,7 +38,7 @@ jobs:
 
     # darwin
     - name: Build for darwin
-      if: matrix.platform == 'macos-10.15'
+      if: matrix.platform == macos-latest
       run: |
         mkdir -p ~/.wails
         cp wails.json ~/.wails/
@@ -45,14 +47,14 @@ jobs:
         wails build -f -p -ldflags "-X wombat/internal/app.semver=${{ steps.version.outputs.tag }}"
 
     - name: Create darwin disk image
-      if: matrix.platform == 'macos-10.15'
+      if: matrix.platform == macos-latest
       run: |
         brew install create-dmg
         rm build/wombat
         create-dmg --volname "Wombat" --volicon "assets/darwin/dmg_icon.icns" --background "assets/darwin/dmg_bg.png" --window-size 512 360 --icon-size 100 --icon "Wombat.app" 100 185  --hide-extension "Wombat.app" --app-drop-link 388 185 "Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg" "build"
 
     - name: Upload darwin disk image
-      if: matrix.platform == 'macos-10.15'
+      if: matrix.platform == macos-latest
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ steps.version.outputs.tag }}_Darwin_x86_64.dmg
@@ -60,7 +62,7 @@ jobs:
 
     # linux
     - name: Build for linux
-      if: matrix.platform == 'ubuntu-18.04'
+      if: matrix.platform == ubuntu-latest
       run: |
         sudo apt update && sudo apt install -y libgtk-3-dev libwebkit2gtk-4.0-dev
         mkdir -p ~/.wails
@@ -69,14 +71,14 @@ jobs:
         tar -C build -zcvf Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz wombat
 
     - name: Upload linux tar.gz
-      if: matrix.platform == 'ubuntu-18.04'
+      if: matrix.platform == ubuntu-latest
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
         path: Wombat_${{ steps.version.outputs.tag }}_Linux_x86_64.tar.gz
 
     # - name: Create linux app image
-    #   if: matrix.platform == 'ubuntu-16.04'
+    #   if: matrix.platform == ubuntu-latest
     #   run: |
     #     wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
     #     chmod +x linuxdeploy-x86_64.AppImage
@@ -93,7 +95,7 @@ jobs:
 
     # windows
     - name: Build for windows
-      if: matrix.platform == 'windows-2019'
+      if: matrix.platform == windows-latest
       run: |
         New-Item -ItemType directory -Path "$HOME\.wails" -Force
         Copy-Item -Path "$PWD\wails.json" -Destination "$HOME\.wails\wails.json"
@@ -102,7 +104,7 @@ jobs:
         Compress-Archive -Path "$PWD\build\wombat.exe" -DestinationPath "$PWD\Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip"
 
     - name: Upload windows zip
-      if: matrix.platform == 'windows-2019'
+      if: matrix.platform == windows-latest
       uses: actions/upload-artifact@v2
       with:
         name: Wombat_${{ steps.versionw.outputs.tag }}_Windows_x86_64.zip
