@@ -297,7 +297,7 @@ func (a *api) GetRawMessageState(method string) (string, error) {
 	return string(val), err
 }
 
-//FindProtoFiles opens a directory dialog to search for proto files
+// FindProtoFiles opens a directory dialog to search for proto files
 func (a *api) FindProtoFiles() (files []string, rerr error) {
 	defer func() {
 		if rerr != nil {
@@ -324,7 +324,7 @@ func (a *api) FindProtoFiles() (files []string, rerr error) {
 	return files, nil
 }
 
-//SelectDirectory opens a directory dialog and returns the path of the selected directory
+// SelectDirectory opens a directory dialog and returns the path of the selected directory
 func (a *api) SelectDirectory() string {
 	if wails.BuildMode == cmd.BuildModeBridge {
 		f, _ := filepath.Abs(filepath.Join(".", "internal", "server"))

@@ -69,14 +69,14 @@ func parseGrpcurlCommand(command string) (*grpcurlArguments, error) {
 	_ = flags.Bool("use-reflection", false, "")
 
 	var data, format string
-	flags.StringVar(&data,"d", "", "")
+	flags.StringVar(&data, "d", "", "")
 	flags.StringVar(&format, "format", "json", "")
 
 	if format != "" && format != "json" {
 		return nil, errors.New("data format must be json")
 	}
 
-	var protoset, protoFiles, importPaths, addlHeaders, rpcHeaders, reflHeaders  multiString
+	var protoset, protoFiles, importPaths, addlHeaders, rpcHeaders, reflHeaders multiString
 	flags.Var(&addlHeaders, "H", "")
 	flags.Var(&rpcHeaders, "rpc-header", "")
 	flags.Var(&reflHeaders, "reflect-header", "")
