@@ -1,12 +1,13 @@
 <script>
   import Button from "../controls/Button.svelte";
+  import { EventsOn, BrowserOpenURL } from "../../wailsjs/runtime";
 
   let visible = false;
   let oldVersion = "";
   let newVersion = "";
   let releaseURL = "";
 
-  wails.Events.On("wombat:update_available", ({old_version, new_version, url}) => {
+  EventsOn("wombat:update_available", ({old_version, new_version, url}) => {
     oldVersion = old_version;
     newVersion = new_version;
     releaseURL = url;
@@ -15,7 +16,7 @@
 
   const onCloseClicked = () => visible = false;
   const onDownloadClicked = async () => {
-    await wails.Browser.OpenURL(releaseURL)
+    await BrowserOpenURL(releaseURL)
     visible = false;
   }
 </script>
@@ -47,10 +48,10 @@
 
 {#if visible}
 <div class="updater">
-  <div>🎉 Update available: <span class="old">{oldVersion}</span> → <span class="new">{newVersion}</div>
+  <div>🎉 Update available: <span class="old">{oldVersion}</span> → <span class="new">{newVersion}</span></div>
   <div class="dismiss">
-    <Button on:click={onCloseClicked} text="Close" bgColor={isWin ? "#434c5e" : "var(--bg-color2)"} />
-    <Button on:click={onDownloadClicked} text="Download" bgColor={isWin ? "#434c5e" : "var(--bg-color2)"} color={isWin ? "#88c0d0" : "var(--primary-color)"} border />
+    <Button on:click={onCloseClicked} text="Close" bgColor="var(--bg-color2)" />
+    <Button on:click={onDownloadClicked} text="Download" bgColor="var(--bg-color2)" color="var(--primary-color)" border />
   </div>
 </div>
 {/if}

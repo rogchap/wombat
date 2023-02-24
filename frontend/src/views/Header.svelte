@@ -1,17 +1,18 @@
 <script>
   import { getContext } from "svelte";
+  import { EventsOn } from "../../wailsjs/runtime";
 
   import Button from "../controls/Button.svelte";
   import WorkspaceOptions from "./WorkspaceOptions.svelte";
   import WorkspaceSwitcher from "./WorkspaceSwitcher.svelte";
 
   let addr = "";
-  wails.Events.On("wombat:client_connected", data => addr = data);
+  EventsOn("wombat:client_connected", data => addr = data);
 
   let status = "";
-  wails.Events.On("wombat:client_state_changed", data => status = data.toLowerCase());
+  EventsOn("wombat:client_state_changed", data => status = data.toLowerCase());
 
-  wails.Events.On("wombat:client_connect_started", data => {
+  EventsOn("wombat:client_connect_started", data => {
     addr = data;
     status = "connecting";
   })
@@ -94,10 +95,10 @@
   <div class="hitem">
     <Button
       text="Workspace"
-      bgColor={isWin ? "#5e81ac" : "var(--accent-color3)"}
+      bgColor="var(--accent-color3)"
       on:click={onWorkspaceClicked}
     /><Button
-      bgColor={isWin ? "#81a1c1" : "var(--accent-color2)"}
+      bgColor="var(--accent-color2)"
       on:click={onNewWorkspaceClicked}
       style="height:40px;min-width:auto;" >
       <svg width="14" height="14">

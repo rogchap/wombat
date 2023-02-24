@@ -8,6 +8,7 @@
   import WorkspaceOptionsBasic from "./WorkspaceOptionsBasic.svelte";
   import WorkspaceOptionsTls from "./WorkspaceOptionsTls.svelte";
   import WorkspaceOptionsMetadata from "./WorkspaceOptionsMetadata.svelte";
+  import { GetWorkspaceOptions, GetReflectMetadata, Connect } from "../../wailsjs/go/app/api";
 
   const { close } = getContext('modal');
 
@@ -20,15 +21,15 @@
     if (createNew) {
       return
     }
-    options = await backend.api.GetWorkspaceOptions();
-    const mds = await backend.api.GetReflectMetadata(options.addr);
+    options = await GetWorkspaceOptions();
+    const mds = await GetReflectMetadata(options.addr);
     if (mds) {
       reflectmd = mds;
     }
   })
 
   const onConnectClicked = async () => {
-    await backend.api.Connect(options, reflectmd, true);
+    await Connect(options, reflectmd, true);
     close();
   }
   const onCloseClicked = close;

@@ -1,5 +1,6 @@
 <script>
   import { getContext, onMount } from 'svelte';
+  import { ImportCommand } from "../../wailsjs/go/app/api";
 
   import Button from '../controls/Button.svelte';
 
@@ -37,7 +38,7 @@
   const { close } = getContext('modal');
   const onImportClicked = async () => {
     close();
-    await backend.api.ImportCommand("grpcurl", Editor.getValue())
+    await ImportCommand("grpcurl", Editor.getValue())
   };
 </script>
 

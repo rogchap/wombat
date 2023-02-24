@@ -1,1 +1,13 @@
-{"email":"rogchap@gmail.com","name":"Roger Chapman"}
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Wombat",
+  "outputfilename": "wombat",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "email":"rogchap@gmail.com",
+    "name":"Roger Chapman"
+  }
+}

@@ -2,6 +2,7 @@
   import Button from "../controls/Button.svelte";
   import Status from "./Status.svelte";
   import RequestType from "./RequestType.svelte";
+  import { Cancel, CloseSend } from "../../wailsjs/go/app/api";
 
   export let rpc = {};
   export let inflight = false;
@@ -10,8 +11,8 @@
   export let outCount = 0;
   export let inCount = 0;
 
-  const onCancelClicked = () => backend.api.Cancel()
-  const onCloseClicked = () => backend.api.CloseSend()
+  const onCancelClicked = () => Cancel()
+  const onCloseClicked = () => CloseSend()
 </script>
 <style>
   .output-header {
@@ -36,8 +37,8 @@
   <div class="spacer" />
   {#if inflight}
     {#if client_stream}
-      <Button on:click={onCloseClicked} text={server_stream ? "Close Send" : "Close & Receive"} color={isWin ? "#88c0d0" : "var(--primary-color)"} />
+      <Button on:click={onCloseClicked} text={server_stream ? "Close Send" : "Close & Receive"} color="var(--primary-color)" />
     {/if}
-    <Button on:click={onCancelClicked} text="Cancel" color={isWin ? "#d08770" : "var(--orange-color)"} />
+    <Button on:click={onCancelClicked} text="Cancel" color="var(--orange-color)" />
   {/if}
 </div>

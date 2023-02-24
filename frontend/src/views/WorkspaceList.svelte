@@ -56,7 +56,7 @@
         <td class:selected={wksp.id === current.id}>{!wksp.addr && wksp.id === "wksp_default" ? "default workspace" : wksp.addr}</td>
         <td>
           {#if wksp.id !== "wksp_default"}
-            <CrossButton on:click={() => onDeleteClicked(wksp)} color={isWin ? "#bf616a" : "var(--red-color)"} />
+            <CrossButton on:click={() => onDeleteClicked(wksp)} color="var(--red-color)" />
           {/if}
         </td>
       </tr>

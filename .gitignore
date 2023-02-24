@@ -3,7 +3,10 @@ vendor
 deploy
 moc*
 rcc*
+.idea
 
 # new v2
-build
+!build
+build/*
+!build/appicon.png
 .data
