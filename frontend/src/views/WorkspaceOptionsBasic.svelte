@@ -2,6 +2,7 @@
   import TextField from "../controls/TextField.svelte";
   import Checkbox from "../controls/Checkbox.svelte";
   import FileList from "../controls/FileList.svelte";
+  import { FindProtoFiles, SelectDirectory } from "../../wailsjs/go/app/api";
 
   export let options = {
     protos: {},
@@ -12,11 +13,11 @@
 
   const onFilesAction = async () => {
     options.protos.files = options.protos.files || [];
-    options.protos.files = await backend.api.FindProtoFiles();
+    options.protos.files = await FindProtoFiles();
   }
 
   const onRootsAction = async () => {
-    const dir = await backend.api.SelectDirectory();
+    const dir = await SelectDirectory();
     options.protos.roots = options.protos.roots || [];
     options.protos.roots = [...options.protos.roots, dir];
   }

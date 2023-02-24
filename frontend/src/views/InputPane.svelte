@@ -8,6 +8,8 @@
   import RequestMetadata from "./RequestMetadata.svelte";
   import CodeEditPanel from "./CodeEditPanel.svelte";
   import { getContext, tick } from 'svelte';
+  import { EventsOn } from "../../wailsjs/runtime";
+  import { GetRawMessageState, GetMetadata, Send, ExportCommands } from "../../wailsjs/go/app/api";
 
   let methodInput = {
     full_name: "",
@@ -32,7 +34,7 @@
     return tick();
   }
 
-  wails.Events.On("wombat:method_input_changed", async (data, initState, m) => {
+  EventsOn("wombat:method_input_changed", async (data, initState, m) => {
     await reset();
     if (!data) {
       return
@@ -42,23 +44,23 @@
       state = JSON.parse(initState);
       metadata = m;
     } else {
-      const rawState = await backend.api.GetRawMessageState(data.full_name);
+      const rawState = await GetRawMessageState(data.full_name);
       if (rawState) {
         state = JSON.parse(rawState);
       }
     }
   });
 
-  wails.Events.On("wombat:client_connect_started", async (addr) => {
+  EventsOn("wombat:client_connect_started", async (addr) => {
     await reset(true)
-    const m = await backend.api.GetMetadata(addr);
+    const m = await GetMetadata(addr);
     if (m) {
       metadata = m;
     }
   })
 
   const onSend = ({ detail: { method } }) => {
-    backend.api.Send(method, JSON.stringify(state), metadata)
+    Send(method, JSON.stringify(state), metadata)
     // console.log(method, state, metadata);
   }
 
@@ -67,7 +69,7 @@
   const { open } = getContext('modal')
   const onEdit = async () => {
     if (methodSelected === undefined) return;
-    const commands = await backend.api.ExportCommands(methodSelected.value, JSON.stringify(state), metadata)
+    const commands = await ExportCommands(methodSelected.value, JSON.stringify(state), metadata)
     open(CodeEditPanel, { commands })
   }
 

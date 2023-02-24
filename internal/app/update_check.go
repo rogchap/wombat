@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-version"
-	"github.com/wailsapp/wails"
-	"github.com/wailsapp/wails/cmd"
 )
 
 const latestReleaseURL = "https://api.github.com/repos/rogchap/wombat/releases/latest"
@@ -31,10 +29,6 @@ func init() {
 }
 
 func checkForUpdate() (*releaseInfo, error) {
-	if wails.BuildMode == cmd.BuildModeBridge {
-		return nil, noUpdate
-	}
-
 	req, err := http.NewRequest("GET", latestReleaseURL, nil)
 	if err != nil {
 		return nil, err

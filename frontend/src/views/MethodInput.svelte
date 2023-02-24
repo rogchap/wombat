@@ -49,7 +49,7 @@
   <div class="edit">
     <Button 
       text="Edit"
-      color={isWin ? "#81a1c1" : "var(--accent-color2)"}
+      color="var(--accent-color2)"
       bgColor="transparent"
       style="min-width:auto"
       on:click={onEdit}

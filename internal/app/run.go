@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,10 +10,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/wailsapp/wails"
-	"github.com/wailsapp/wails/cmd"
-
-	"wombat/internal/server"
+	"github.com/wailsapp/wails/v2"
+	woptions "github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 )
 
 // Run is the main function to run the application
-func Run(js string, css string) int {
+func Run(assets embed.FS) int {
 	appData, err := appDataLocation(appname)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open add data directory: %v\n", err)
@@ -29,24 +29,29 @@ func Run(js string, css string) int {
 	}
 	defer crashlog(appData)
 
-	if wails.BuildMode != cmd.BuildModeProd {
-		go server.Serve()
+	appApi := &api{appData: appData}
+
+	cfg := &woptions.App{
+		Title:  appname,
+		Width:  1200,
+		Height: 820,
+		BackgroundColour: &woptions.RGBA{
+			R: 0x2e,
+			G: 0x34,
+			B: 0x40,
+			A: 0xff,
+		},
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		Bind: []interface{}{
+			appApi,
+		},
+		OnStartup:  appApi.startup,
+		OnDomReady: appApi.wailsReady,
 	}
 
-	cfg := &wails.AppConfig{
-		Width:     1200,
-		Height:    820,
-		Resizable: true,
-		Title:     appname,
-		JS:        js,
-		CSS:       css,
-		Colour:    "#2e3440",
-	}
-
-	app := wails.CreateApp(cfg)
-	app.Bind(&api{appData: appData})
-
-	if err := app.Run(); err != nil && err != http.ErrServerClosed {
+	if err := wails.Run(cfg); err != nil && err != http.ErrServerClosed {
 		fmt.Fprintf(os.Stderr, "app: error running app: %v\n", err)
 		return 1
 	}
@@ -54,9 +59,9 @@ func Run(js string, css string) int {
 }
 
 func crashlog(appData string) {
-	if wails.BuildMode != cmd.BuildModeProd {
-		return
-	}
+	//if wails.BuildMode != cmd.BuildModeProd {
+	//	return
+	//}
 	if r := recover(); r != nil {
 		if _, err := os.Stat(appData); os.IsNotExist(err) {
 			os.MkdirAll(appData, 0700)

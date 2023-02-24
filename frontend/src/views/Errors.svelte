@@ -1,9 +1,10 @@
 <script>
   import Button from "../controls/Button.svelte";
+  import { EventsOn } from "../../wailsjs/runtime";
 
   let errors = [];
 
-  wails.Events.On("wombat:error", err => {
+  EventsOn("wombat:error", err => {
     errors = [...errors, err];
   })
 

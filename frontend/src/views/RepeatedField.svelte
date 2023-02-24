@@ -66,7 +66,7 @@
 
 <div class="msg-label">
   <InputLabel label={field.name} hint={"repeated "+hint} block />
-  <CrossButton color={isWin ? "#a3be8c" : "var(--green-color)"} add on:click={onAddButtonClicked} />
+  <CrossButton color="var(--green-color)" add on:click={onAddButtonClicked} />
 </div>
 
 <div class="fields">

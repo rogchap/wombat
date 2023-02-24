@@ -1,5 +1,6 @@
 <script>
   import WorkspaceList from "./WorkspaceList.svelte";
+  import { GetWorkspaceOptions, ListWorkspaces, SelectWorkspace, DeleteWorkspace } from "../../wailsjs/go/app/api";
 
   export let visible = false;
 
@@ -7,19 +8,19 @@
   let current = undefined;
   const loadWorkspacesList = async () => {
       workspaces = [];
-      current = await backend.api.GetWorkspaceOptions()
-      workspaces = await backend.api.ListWorkspaces() 
+      current = await GetWorkspaceOptions()
+      workspaces = await ListWorkspaces()
   }
 
   $: visible && loadWorkspacesList();
 
   const onWorkspaceSelected = ({detail: wksp}) => {
-    backend.api.SelectWorkspace(wksp.id);
+    SelectWorkspace(wksp.id);
     visible = false;
   }
 
   const onWorkspaceDeleted = ({detail:wksp}) => {
-    backend.api.DeleteWorkspace(wksp.id);
+    DeleteWorkspace(wksp.id);
     visible = false;
   }
 
