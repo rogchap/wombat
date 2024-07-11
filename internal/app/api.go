@@ -612,15 +612,17 @@ func (a *api) SelectMethod(fullname string, initState string, metadata interface
 }
 
 func messageViewFromDesc(md protoreflect.MessageDescriptor, cd *cyclicDetector) (*messageDesc, error) {
+	var rtn messageDesc
+	rtn.Name = string(md.Name())
+	rtn.FullName = string(md.FullName())
+
 	//(rogchap) this is a recursive function, therefore we should make sure we
 	// don't get a stack overflow. The protobuf wireformat does not support
 	// cyclic data objects: protocolbuffers/protobuf#5504
 	if err := cd.detect(md); err != nil {
-		return nil, err
+		rtn.Fields = []fieldDesc{}
+		return &rtn, nil
 	}
-	var rtn messageDesc
-	rtn.Name = string(md.Name())
-	rtn.FullName = string(md.FullName())
 
 	fds := md.Fields()
 	var err error
